@@ -1130,19 +1130,30 @@
         202425, 62240, 132203, 136787, 53667, 397223
     ]);
 
-    // UPDATED: Expanded List of VPNs
+    // Priority 1: Map Infrastructure names to Likely VPN Brands
+    const VPN_BRAND_MAP = [
+        { keys: ['packethub'], label: 'Detected (Likely NordVPN)' },
+        { keys: ['cyberzone', 'datacamp'], label: 'Detected (Likely Surfshark)' },
+        { keys: ['m247', 'm europe'], label: 'Detected (Likely Proton/Nord/Surfshark)' },
+        { keys: ['clouvider'], label: 'Detected (Likely ExpressVPN)' },
+        { keys: ['terrahost'], label: 'Detected (Likely Mullvad)' },
+        { keys: ['cdn77', 'datapacket'], label: 'Detected (Likely Nord/Surfshark)' },
+        { keys: ['tzulo'], label: 'Detected (Likely PureVPN)' },
+        { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network' }
+    ];
+
+    // Priority 2: Generic list of known providers/terms for regex matching
     const PROVIDER_NAMES = [
         'cloudflare', 'google', 'amazon', 'aws', 'microsoft', 'azure',
-        'digitalocean', 'hetzner', 'ovh', 'm247', 'm europe', 'expressvpn',
-        'nordvpn', 'proton', 'surfshark', 'mullvad', 'tor exit',
-        'zenlayer', 'leaseweb', 'datacamp', 'packethub', 'hostinger',
-        'cyberzone', 'tor project', 'onion', 'windscribe', 'tunnelbear',
-        'vyprvpn', 'purevpn', 'ipvanish', 'hotspot shield', 'zenmate',
-        'hidemyass', 'hma', 'private internet access', 'pia', 'cyberghost',
-        'ipvanish', 'strongvpn', 'fastestvpn', 'ivacy', 'veepn', 'torguard',
+        'digitalocean', 'hetzner', 'ovh', 'expressvpn',
+        'nordvpn', 'proton', 'surfshark', 'mullvad',
+        'zenlayer', 'leaseweb', 'hostinger',
+        'windscribe', 'tunnelbear', 'vyprvpn', 'purevpn', 'ipvanish',
+        'hotspot shield', 'zenmate', 'hidemyass', 'hma', 'private internet access',
+        'pia', 'cyberghost', 'strongvpn', 'fastestvpn', 'ivacy', 'veepn', 'torguard',
         'airvpn', 'perfectprivacy', 'cactusvpn', 'ovpn', 'hide.me',
         'privatevpn', 'protonvpn', 'vultr', 'linode', 'choopa', 'performive',
-        'tzulo', 'shock hosting', 'teraswitch', 'clouvider', 'datapacket', 'melbicom'
+        'shock hosting', 'teraswitch', 'melbicom'
     ];
 
     // Compiled Regex for O(1) matching of strings
@@ -1170,25 +1181,36 @@
         const asnNum = parseInt(asn);
         const combinedName = (isp + " " + org + " " + asn).toLowerCase();
 
-        // 1. ASN Check (Fastest - O(1))
-        let ispFlagged = false;
-        let detectedName = "Detected"; // Default
+        // 1. Check Priority Mappings first (Custom Branding)
+        let matchedBrand = null;
+        for (const brand of VPN_BRAND_MAP) {
+            if (brand.keys.some(k => combinedName.includes(k))) {
+                matchedBrand = brand.label;
+                score += 50;
+                reasons.push(`Known Infra Match`);
+                document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
+                document.getElementById('desc-isp').innerText = `Infra Matched: ${brand.keys[0]}`;
+                break;
+            }
+        }
 
-        if (!isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
+        let ispFlagged = !!matchedBrand;
+
+        // 2. ASN Check (Fastest - O(1)) if not already matched
+        if (!ispFlagged && !isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
             score += 50;
             reasons.push(`ASN Match: ${asnNum}`);
             ispFlagged = true;
             document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
             document.getElementById('desc-isp').innerText = `Flagged ASN: ${asnNum}`;
         }
-        // 2. String Match (Fast - Compiled Regex)
-        else if (VPN_REGEX.test(combinedName)) {
+
+        // 3. String Match (Fast - Compiled Regex) if not already matched
+        if (!ispFlagged && VPN_REGEX.test(combinedName)) {
             score += 50;
             const match = combinedName.match(VPN_REGEX)[0];
-
-            // Format match string nicely (e.g., "nordvpn" -> "Nordvpn")
             const formattedName = match.charAt(0).toUpperCase() + match.slice(1);
-            detectedName = `${formattedName} Detected`;
+            matchedBrand = `${formattedName} Detected`;
 
             reasons.push(`Provider Match: ${match}`);
             ispFlagged = true;
@@ -1196,7 +1218,7 @@
             document.getElementById('desc-isp').innerText = `Matched: ${formattedName}`;
         }
 
-        // 3. Generic Heuristics
+        // 4. Generic Heuristics
         if (!ispFlagged) {
             if (GENERIC_REGEX.test(combinedName)) {
                 score += 20; // Lower score for generic terms
@@ -1209,7 +1231,7 @@
             }
         }
 
-        // 4. Timezone Check
+        // 5. Timezone Check
         if (ipUtcStr !== sysUtcStr) {
             score += 20;
             reasons.push("Timezone Mismatch");
@@ -1220,13 +1242,12 @@
             document.getElementById('desc-tz').innerText = "Matched";
         }
 
-        // 5. Language Check (Visual Only)
+        // 6. Language Check (Visual Only)
         const browserLang = navigator.language || "en";
         document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
         document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
 
-        // 6. TOR Specific Logic (New)
-        // Simple heuristic check: if "tor" appears in provider string
+        // 7. TOR Specific Logic (Visual check for modal)
         if (/tor exit|tor project|onion/i.test(combinedName)) {
             document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
@@ -1235,24 +1256,24 @@
             document.getElementById('desc-tor').innerText = "No Tor fingerprints found";
         }
 
-
-        // --- SCORING LOGIC ---
+        // --- SCORING & DISPLAY LOGIC ---
 
         if (score >= 50) {
             // DETECTED (Red) - Confirmed Match
-            vpnEl.innerText = detectedName; // Show specific name if found
+            vpnEl.innerText = matchedBrand || "Detected"; // Use custom label if available
             vpnEl.className = "text-lg font-bold mt-1 text-red-600";
             detailEl.innerHTML = ""; // Hidden per request
 
-            badgeEl.innerText = "High Anonymity";
-            badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
-            fraudEl.innerText = "High Risk (Flagged)";
-            fraudEl.className = "font-bold text-red-500";
-
-            // SPECIAL TOR CHECK
-            if (/tor exit|tor project|onion/i.test(combinedName)) {
+            // Special Check for Tor Labeling override
+            if (matchedBrand === 'Tor Network') {
                 vpnEl.innerText = "Tor Network";
                 badgeEl.innerText = "High Anonymity (Tor)";
+                fraudEl.className = "font-bold text-red-500";
+            } else {
+                badgeEl.innerText = "High Anonymity";
+                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
+                fraudEl.innerText = "High Risk (Flagged)";
+                fraudEl.className = "font-bold text-red-500";
             }
 
         } else if (score > 0) {
