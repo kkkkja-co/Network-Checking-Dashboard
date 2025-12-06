@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Network Dashboard</title>
+    <title>Network Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -233,10 +233,31 @@
                 </div>
                 <div class="p-2 bg-blue-50 rounded-lg text-blue-600 ml-2 absolute top-5 right-5"><i class="fas fa-globe"></i></div>
             </div>
-            <div class="pt-2 border-t border-gray-100 mt-2">
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Provider (ISP)</p>
-                <p class="text-sm font-bold text-slate-700 leading-tight" id="isp-display">--</p>
-                <p class="text-xs text-gray-400 font-mono mt-0.5" id="asn-display">--</p>
+
+            <div class="pt-3 border-t border-gray-100 mt-2">
+                <div class="flex flex-row">
+                    <div class="flex-1 pr-3 border-r border-gray-200">
+                        <div class="mb-3">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">ISP</p>
+                            <p class="text-xs font-bold text-slate-700 leading-tight break-words" id="isp-display">--</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Organization</p>
+                            <p class="text-xs font-medium text-slate-600 leading-tight break-words" id="org-display">--</p>
+                        </div>
+                    </div>
+
+                    <div class="flex-1 pl-3">
+                        <div class="mb-3">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">AS Organization</p>
+                            <p class="text-xs font-bold text-slate-700 leading-tight break-words" id="as-org-display">--</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">AS Number</p>
+                            <p class="text-xs font-mono font-medium text-slate-600 leading-tight" id="asn-display">--</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -617,7 +638,21 @@
         const ip = document.getElementById('ipv4-display').innerText || '--';
         const isp = document.getElementById('isp-display').innerText || '--';
 
-        h.unshift({date:new Date().toLocaleTimeString()+" "+new Date().toLocaleDateString(), ping:p, dl:d, ul:u, ip:ip, isp:isp});
+        // 24h format manually to ensure consistency
+        const dateObj = new Date();
+        const f = (x) => String(x).padStart(2,'0');
+        const timeStr = `${f(dateObj.getHours())}:${f(dateObj.getMinutes())}`;
+        const dateStr = `${f(dateObj.getDate())}/${f(dateObj.getMonth()+1)}/${dateObj.getFullYear()}`;
+
+        // Offset
+        const offset = -dateObj.getTimezoneOffset();
+        const sign = offset >= 0 ? '+' : '-';
+        const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
+        const utcStr = `UTC${sign}${pad(offset/60)}:${pad(offset%60)}`;
+
+        const fullDate = `${timeStr} ${dateStr} (${utcStr})`;
+
+        h.unshift({date:fullDate, ping:p, dl:d, ul:u, ip:ip, isp:isp});
         if(h.length>5) h.pop();
         setCookie('speedtest_history',JSON.stringify(h),30); renderHistory();
     }
@@ -673,7 +708,7 @@
         const headerBtn = document.getElementById('btn-header-speed');
 
         if(btn) { btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); }
-        if(headerBtn) { headerBtn.disabled = true; headerBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
+        if(headerBtn) { headerBtn.disabled = true; headerBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
 
         const status=document.getElementById('test-state'), bar=document.getElementById('speed-progress'), icon=document.getElementById('speed-status-icon');
         const dlEl=document.getElementById('dl-final'), ulEl=document.getElementById('ul-final'), pgEl=document.getElementById('ping-value');
@@ -850,7 +885,18 @@
     }
 
     // --- 4. DATA FETCHERS ---
-    function updateTimestamp() { const n=new Date(); const f=(x)=>String(x).padStart(2,'0'); document.getElementById('last-update').innerText=`${f(n.getDate())}/${f(n.getMonth()+1)}/${n.getFullYear()} , ${f(n.getHours())}:${f(n.getMinutes())}:${f(n.getSeconds())}`; }
+    function updateTimestamp() {
+        const n = new Date();
+        const f = (x) => String(x).padStart(2,'0');
+
+        // Offset
+        const offset = -n.getTimezoneOffset();
+        const sign = offset >= 0 ? '+' : '-';
+        const pad = val => String(Math.floor(Math.abs(val))).padStart(2, '0');
+        const utcStr = `UTC${sign}${pad(offset/60)}:${pad(offset%60)}`;
+
+        document.getElementById('last-update').innerText = `${f(n.getDate())}/${f(n.getMonth()+1)}/${n.getFullYear()} , ${f(n.getHours())}:${f(n.getMinutes())}:${f(n.getSeconds())} ${utcStr}`;
+    }
     setInterval(updateTimestamp,1000); updateTimestamp();
 
     let map;
@@ -859,11 +905,15 @@
     async function fetchIPv4Data() { try{const r=await fetch('https://ipwho.is/');const d=await r.json();if(d.success){
         document.getElementById('ipv4-display').innerText=d.ip;
         document.getElementById('ipv4-loc').innerText=`${d.city}, ${d.region_code}`;
-        document.getElementById('isp-display').innerText=d.connection.isp||"Unknown";
-        document.getElementById('asn-display').innerText=`ASN: ${d.connection.asn}`;
+
+        // UPDATED: Populate 4 new fields
+        document.getElementById('isp-display').innerText = d.connection.isp || "Unknown";
+        document.getElementById('org-display').innerText = d.connection.org || "Unknown";
+        document.getElementById('as-org-display').innerText = d.connection.org || "Unknown"; // Usually mapped to org in this API
+        document.getElementById('asn-display').innerText = d.connection.asn || "--";
+
         document.getElementById('hostname-display').innerText=d.connection.domain||"No PTR Record";
         initMap(d.latitude,d.longitude);
-        // UPDATED: Pass 'utc' field to detectVPN for offset comparison
         detectVPN(d.timezone.id, d.timezone.utc, d.connection.isp);
     }}catch(e){document.getElementById('ipv4-display').innerText="Error";}}
 
