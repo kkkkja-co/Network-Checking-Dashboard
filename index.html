@@ -98,10 +98,28 @@
 
             <div class="prose prose-slate max-w-none text-slate-700 pb-12">
                 <p class="text-lg mb-4">Last Updated: <span id="policy-date"></span></p>
+
                 <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">1. Overview & Hosting</h3>
-                <p class="mb-4">This Network Dashboard is hosted on <strong>Cloudflare</strong>. We do not operate a backend server to collect data. Analysis is local.</p>
+                <p class="mb-4">This Network Dashboard is a client-side application hosted on <strong>Cloudflare</strong>. We do not operate a proprietary backend server to collect or store your personal data. All network analysis is performed locally within your web browser.</p>
+
+                <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">2. Data Processing</h3>
+                <p class="mb-4">All data displayed (IP addresses, speed test results, DNS information) is fetched directly by your browser from public APIs. This data is processed temporarily in your browser's memory and is not transmitted to us.</p>
+
+                <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">3. Third-Party Services</h3>
+                <p class="mb-4">To provide functionality, this dashboard connects to the following third-party providers:</p>
+                <ul class="list-disc pl-5 mb-4 space-y-1">
+                    <li><strong>IP Geolocation:</strong> <code>ipwho.is</code> and <code>ipify.org</code> are used to detect your public IP and location.</li>
+                    <li><strong>Speed Test:</strong> <code>speed.cloudflare.com</code> is used to measure upload and download bandwidth.</li>
+                    <li><strong>Maps:</strong> <code>OpenStreetMap</code> tiles are used to visualize your approximate location.</li>
+                    <li><strong>DNS:</strong> <code>edns.ip-api.com</code> is used to detect your DNS resolver.</li>
+                </ul>
+                <p class="mb-4">Please refer to the respective privacy policies of these services for details on how they handle IP requests.</p>
+
+                <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">4. Cookies & Local Storage</h3>
+                <p class="mb-4">We use a small cookie (or local storage) solely to save your <strong>Speed Test History</strong> on your own device. This allows you to compare previous results. This data never leaves your browser. You can disable this feature or clear your history at any time using the dashboard controls.</p>
+
                 <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">5. Contact</h3>
-                <p class="mb-4">Contact: <a href="mailto:contact@bunorden.com" class="text-blue-600 font-bold hover:underline">contact@bunorden.com</a></p>
+                <p class="mb-4">For any inquiries, please contact us at: <a href="mailto:contact@bunorden.com" class="text-blue-600 font-bold hover:underline">contact@bunorden.com</a></p>
             </div>
         </div>
     </div>
@@ -153,22 +171,32 @@
 
 <div class="max-w-7xl mx-auto">
 
-    <header class="mb-8 flex flex-col md:flex-row justify-between items-end md:items-center border-b border-gray-200 pb-6">
+    <header class="mb-4 flex flex-col md:flex-row justify-between items-end md:items-center border-b border-gray-200 pb-4">
         <div>
-            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Network Dashboard</h1>
-            <div class="flex items-center mt-2 space-x-4 text-sm text-gray-500 font-mono">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Network Dashboard</h1>
+            <div class="flex items-center mt-1 space-x-3 text-xs text-gray-500 font-mono">
                 <span id="last-update">--</span>
             </div>
         </div>
-        <div class="flex gap-3 mt-4 md:mt-0">
-            <button onclick="runHighPerformanceTest()" class="px-5 py-2.5 bg-emerald-600 text-white rounded-lg shadow hover:bg-emerald-700 transition flex items-center font-bold">
-                <i class="fas fa-play mr-2"></i> Run Speedtest
+        <div class="flex gap-2 mt-3 md:mt-0 items-center">
+            <a href="https://github.com/kkkkja-co/Network-Checking-Dashboard" target="_blank" class="px-3 py-1.5 bg-slate-800 text-white rounded text-sm shadow hover:bg-slate-900 transition flex items-center font-semibold">
+                <i class="fab fa-github text-sm md:mr-2"></i> <span class="hidden md:inline">GitHub</span>
+            </a>
+
+            <button onclick="runHighPerformanceTest()" class="px-4 py-1.5 bg-emerald-600 text-white rounded text-sm shadow hover:bg-emerald-700 transition flex items-center font-bold">
+                <i class="fas fa-play mr-2"></i> Speedtest
             </button>
-            <button onclick="window.location.reload()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 transition flex items-center font-medium">
+            <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm shadow-sm hover:bg-gray-50 transition flex items-center">
                 <i class="fas fa-sync-alt"></i>
             </button>
         </div>
     </header>
+
+    <div class="flex justify-center mb-6">
+        <span class="text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-full flex items-center shadow-sm">
+            <i class="fas fa-arrow-down mr-2 animate-bounce text-slate-500"></i> Scroll down for History & Details
+        </span>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
@@ -402,7 +430,7 @@
 
     <footer class="mt-12 mb-6 text-center border-t border-gray-200 pt-6">
         <p class="text-sm text-gray-400 flex justify-center items-center gap-2">
-            &copy; <span id="year"></span> ip.bunorden.com.
+            &copy; <span id="year"></span> net.bunorden.com.
             <a href="mailto:contact@bunorden.com" class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium">Contact</a>
             <span class="text-gray-300">|</span>
             <button onclick="openPrivacy()" class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium">Privacy Policy</button>
@@ -674,10 +702,19 @@
     }
 
     // --- 3. VPN & SYSTEM UTILS ---
-    function detectVPN(ipTimezone, isp) {
+    function detectVPN(ipTz, ipUtc, isp) {
         const vpnEl = document.getElementById('vpn-status');
         const detailEl = document.getElementById('vpn-details');
-        const sysTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        // System UTC Calculation
+        const d = new Date();
+        const offset = -d.getTimezoneOffset();
+        const sign = offset >= 0 ? '+' : '-';
+        const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
+        const sysUtcStr = `UTC${sign}${pad(offset/60)}:${pad(offset%60)}`;
+
+        // IP UTC Formatting (Normalizing input like "+09:00" to "UTC+09:00")
+        const ipUtcStr = `UTC${ipUtc}`;
 
         let reasons = [];
         const lowerISP = isp ? isp.toLowerCase() : "";
@@ -720,9 +757,9 @@
             }
         }
 
-        // 3. Timezone Check
-        if (ipTimezone && sysTimezone && ipTimezone !== sysTimezone) {
-            reasons.push(`Flagged: Timezone Mismatch<br><span class="text-xs font-normal text-slate-500">(IP: ${ipTimezone} vs Sys: ${sysTimezone})</span>`);
+        // 3. Timezone Check (UPDATED: Using UTC Offsets)
+        if (ipUtcStr !== sysUtcStr) {
+            reasons.push(`Flagged: Timezone Mismatch<br><span class="text-xs font-normal text-slate-500">(IP: ${ipUtcStr} vs Sys: ${sysUtcStr})</span>`);
         }
 
         if (reasons.length > 0) {
@@ -733,7 +770,7 @@
         } else {
             vpnEl.innerText = "Not Detected";
             vpnEl.className = "text-lg font-bold mt-1 text-emerald-600";
-            detailEl.innerHTML = `System Time matches IP<br><span class="text-xs text-gray-400 font-normal">(${ipTimezone})</span>`;
+            detailEl.innerHTML = `System Time matches IP<br><span class="text-xs text-gray-400 font-normal">(${sysUtcStr})</span>`;
         }
     }
 
@@ -751,7 +788,8 @@
         document.getElementById('asn-display').innerText=`ASN: ${d.connection.asn}`;
         document.getElementById('hostname-display').innerText=d.connection.domain||"No PTR Record";
         initMap(d.latitude,d.longitude);
-        detectVPN(d.timezone.id, d.connection.isp);
+        // UPDATED: Pass 'utc' field to detectVPN for offset comparison
+        detectVPN(d.timezone.id, d.timezone.utc, d.connection.isp);
     }}catch(e){document.getElementById('ipv4-display').innerText="Error";}}
 
     async function fetchIPv6Data() { try{const r=await fetch('https://api6.ipify.org?format=json');if(r.ok){const d=await r.json();document.getElementById('ipv6-display').innerText=d.ip;document.getElementById('ipv6-status').innerText="Active";document.getElementById('ipv6-status').className="text-xs text-emerald-500 font-bold mt-1";try{const dr=await fetch(`https://ipwho.is/${d.ip}`);const dd=await dr.json();if(dd.success){document.getElementById('ipv6-provider').innerText=dd.connection.isp||"Unknown";}else{document.getElementById('ipv6-provider').innerText="N/A";}}catch(err){document.getElementById('ipv6-provider').innerText="N/A";}}}catch(e){document.getElementById('ipv6-display').innerText="Not Detected";document.getElementById('ipv6-status').innerText="IPv4 Only";document.getElementById('ipv6-provider').innerText="N/A";}}
