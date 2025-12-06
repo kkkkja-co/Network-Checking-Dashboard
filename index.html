@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Network Dashboard</title>
+    <title>Network Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -104,6 +104,9 @@
 
                 <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">2. Data Processing</h3>
                 <p class="mb-4">All data displayed (IP addresses, speed test results, DNS information) is fetched directly by your browser from public APIs. This data is processed temporarily in your browser's memory and is not transmitted to us.</p>
+                <p class="mb-4 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <strong>Note on Heuristics:</strong> We use local client-side logic to estimate **VPN/Proxy usage** and detect **Operating System details**. This involves analyzing your IP's public metadata (ASN, ISP) and User Agent string directly on your device. This analysis is not sent to any central server.
+                </p>
 
                 <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">3. Third-Party Services</h3>
                 <p class="mb-4">To provide functionality, this dashboard connects to the following third-party providers:</p>
@@ -259,9 +262,6 @@
                 <i class="fab fa-github text-sm md:mr-2"></i> <span class="hidden md:inline">GitHub</span>
             </a>
 
-            <button id="btn-header-speed" onclick="runHighPerformanceTest()" class="px-4 py-1.5 bg-emerald-600 text-white rounded text-sm shadow hover:bg-emerald-700 transition flex items-center font-bold">
-                <i class="fas fa-play mr-2"></i> Speedtest
-            </button>
             <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm shadow-sm hover:bg-gray-50 transition flex items-center">
                 <i class="fas fa-sync-alt"></i>
             </button>
@@ -369,7 +369,7 @@
             </div>
         </div>
 
-        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-indigo-500 relative">
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-indigo-500 relative min-h-[11rem]">
             <div class="flex justify-between items-start">
                 <div class="w-full">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hostname</p>
@@ -382,7 +382,7 @@
             </div>
         </div>
 
-        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-teal-500 relative">
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-teal-500 relative min-h-[11rem]">
             <div class="flex justify-between items-start">
                 <div class="w-full">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Operating System</p>
