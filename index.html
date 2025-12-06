@@ -171,21 +171,91 @@
     </div>
 </div>
 
-<div id="ua-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300" onclick="closeUaModal()">
-    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative" onclick="event.stopPropagation()">
-        <button onclick="closeUaModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times text-lg"></i></button>
+<div id="os-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300" onclick="closeOsModal()">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto custom-scroll" onclick="event.stopPropagation()">
+        <button onclick="closeOsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times text-lg"></i></button>
         <div class="mb-5">
             <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                <i class="fas fa-fingerprint text-orange-500"></i> Browser Details
+                <i class="fas fa-microchip text-teal-500"></i> System & Hardware
             </h3>
-            <p class="text-xs text-gray-500 mt-1">Client User Agent String</p>
+            <p class="text-xs text-gray-500 mt-1">Detailed Operating System & Device Info</p>
         </div>
-        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 font-mono text-xs text-slate-600 break-all leading-relaxed" id="modal-ua-raw">
-            Loading...
+
+        <div class="space-y-4">
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">CPU & Architecture</h4>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-gray-400 block">Cores (Logical)</span><span class="font-mono font-bold text-slate-700" id="os-cores">--</span></div>
+                    <div><span class="text-gray-400 block">Architecture</span><span class="font-mono font-bold text-slate-700" id="os-arch">--</span></div>
+                    <div><span class="text-gray-400 block">Bitness</span><span class="font-mono font-bold text-slate-700" id="os-bitness">--</span></div>
+                    <div><span class="text-gray-400 block">Memory (RAM)</span><span class="font-mono font-bold text-slate-700" id="os-memory">--</span></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Device Identity</h4>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-gray-400 block">Vendor</span><span class="font-mono font-bold text-slate-700" id="os-vendor">--</span></div>
+                    <div><span class="text-gray-400 block">Model</span><span class="font-mono font-bold text-slate-700" id="os-model">--</span></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Display & Graphics</h4>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-gray-400 block">Resolution</span><span class="font-mono font-bold text-slate-700" id="os-res">--</span></div>
+                    <div><span class="text-gray-400 block">Color Depth</span><span class="font-mono font-bold text-slate-700" id="os-cdepth">--</span></div>
+                    <div><span class="text-gray-400 block">Pixel Depth</span><span class="font-mono font-bold text-slate-700" id="os-pdepth">--</span></div>
+                    <div><span class="text-gray-400 block">Orientation</span><span class="font-mono font-bold text-slate-700" id="os-orient">--</span></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Capabilities</h4>
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-gray-500">PDF Viewer</span>
+                        <span class="font-bold text-slate-700" id="os-pdf">--</span>
+                    </div>
+                    <div class="flex justify-between border-b border-slate-100 pb-1 pt-1">
+                        <span class="text-gray-500">Media Codecs</span>
+                        <span class="font-bold text-slate-700" id="os-media">--</span>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+</div>
+
+<div id="browser-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300" onclick="closeBrowserModal()">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative" onclick="event.stopPropagation()">
+        <button onclick="closeBrowserModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times text-lg"></i></button>
+        <div class="mb-5">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fab fa-chrome text-orange-500"></i> Browser Information
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">Detailed Browser Identity</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 font-mono text-xs text-slate-600 break-all leading-relaxed" id="modal-ua-raw">
+                Loading...
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Browser Identity</h4>
+                <div class="grid grid-cols-2 gap-y-2 text-xs">
+                    <div><span class="text-gray-400 block">Name</span><span class="font-bold text-slate-700" id="br-name">--</span></div>
+                    <div><span class="text-gray-400 block">Version</span><span class="font-bold text-slate-700" id="br-ver">--</span></div>
+                    <div><span class="text-gray-400 block">Engine</span><span class="font-bold text-slate-700" id="br-eng">--</span></div>
+                    <div><span class="text-gray-400 block">Eng. Ver</span><span class="font-bold text-slate-700" id="br-eng-ver">--</span></div>
+                </div>
+            </div>
+        </div>
+
         <div class="mt-4 flex justify-end">
             <button onclick="copyUA()" class="text-xs bg-slate-800 text-white hover:bg-slate-700 px-4 py-2 rounded transition shadow flex items-center">
-                <i class="far fa-copy mr-2"></i> Copy to Clipboard
+                <i class="far fa-copy mr-2"></i> Copy User Agent
             </button>
         </div>
     </div>
@@ -210,6 +280,20 @@
             <div class="bg-white p-2 rounded border border-gray-100 text-xs flex justify-between">
                 <span class="font-semibold text-slate-600">IP Fraud Risk:</span>
                 <span id="vpn-fraud-score" class="font-bold">--</span>
+            </div>
+
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <h4 class="text-xs font-bold text-blue-500 uppercase mb-2">Tracking Protection</h4>
+                <div class="grid grid-cols-2 gap-y-2 text-xs">
+                    <div>
+                        <span class="text-gray-400 block">Do Not Track</span>
+                        <span class="font-bold text-slate-700" id="priv-dnt">--</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 block">Cookies</span>
+                        <span class="font-bold text-slate-700" id="priv-cookies">--</span>
+                    </div>
+                </div>
             </div>
 
             <div class="border-b border-gray-100 pb-3">
@@ -389,7 +473,7 @@
                     <h2 class="text-lg font-bold text-slate-800 mt-1" id="os-name">--</h2>
                     <p class="text-xs text-gray-500" id="os-detail">--</p>
 
-                    <button onclick="showUaModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center mt-1">
+                    <button onclick="showOsModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center mt-1">
                         <span class="decoration-dotted underline underline-offset-4">More Info</span> <i class="fas fa-info-circle ml-1"></i>
                     </button>
                 </div>
@@ -407,7 +491,7 @@
                     <h2 class="text-lg font-bold text-slate-800 mt-1" id="browser-name">--</h2>
                     <p class="text-xs text-gray-500 mb-1" id="browser-ver">--</p>
 
-                    <button onclick="showUaModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center">
+                    <button onclick="showBrowserModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center">
                         <span class="decoration-dotted underline underline-offset-4">More Info</span> <i class="fas fa-info-circle ml-1"></i>
                     </button>
                 </div>
@@ -661,9 +745,9 @@
         }, 300);
     }
 
-    // --- NEW: USER AGENT MODAL LOGIC ---
-    function showUaModal() {
-        const m = document.getElementById('ua-modal');
+    // --- NEW: USER AGENT MODAL LOGIC (Renamed to OS Modal) ---
+    function showOsModal() {
+        const m = document.getElementById('os-modal');
         const content = m.querySelector('div');
         m.classList.remove('hidden');
         setTimeout(() => {
@@ -672,8 +756,29 @@
         }, 10);
     }
 
-    function closeUaModal() {
-        const m = document.getElementById('ua-modal');
+    function closeOsModal() {
+        const m = document.getElementById('os-modal');
+        const content = m.querySelector('div');
+        m.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => {
+            m.classList.add('hidden');
+        }, 300);
+    }
+
+    // --- NEW: BROWSER MODAL LOGIC ---
+    function showBrowserModal() {
+        const m = document.getElementById('browser-modal');
+        const content = m.querySelector('div');
+        m.classList.remove('hidden');
+        setTimeout(() => {
+            m.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closeBrowserModal() {
+        const m = document.getElementById('browser-modal');
         const content = m.querySelector('div');
         m.classList.add('opacity-0');
         content.classList.add('scale-95');
@@ -1212,6 +1317,70 @@
         document.getElementById('sys-tz').innerHTML = `Sys Timezone: <span class="font-bold text-slate-600">${utcStr}</span> <i class="fas fa-info-circle text-[10px] ml-1"></i>`;
 
         let o="Unknown",b="Unknown"; if(navigator.userAgentData){const v=await navigator.userAgentData.getHighEntropyValues(["platformVersion"]);const m=parseInt(v.platformVersion?.split('.')[0]||0);o=(m>=13)?"Windows 11":"Windows 10";}else{if(u.includes("Win"))o="Windows";if(u.includes("Mac"))o="macOS";if(u.includes("Linux"))o="Linux";if(u.includes("Android"))o="Android";if(u.includes("like Mac"))o="iOS";} if(u.includes("Firefox"))b="Firefox";else if(u.includes("Chrome"))b="Chrome";else if(u.includes("Safari"))b="Safari";else if(u.includes("Edg"))b="Edge"; document.getElementById('os-name').innerText=o; document.getElementById('os-detail').innerText=(u.includes("64")?"64-bit":"32-bit"); document.getElementById('browser-name').innerText=b; const v=u.match(/(?:Chrome|Firefox|Version|Edg)\/([0-9.]+)/); document.getElementById('browser-ver').innerText=v?"v"+v[1]:"";
+
+        // --- BROWSER DETAILS POPULATION (NEW) ---
+        // Basic detection
+        let browserName = "Unknown", browserVer = "--", engineName = "--", engineVer = "--";
+        if(u.indexOf("Firefox") > -1) {
+            browserName = "Firefox";
+            browserVer = u.match(/Firefox\/([0-9.]+)/)?.[1] || "";
+            engineName = "Gecko";
+            engineVer = u.match(/Gecko\/([0-9]+)/)?.[1] || "";
+        } else if(u.indexOf("Chrome") > -1) {
+            browserName = "Chrome";
+            if(u.indexOf("Edg") > -1) browserName = "Edge";
+            browserVer = u.match(/(?:Chrome|Edg)\/([0-9.]+)/)?.[1] || "";
+            engineName = "Blink";
+            engineVer = u.match(/AppleWebKit\/([0-9.]+)/)?.[1] || "";
+        } else if(u.indexOf("Safari") > -1) {
+            browserName = "Safari";
+            browserVer = u.match(/Version\/([0-9.]+)/)?.[1] || "";
+            engineName = "WebKit";
+            engineVer = u.match(/AppleWebKit\/([0-9.]+)/)?.[1] || "";
+        }
+
+        document.getElementById('br-name').innerText = browserName;
+        document.getElementById('br-ver').innerText = browserVer;
+        document.getElementById('br-eng').innerText = engineName;
+        document.getElementById('br-eng-ver').innerText = engineVer;
+
+        // Privacy
+        document.getElementById('priv-dnt').innerText = navigator.doNotTrack === "1" ? "Enabled" : "Disabled";
+        document.getElementById('priv-cookies').innerText = navigator.cookieEnabled ? "Enabled" : "Disabled";
+
+        // --- OS HARDWARE DETAILS POPULATION (NEW) ---
+        document.getElementById('os-cores').innerText = navigator.hardwareConcurrency || "Unknown";
+
+        // Arch / Bitness
+        let arch = "x86";
+        if(u.includes("Win64") || u.includes("x64")) arch = "x86-64";
+        else if(u.includes("arm")) arch = "ARM";
+
+        document.getElementById('os-arch').innerText = arch;
+        document.getElementById('os-bitness').innerText = u.includes("64") ? "64-bit" : "32-bit";
+        document.getElementById('os-memory').innerText = (navigator.deviceMemory ? `>=${navigator.deviceMemory}` : "Unknown") + " GB";
+
+        // Screen
+        const s = window.screen;
+        document.getElementById('os-res').innerText = `${s.width} x ${s.height}`;
+        document.getElementById('os-cdepth').innerText = `${s.colorDepth}-bit`;
+        document.getElementById('os-pdepth').innerText = `${s.pixelDepth}-bit`;
+
+        // Orientation
+        let orient = "Landscape";
+        if(s.orientation && s.orientation.type) orient = s.orientation.type.replace("-", " ");
+        else if(window.innerHeight > window.innerWidth) orient = "Portrait";
+        document.getElementById('os-orient').innerText = orient;
+
+        // Capabilities
+        const aud = new Audio();
+        let codecs = [];
+        if(aud.canPlayType('audio/mpeg')) codecs.push("MP3");
+        if(aud.canPlayType('audio/mp4')) codecs.push("AAC");
+        document.getElementById('os-media').innerText = codecs.join(", ") || "Basic";
+        document.getElementById('os-pdf').innerText = navigator.pdfViewerEnabled ? "Supported" : "No";
+        document.getElementById('os-vendor').innerText = navigator.vendor || "Unknown";
+        document.getElementById('os-model').innerText = "Desktop/Generic"; // Simplified
     }
 
     // UPDATED COPY FUNCTION
