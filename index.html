@@ -168,6 +168,26 @@
     </div>
 </div>
 
+<div id="ua-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300" onclick="closeUaModal()">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative" onclick="event.stopPropagation()">
+        <button onclick="closeUaModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times text-lg"></i></button>
+        <div class="mb-5">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fas fa-fingerprint text-orange-500"></i> Browser Details
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">Client User Agent String</p>
+        </div>
+        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 font-mono text-xs text-slate-600 break-all leading-relaxed" id="modal-ua-raw">
+            Loading...
+        </div>
+        <div class="mt-4 flex justify-end">
+            <button onclick="copyUA()" class="text-xs bg-slate-800 text-white hover:bg-slate-700 px-4 py-2 rounded transition shadow flex items-center">
+                <i class="far fa-copy mr-2"></i> Copy to Clipboard
+            </button>
+        </div>
+    </div>
+</div>
+
 
 <div class="max-w-7xl mx-auto">
 
@@ -183,7 +203,7 @@
                 <i class="fab fa-github text-sm md:mr-2"></i> <span class="hidden md:inline">GitHub</span>
             </a>
 
-            <button onclick="runHighPerformanceTest()" class="px-4 py-1.5 bg-emerald-600 text-white rounded text-sm shadow hover:bg-emerald-700 transition flex items-center font-bold">
+            <button id="btn-header-speed" onclick="runHighPerformanceTest()" class="px-4 py-1.5 bg-emerald-600 text-white rounded text-sm shadow hover:bg-emerald-700 transition flex items-center font-bold">
                 <i class="fas fa-play mr-2"></i> Speedtest
             </button>
             <button onclick="window.location.reload()" class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm shadow-sm hover:bg-gray-50 transition flex items-center">
@@ -194,7 +214,7 @@
 
     <div class="flex justify-center mb-6">
         <span class="text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-full flex items-center shadow-sm">
-            <i class="fas fa-arrow-down mr-2 animate-bounce text-slate-500"></i> Scroll down for History & Details
+            <i class="fas fa-arrow-down mr-2 animate-bounce text-slate-500"></i> Scroll down for History
         </span>
     </div>
 
@@ -302,12 +322,16 @@
                 <div class="w-full">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Browser</p>
                     <h2 class="text-lg font-bold text-slate-800 mt-1" id="browser-name">--</h2>
-                    <p class="text-xs text-gray-500" id="browser-ver">--</p>
+                    <p class="text-xs text-gray-500 mb-1" id="browser-ver">--</p>
+
+                    <button onclick="showUaModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition decoration-dotted underline underline-offset-4 flex items-center">
+                        <i class="fas fa-info-circle mr-1"></i> More Info
+                    </button>
                 </div>
                 <div class="p-2 bg-orange-50 rounded-lg text-orange-600 ml-2 absolute top-5 right-5"><i class="fab fa-chrome"></i></div>
             </div>
             <div class="pt-2 border-t border-gray-100 mt-auto">
-                <p class="text-xs text-gray-400">User Agent Client</p>
+                <p class="text-xs text-gray-400">Browser Details</p>
             </div>
         </div>
 
@@ -386,6 +410,12 @@
                     <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mt-2">
                         <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200" id="speed-progress" style="width: 0%"></div>
                     </div>
+
+                    <div class="mt-4">
+                        <button id="btn-card-speed" onclick="runHighPerformanceTest()" class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg shadow hover:bg-emerald-700 transition flex items-center justify-center font-bold disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-play mr-2"></i> Start Speedtest
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -408,6 +438,8 @@
                     <thead class="bg-gray-50 text-gray-500 font-medium">
                     <tr>
                         <th class="px-4 py-2 rounded-tl-lg">Time</th>
+                        <th class="px-4 py-2">IP Address</th>
+                        <th class="px-4 py-2">ISP</th>
                         <th class="px-4 py-2">Latency</th>
                         <th class="px-4 py-2">Download</th>
                         <th class="px-4 py-2 rounded-tr-lg">Upload</th>
@@ -416,14 +448,6 @@
                     <tbody id="history-table-body" class="divide-y divide-gray-100 text-slate-700"></tbody>
                 </table>
             </div>
-        </div>
-
-        <div class="card bg-slate-800 text-white rounded-xl shadow-sm p-5 md:col-span-4">
-            <div class="flex justify-between items-center mb-2">
-                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">User Agent String</p>
-                <button onclick="copyUA()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded transition border border-slate-600"><i class="far fa-copy mr-1"></i> Copy</button>
-            </div>
-            <p class="font-mono text-sm break-all text-slate-400" id="ua-raw">Loading...</p>
         </div>
 
     </div>
@@ -546,6 +570,27 @@
         }, 300);
     }
 
+    // --- NEW: USER AGENT MODAL LOGIC ---
+    function showUaModal() {
+        const m = document.getElementById('ua-modal');
+        const content = m.querySelector('div');
+        m.classList.remove('hidden');
+        setTimeout(() => {
+            m.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closeUaModal() {
+        const m = document.getElementById('ua-modal');
+        const content = m.querySelector('div');
+        m.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => {
+            m.classList.add('hidden');
+        }, 300);
+    }
+
     // --- 1. COOKIE LOGIC ---
     function setCookie(n, v, d) { let e=""; if(d){const dt=new Date();dt.setTime(dt.getTime()+(d*24*60*60*1000));e="; expires="+dt.toUTCString();} document.cookie=n+"="+(v||"")+e+"; path=/"; }
     function getCookie(n) { const ne=n+"="; const ca=document.cookie.split(';'); for(let i=0;i<ca.length;i++){ let c=ca[i]; while(c.charAt(0)==' ') c=c.substring(1,c.length); if(c.indexOf(ne)==0) return c.substring(ne.length,c.length); } return null; }
@@ -563,20 +608,38 @@
 
     document.addEventListener('DOMContentLoaded', ()=>{ const c=getCookie('speedtest_consent'); if(!c){showConsentModal(); updateConsentStatus(null);}else{updateConsentStatus(c);} renderHistory(); });
 
+    // UPDATED SAVE RESULT FUNCTION
     function saveResult(p,d,u) {
         if(getCookie('speedtest_consent')!=='accepted') return;
         let h=getCookie('speedtest_history'); try{h=h?JSON.parse(h):[];}catch(e){h=[];}
-        h.unshift({date:new Date().toLocaleTimeString()+" "+new Date().toLocaleDateString(), ping:p, dl:d, ul:u});
+
+        // Grab values from DOM
+        const ip = document.getElementById('ipv4-display').innerText || '--';
+        const isp = document.getElementById('isp-display').innerText || '--';
+
+        h.unshift({date:new Date().toLocaleTimeString()+" "+new Date().toLocaleDateString(), ping:p, dl:d, ul:u, ip:ip, isp:isp});
         if(h.length>5) h.pop();
         setCookie('speedtest_history',JSON.stringify(h),30); renderHistory();
     }
+
     function clearHistory(){ setCookie('speedtest_history',"",-1); renderHistory(); }
+
+    // UPDATED RENDER HISTORY FUNCTION
     function renderHistory(){
         const tb=document.getElementById('history-table-body'), c=getCookie('speedtest_consent');
-        if(c!=='accepted'){ tb.innerHTML=`<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400"><p class="italic mb-2">History disabled.</p><button onclick="showConsentModal()" class="text-blue-500 underline font-medium">Enable</button></td></tr>`; return; }
+        if(c!=='accepted'){ tb.innerHTML=`<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400"><p class="italic mb-2">History disabled.</p><button onclick="showConsentModal()" class="text-blue-500 underline font-medium">Enable</button></td></tr>`; return; }
         let h=getCookie('speedtest_history'); try{h=h?JSON.parse(h):[];}catch(e){h=[];}
-        if(h.length===0){ tb.innerHTML=`<tr><td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">No history found.</td></tr>`; return; }
-        let ht=''; h.forEach(i=>{ ht+=`<tr class="hover:bg-gray-50 transition"><td class="px-4 py-2 font-mono text-gray-500 text-xs">${i.date}</td><td class="px-4 py-2 font-bold">${i.ping}</td><td class="px-4 py-2 font-bold text-blue-600">${i.dl}</td><td class="px-4 py-2 font-bold text-purple-600">${i.ul}</td></tr>`; });
+        if(h.length===0){ tb.innerHTML=`<tr><td colspan="6" class="px-4 py-4 text-center text-gray-400 italic">No history found.</td></tr>`; return; }
+        let ht=''; h.forEach(i=>{
+            ht+=`<tr class="hover:bg-gray-50 transition">
+                <td class="px-4 py-2 font-mono text-gray-500 text-xs">${i.date}</td>
+                <td class="px-4 py-2 font-mono text-xs text-slate-600">${i.ip || '-'}</td>
+                <td class="px-4 py-2 text-xs text-slate-600 max-w-[120px] truncate" title="${i.isp || ''}">${i.isp || '-'}</td>
+                <td class="px-4 py-2 font-bold">${i.ping}</td>
+                <td class="px-4 py-2 font-bold text-blue-600">${i.dl}</td>
+                <td class="px-4 py-2 font-bold text-purple-600">${i.ul}</td>
+            </tr>`;
+        });
         tb.innerHTML=ht;
     }
 
@@ -605,6 +668,13 @@
     }
 
     async function runHighPerformanceTest() {
+        // Toggle Buttons - Gray Out
+        const btn = document.getElementById('btn-card-speed');
+        const headerBtn = document.getElementById('btn-header-speed');
+
+        if(btn) { btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); }
+        if(headerBtn) { headerBtn.disabled = true; headerBtn.classList.add('opacity-50', 'cursor-not-allowed'); }
+
         const status=document.getElementById('test-state'), bar=document.getElementById('speed-progress'), icon=document.getElementById('speed-status-icon');
         const dlEl=document.getElementById('dl-final'), ulEl=document.getElementById('ul-final'), pgEl=document.getElementById('ping-value');
         const serverLoc=document.getElementById('server-location');
@@ -661,14 +731,15 @@
             bar.style.width = "50%";
 
             // 3. UPLOAD
-            status.innerText="Uploading...";
+            status.innerText="Uploading (4 Streams)...";
             updateGauge(0, "Mbps (Up)", true);
 
             const upSize = 5 * 1024 * 1024;
             const blob = new Blob([new Uint8Array(upSize)]);
 
             startTime = performance.now();
-            const upPromises = Array(2).fill(0).map(async () => {
+            // Increased to 4 concurrent upload streams for better saturation
+            const upPromises = Array(4).fill(0).map(async () => {
                 try { await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob }); return upSize; } catch(e) { return 0; }
             });
 
@@ -698,6 +769,10 @@
             status.innerText="Network Error";
             status.className="text-xs font-bold text-red-600";
             icon.className="p-2 bg-red-50 rounded-lg text-red-600";
+        } finally {
+            // Restore Buttons
+            if(btn) { btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+            if(headerBtn) { headerBtn.disabled = false; headerBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
         }
     }
 
@@ -842,7 +917,8 @@
 
     async function detectSystem() {
         const u=navigator.userAgent;
-        document.getElementById('ua-raw').innerText=u;
+        // UPDATED: Populate Modal ID instead of removed card
+        document.getElementById('modal-ua-raw').innerText=u;
 
         // --- NEW: Calculate UTC Offset for Display ---
         const d = new Date();
@@ -855,7 +931,12 @@
 
         let o="Unknown",b="Unknown"; if(navigator.userAgentData){const v=await navigator.userAgentData.getHighEntropyValues(["platformVersion"]);const m=parseInt(v.platformVersion?.split('.')[0]||0);o=(m>=13)?"Windows 11":"Windows 10";}else{if(u.includes("Win"))o="Windows";if(u.includes("Mac"))o="macOS";if(u.includes("Linux"))o="Linux";if(u.includes("Android"))o="Android";if(u.includes("like Mac"))o="iOS";} if(u.includes("Firefox"))b="Firefox";else if(u.includes("Chrome"))b="Chrome";else if(u.includes("Safari"))b="Safari";else if(u.includes("Edg"))b="Edge"; document.getElementById('os-name').innerText=o; document.getElementById('os-detail').innerText=(u.includes("64")?"64-bit":"32-bit"); document.getElementById('browser-name').innerText=b; const v=u.match(/(?:Chrome|Firefox|Version|Edg)\/([0-9.]+)/); document.getElementById('browser-ver').innerText=v?"v"+v[1]:"";
     }
-    function copyUA() { navigator.clipboard.writeText(document.getElementById('ua-raw').innerText); alert("Copied!"); }
+
+    // UPDATED COPY FUNCTION
+    function copyUA() {
+        navigator.clipboard.writeText(document.getElementById('modal-ua-raw').innerText);
+        alert("Copied!");
+    }
 
     fetchIPv4Data(); fetchIPv6Data(); fetchDNS(); getWebRTCIPs(); detectSystem();
 </script>
