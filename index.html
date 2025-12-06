@@ -267,6 +267,14 @@
                     <div><span class="text-gray-400 block">Eng. Ver</span><span class="font-bold text-slate-700" id="br-eng-ver">--</span></div>
                 </div>
             </div>
+
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Settings & Permissions</h4>
+                <div class="grid grid-cols-2 gap-y-2 text-xs">
+                    <div><span class="text-gray-400 block">Cookies</span><span class="font-bold text-slate-700" id="br-cookies">--</span></div>
+                    <div><span class="text-gray-400 block">JavaScript</span><span class="font-bold text-slate-700" id="br-js">--</span></div>
+                </div>
+            </div>
         </div>
 
         <div class="mt-4 flex justify-end">
@@ -305,10 +313,6 @@
                         <span class="text-gray-400 block">Do Not Track</span>
                         <span class="font-bold text-slate-700" id="priv-dnt">--</span>
                     </div>
-                    <div>
-                        <span class="text-gray-400 block">Cookies</span>
-                        <span class="font-bold text-slate-700" id="priv-cookies">--</span>
-                    </div>
                 </div>
             </div>
 
@@ -336,12 +340,20 @@
                 <p class="text-[10px] text-gray-500" id="desc-lang">Checking browser language vs IP country...</p>
             </div>
 
-            <div>
+            <div class="border-b border-gray-100 pb-3">
                 <div class="flex justify-between items-center mb-1">
                     <p class="text-xs font-bold text-slate-700">4. WebRTC Leak</p>
                     <i id="icon-webrtc" class="fas fa-circle text-[10px] text-gray-300"></i>
                 </div>
                 <p class="text-[10px] text-gray-500" id="desc-webrtc">Checking for leaked IPs...</p>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <p class="text-xs font-bold text-slate-700">5. Tor / Onion Routing</p>
+                    <i id="icon-tor" class="fas fa-circle text-[10px] text-gray-300"></i>
+                </div>
+                <p class="text-[10px] text-gray-500" id="desc-tor">Checking for Tor exit nodes...</p>
             </div>
         </div>
     </div>
@@ -1118,11 +1130,19 @@
         202425, 62240, 132203, 136787, 53667, 397223
     ]);
 
+    // UPDATED: Expanded List of VPNs
     const PROVIDER_NAMES = [
         'cloudflare', 'google', 'amazon', 'aws', 'microsoft', 'azure',
         'digitalocean', 'hetzner', 'ovh', 'm247', 'm europe', 'expressvpn',
         'nordvpn', 'proton', 'surfshark', 'mullvad', 'tor exit',
-        'zenlayer', 'leaseweb', 'datacamp', 'packethub', 'hostinger'
+        'zenlayer', 'leaseweb', 'datacamp', 'packethub', 'hostinger',
+        'cyberzone', 'tor project', 'onion', 'windscribe', 'tunnelbear',
+        'vyprvpn', 'purevpn', 'ipvanish', 'hotspot shield', 'zenmate',
+        'hidemyass', 'hma', 'private internet access', 'pia', 'cyberghost',
+        'ipvanish', 'strongvpn', 'fastestvpn', 'ivacy', 'veepn', 'torguard',
+        'airvpn', 'perfectprivacy', 'cactusvpn', 'ovpn', 'hide.me',
+        'privatevpn', 'protonvpn', 'vultr', 'linode', 'choopa', 'performive',
+        'tzulo', 'shock hosting', 'teraswitch', 'clouvider', 'datapacket', 'melbicom'
     ];
 
     // Compiled Regex for O(1) matching of strings
@@ -1152,6 +1172,8 @@
 
         // 1. ASN Check (Fastest - O(1))
         let ispFlagged = false;
+        let detectedName = "Detected"; // Default
+
         if (!isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
             score += 50;
             reasons.push(`ASN Match: ${asnNum}`);
@@ -1163,10 +1185,15 @@
         else if (VPN_REGEX.test(combinedName)) {
             score += 50;
             const match = combinedName.match(VPN_REGEX)[0];
+
+            // Format match string nicely (e.g., "nordvpn" -> "Nordvpn")
+            const formattedName = match.charAt(0).toUpperCase() + match.slice(1);
+            detectedName = `${formattedName} Detected`;
+
             reasons.push(`Provider Match: ${match}`);
             ispFlagged = true;
             document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
-            document.getElementById('desc-isp').innerText = `Matched: ${match}`;
+            document.getElementById('desc-isp').innerText = `Matched: ${formattedName}`;
         }
 
         // 3. Generic Heuristics
@@ -1198,12 +1225,22 @@
         document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
         document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
 
+        // 6. TOR Specific Logic (New)
+        // Simple heuristic check: if "tor" appears in provider string
+        if (/tor exit|tor project|onion/i.test(combinedName)) {
+            document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
+            document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
+        } else {
+            document.getElementById('icon-tor').className = "fas fa-check-circle text-emerald-500";
+            document.getElementById('desc-tor').innerText = "No Tor fingerprints found";
+        }
+
 
         // --- SCORING LOGIC ---
 
         if (score >= 50) {
             // DETECTED (Red) - Confirmed Match
-            vpnEl.innerText = "Detected";
+            vpnEl.innerText = detectedName; // Show specific name if found
             vpnEl.className = "text-lg font-bold mt-1 text-red-600";
             detailEl.innerHTML = ""; // Hidden per request
 
@@ -1211,6 +1248,12 @@
             badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
             fraudEl.innerText = "High Risk (Flagged)";
             fraudEl.className = "font-bold text-red-500";
+
+            // SPECIAL TOR CHECK
+            if (/tor exit|tor project|onion/i.test(combinedName)) {
+                vpnEl.innerText = "Tor Network";
+                badgeEl.innerText = "High Anonymity (Tor)";
+            }
 
         } else if (score > 0) {
             // LIKELY DETECTED (Orange) - Generic Keywords or Heuristics only
@@ -1415,7 +1458,10 @@
 
         // Privacy
         document.getElementById('priv-dnt').innerText = navigator.doNotTrack === "1" ? "Enabled" : "Disabled";
-        document.getElementById('priv-cookies').innerText = navigator.cookieEnabled ? "Enabled" : "Disabled";
+        // UPDATED: Cookies Moved to Browser Modal
+        document.getElementById('br-cookies').innerText = navigator.cookieEnabled ? "Enabled" : "Disabled";
+        // UPDATED: JS Check Added to Browser Modal
+        document.getElementById('br-js').innerText = "Enabled";
 
         // --- OS HARDWARE DETAILS POPULATION (NEW) ---
         document.getElementById('os-cores').innerText = navigator.hardwareConcurrency || "Unknown";
