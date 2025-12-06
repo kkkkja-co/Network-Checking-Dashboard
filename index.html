@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Network Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            color: #334155;
+        }
+        .card {
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .loader {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3b82f6;
+            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 0.75rem;
+            z-index: 1;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+        .gauge-bg { stroke: #e2e8f0; }
+        .gauge-fill {
+            stroke: #10b981;
+            transition: stroke-dashoffset 0.2s ease-out;
+        }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 relative">
+
+<div id="cookie-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[5000] hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 transform scale-95 transition-transform duration-300" id="cookie-content">
+        <div class="text-center mb-4">
+            <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600">
+                <i class="fas fa-cookie-bite text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800">Enable History?</h3>
+            <p class="text-sm text-gray-500 mt-2">
+                To save your speed test results for future comparison, we need to store a small cookie on your browser.
+                <br><br>
+                <strong>Do you consent to storing this data?</strong>
+            </p>
+        </div>
+        <div class="flex space-x-3 mt-6">
+            <button onclick="handleConsent(false)" class="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition">
+                No, keep disabled
+            </button>
+            <button onclick="handleConsent(true)" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition shadow-lg shadow-emerald-200">
+                Yes, Enable History
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="privacy-modal" class="fixed inset-0 z-[6000] hidden transition-opacity duration-300 opacity-0 bg-white/95 backdrop-blur-sm">
+    <div id="privacy-content" class="w-full h-full overflow-y-auto transform transition-transform duration-300 scale-95">
+        <div class="max-w-4xl mx-auto p-8 md:p-12 bg-white min-h-screen shadow-2xl border-x border-gray-100">
+            <div class="flex justify-between items-center mb-8 border-b pb-4 sticky top-0 bg-white/95 backdrop-blur z-10 pt-2">
+                <h1 class="text-3xl font-bold text-slate-900">Privacy Policy</h1>
+                <button onclick="closePrivacy()" class="text-slate-500 hover:text-slate-800 transition text-xl px-4 py-2 hover:bg-slate-100 rounded-lg">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+
+            <div class="prose prose-slate max-w-none text-slate-700 pb-12">
+                <p class="text-lg mb-4">Last Updated: <span id="policy-date"></span></p>
+                <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">1. Overview & Hosting</h3>
+                <p class="mb-4">This Network Dashboard is hosted on <strong>Cloudflare</strong>. We do not operate a backend server to collect data. Analysis is local.</p>
+                <h3 class="text-xl font-bold mt-6 mb-2 text-slate-900">5. Contact</h3>
+                <p class="mb-4">Contact: <a href="mailto:contact@bunorden.com" class="text-blue-600 font-bold hover:underline">contact@bunorden.com</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="tz-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300" onclick="closeTz()">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+        <button onclick="closeTz()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times text-lg"></i></button>
+        <div class="mb-5 flex-shrink-0">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="far fa-clock text-blue-500"></i> Timezone Check
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">Detailed system time configuration</p>
+        </div>
+
+        <div class="space-y-4 overflow-y-auto custom-scroll pr-1">
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                <p class="text-[10px] text-blue-500 uppercase font-bold tracking-wider mb-1">UTC Offset</p>
+                <p id="modal-utc" class="font-mono text-2xl font-bold text-blue-700 tracking-tight">--</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3">
+                <div class="border-b border-gray-100 pb-2">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">IANA Region Code</p>
+                    <p id="modal-region" class="font-mono text-sm font-semibold text-slate-700">--</p>
+                </div>
+                <div class="border-b border-gray-100 pb-2">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Local System Time</p>
+                    <p id="modal-local" class="font-mono text-xs text-slate-600 break-words leading-tight">--</p>
+                </div>
+                <div class="border-b border-gray-100 pb-2">
+                    <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">UTC Time</p>
+                    <p id="modal-global" class="font-mono text-xs text-slate-600 break-words leading-tight">--</p>
+                </div>
+
+                <div>
+                    <p id="modal-regions-title" class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Regions with same UTC Offset</p>
+                    <div class="bg-gray-50 rounded border border-gray-200 p-2 h-32 overflow-y-auto custom-scroll">
+                        <ul id="modal-all-regions" class="text-[10px] font-mono text-slate-600 space-y-1">
+                            <li>Loading...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="max-w-7xl mx-auto">
+
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-end md:items-center border-b border-gray-200 pb-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Network Dashboard</h1>
+            <div class="flex items-center mt-2 space-x-4 text-sm text-gray-500 font-mono">
+                <span id="last-update">--</span>
+            </div>
+        </div>
+        <div class="flex gap-3 mt-4 md:mt-0">
+            <button onclick="runHighPerformanceTest()" class="px-5 py-2.5 bg-emerald-600 text-white rounded-lg shadow hover:bg-emerald-700 transition flex items-center font-bold">
+                <i class="fas fa-play mr-2"></i> Run Speedtest
+            </button>
+            <button onclick="window.location.reload()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg shadow-sm hover:bg-gray-50 transition flex items-center font-medium">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-blue-500 relative">
+            <div class="flex justify-between items-start">
+                <div class="w-full">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Public IPv4</p>
+                    <h2 class="text-xl font-bold text-slate-800 mt-1 font-mono" id="ipv4-display"><span class="loader"></span></h2>
+                    <p class="text-xs text-gray-500 mt-1" id="ipv4-loc">Locating...</p>
+                    <p class="text-xs text-gray-400 font-mono mt-0.5 mb-2 cursor-pointer hover:text-blue-600 transition decoration-dotted underline underline-offset-4"
+                       id="sys-tz" onclick="showTzModal()" title="Click for extra info">
+                        Sys Timezone: <span class="loader w-3 h-3 border-2"></span>
+                    </p>
+                </div>
+                <div class="p-2 bg-blue-50 rounded-lg text-blue-600 ml-2 absolute top-5 right-5"><i class="fas fa-globe"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-2">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Provider (ISP)</p>
+                <p class="text-sm font-bold text-slate-700 leading-tight" id="isp-display">--</p>
+                <p class="text-xs text-gray-400 font-mono mt-0.5" id="asn-display">--</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-purple-500 relative">
+            <div class="flex justify-between items-start">
+                <div class="w-full overflow-hidden">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Public IPv6</p>
+                    <h2 class="text-xl font-bold text-slate-800 mt-1 font-mono break-all leading-tight" id="ipv6-display"><span class="loader"></span></h2>
+                    <p class="text-xs text-gray-500 mt-1 mb-2" id="ipv6-status">Checking...</p>
+                </div>
+                <div class="p-2 bg-purple-50 rounded-lg text-purple-600 ml-2 absolute top-5 right-5"><i class="fas fa-project-diagram"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-auto">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Provider (v6)</p>
+                <p class="text-sm font-bold text-slate-700 leading-tight" id="ipv6-provider">--</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-red-500 relative">
+            <div class="flex justify-between items-start mb-2">
+                <div class="w-full">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">WebRTC / LAN IP</p>
+                    <ul id="webrtc-list" class="mt-2 space-y-1">
+                        <li class="flex items-center text-sm"><span class="loader mr-2"></span> Scanning...</li>
+                    </ul>
+                </div>
+                <div class="p-2 bg-red-50 rounded-lg text-red-600 ml-2 absolute top-5 right-5"><i class="fas fa-network-wired"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-auto">
+                <p class="text-xs text-gray-400">Local Network Leaks</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-pink-500 relative">
+            <div class="flex justify-between items-start mb-2">
+                <div class="w-full">
+                    <div class="flex items-center justify-between pr-10">
+                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">DNS Servers</p>
+                        <span id="dns-count-badge" class="hidden text-[10px] bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">0 Found</span>
+                    </div>
+                    <div class="custom-scroll max-h-24 overflow-y-auto mt-2">
+                        <ul id="dns-list" class="space-y-2">
+                            <li class="text-sm text-gray-600 flex items-center"><span class="loader mr-2"></span> Probing...</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="p-2 bg-pink-50 rounded-lg text-pink-600 ml-2 absolute top-5 right-5"><i class="fas fa-server"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-auto">
+                <p class="text-xs text-gray-400">Detected Resolvers</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-indigo-500 relative">
+            <div class="flex justify-between items-start">
+                <div class="w-full">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hostname</p>
+                    <h2 class="text-lg font-bold text-slate-800 mt-1 font-mono break-all leading-snug" id="hostname-display"><span class="loader"></span></h2>
+                </div>
+                <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 ml-2 absolute top-5 right-5"><i class="fas fa-tag"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-auto">
+                <p class="text-xs text-gray-400">Reverse DNS / PTR</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-teal-500 relative">
+            <div class="flex justify-between items-start">
+                <div class="w-full">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Operating System</p>
+                    <h2 class="text-lg font-bold text-slate-800 mt-1" id="os-name">--</h2>
+                    <p class="text-xs text-gray-500" id="os-detail">--</p>
+                </div>
+                <div class="p-2 bg-teal-50 rounded-lg text-teal-600 ml-2 absolute top-5 right-5"><i class="fas fa-microchip"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-auto">
+                <p class="text-xs text-gray-400">Platform Details</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-orange-500 relative">
+            <div class="flex justify-between items-start">
+                <div class="w-full">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Browser</p>
+                    <h2 class="text-lg font-bold text-slate-800 mt-1" id="browser-name">--</h2>
+                    <p class="text-xs text-gray-500" id="browser-ver">--</p>
+                </div>
+                <div class="p-2 bg-orange-50 rounded-lg text-orange-600 ml-2 absolute top-5 right-5"><i class="fab fa-chrome"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-auto">
+                <p class="text-xs text-gray-400">User Agent Client</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-cyan-500 relative">
+            <div class="flex justify-between items-start">
+                <div class="w-full">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">VPN / Privacy Check</p>
+                    <h2 class="text-lg font-bold mt-1" id="vpn-status"><span class="loader"></span></h2>
+                    <div id="vpn-details" class="text-xs text-gray-500 mt-1 leading-tight">Analyzing...</div>
+                </div>
+                <div class="p-2 bg-cyan-50 rounded-lg text-cyan-600 ml-2 absolute top-5 right-5"><i class="fas fa-user-secret"></i></div>
+            </div>
+            <div class="pt-2 border-t border-gray-100 mt-auto">
+                <p class="text-xs text-gray-400">Proxy & ISP Analysis</p>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-1 border border-gray-100 md:col-span-2 md:row-span-2 h-96 relative z-0">
+            <div id="map"></div>
+            <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-2 rounded shadow text-xs z-[999] border border-gray-200">
+                <strong>Coordinates</strong><br>
+                <span id="map-coords" class="text-gray-500 font-mono">--</span>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-6 border-t-4 border-emerald-500 md:col-span-2 md:row-span-2">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Speed Test (Multi-Stream)</h3>
+                    <p class="text-xs text-gray-400 mt-1">4 Concurrent Connections</p>
+                </div>
+                <div id="speed-status-icon" class="p-2 bg-gray-50 rounded-lg text-gray-400"><i class="fas fa-wifi"></i></div>
+            </div>
+
+            <div class="mb-6 bg-slate-50 p-2 rounded-lg border border-slate-100 flex justify-between items-center text-xs">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-server text-gray-400"></i>
+                    <span class="text-gray-500 font-medium">Server:</span>
+                    <span id="server-location" class="font-bold text-slate-700">Ready</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="text-gray-500 font-medium hidden sm:inline">Provider:</span>
+                    <span class="font-bold text-slate-700">Cloudflare</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center md:space-x-8 space-y-6 md:space-y-0 h-full justify-center pb-2">
+                <div class="relative w-44 h-44 flex-shrink-0">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                        <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="2.5" />
+                        <path id="speed-gauge" class="gauge-fill" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="2.5" stroke-dasharray="0, 100" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                        <span class="text-4xl font-bold text-slate-800" id="gauge-value">0</span>
+                        <span class="text-xs text-gray-400 uppercase mt-1 font-semibold" id="gauge-label">Start</span>
+                    </div>
+                </div>
+
+                <div class="flex-1 w-full space-y-4">
+                    <div class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded">
+                        <span class="text-xs text-gray-500 font-semibold uppercase">Status</span>
+                        <span class="text-xs font-bold text-emerald-600" id="test-state">Idle</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-1">
+                        <span class="text-sm text-gray-500"><i class="fas fa-exchange-alt text-xs mr-2"></i>Latency</span>
+                        <span class="font-mono font-bold text-slate-700" id="ping-value">-- ms</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-1">
+                        <span class="text-sm text-gray-500"><i class="fas fa-arrow-down text-xs mr-2 text-blue-500"></i>Download</span>
+                        <span class="font-mono font-bold text-blue-600" id="dl-final">-- Mbps</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-gray-100 pb-1">
+                        <span class="text-sm text-gray-500"><i class="fas fa-arrow-up text-xs mr-2 text-purple-500"></i>Upload</span>
+                        <span class="font-mono font-bold text-purple-600" id="ul-final">-- Mbps</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mt-2">
+                        <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200" id="speed-progress" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-white rounded-xl shadow-sm p-6 border-t-4 border-gray-500 md:col-span-4">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Previous Tests</h3>
+                    <p class="text-xs text-gray-400 mt-1">Saved locally via Cookies (Last 5 records)</p>
+                </div>
+                <div class="flex space-x-2 text-xs items-center">
+                    <span id="consent-status" class="px-2 py-1.5 rounded bg-gray-100 text-gray-500 font-semibold">Checking...</span>
+                    <button id="btn-enable-history" onclick="showConsentModal()" class="hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100 font-semibold transition"><i class="fas fa-check-circle mr-1"></i> Enable</button>
+                    <button id="btn-disable-history" onclick="disableHistory()" class="hidden px-3 py-1.5 bg-gray-100 text-gray-600 rounded border border-gray-300 hover:bg-gray-200 font-semibold transition"><i class="fas fa-ban mr-1"></i> Disable</button>
+                    <button id="btn-clear-history" onclick="clearHistory()" class="hidden text-red-500 hover:text-red-700 hover:underline px-2"><i class="fas fa-trash-alt mr-1"></i> Clear</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm text-left">
+                    <thead class="bg-gray-50 text-gray-500 font-medium">
+                    <tr>
+                        <th class="px-4 py-2 rounded-tl-lg">Time</th>
+                        <th class="px-4 py-2">Latency</th>
+                        <th class="px-4 py-2">Download</th>
+                        <th class="px-4 py-2 rounded-tr-lg">Upload</th>
+                    </tr>
+                    </thead>
+                    <tbody id="history-table-body" class="divide-y divide-gray-100 text-slate-700"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card bg-slate-800 text-white rounded-xl shadow-sm p-5 md:col-span-4">
+            <div class="flex justify-between items-center mb-2">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">User Agent String</p>
+                <button onclick="copyUA()" class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded transition border border-slate-600"><i class="far fa-copy mr-1"></i> Copy</button>
+            </div>
+            <p class="font-mono text-sm break-all text-slate-400" id="ua-raw">Loading...</p>
+        </div>
+
+    </div>
+
+    <footer class="mt-12 mb-6 text-center border-t border-gray-200 pt-6">
+        <p class="text-sm text-gray-400 flex justify-center items-center gap-2">
+            &copy; <span id="year"></span> ip.bunorden.com.
+            <a href="mailto:contact@bunorden.com" class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium">Contact</a>
+            <span class="text-gray-300">|</span>
+            <button onclick="openPrivacy()" class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium">Privacy Policy</button>
+        </p>
+    </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<script>
+    // --- 0. UI & PRIVACY LOGIC ---
+    document.getElementById('year').innerText = new Date().getFullYear();
+    document.getElementById('policy-date').innerText = new Date().toLocaleDateString();
+
+    function openPrivacy() {
+        const modal = document.getElementById('privacy-modal');
+        const content = document.getElementById('privacy-content');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closePrivacy() {
+        const modal = document.getElementById('privacy-modal');
+        const content = document.getElementById('privacy-content');
+        modal.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300);
+    }
+
+    // --- NEW: TIMEZONE MODAL LOGIC ---
+    function showTzModal() {
+        const m = document.getElementById('tz-modal');
+        const content = m.querySelector('div'); // inner container
+
+        // Calculate Data
+        const d = new Date();
+        const sysRegion = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const offset = -d.getTimezoneOffset();
+        const sign = offset >= 0 ? '+' : '-';
+        const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
+        const utcStr = `UTC${sign}${pad(offset/60)}:${pad(offset%60)}`;
+
+        // Populate
+        document.getElementById('modal-utc').innerText = utcStr;
+        document.getElementById('modal-region').innerText = sysRegion;
+        document.getElementById('modal-local').innerText = d.toString();
+        document.getElementById('modal-global').innerText = d.toUTCString();
+
+        // --- FILTER & DISPLAY REGIONS WITH SAME OFFSET ---
+        const listEl = document.getElementById('modal-all-regions');
+        const listTitle = document.getElementById('modal-regions-title');
+        listEl.innerHTML = '';
+
+        if (typeof Intl.supportedValuesOf !== 'undefined') {
+            try {
+                // Helper to get consistent offset string (e.g. "GMT+09:00")
+                const getOffsetStr = (z) => {
+                    try {
+                        return new Intl.DateTimeFormat('en-US', { timeZone: z, timeZoneName: 'longOffset' })
+                            .formatToParts(d)
+                            .find(p => p.type === 'timeZoneName').value;
+                    } catch(e) { return ''; }
+                };
+
+                const targetOffsetStr = getOffsetStr(sysRegion);
+                const allTz = Intl.supportedValuesOf('timeZone');
+
+                // Filter
+                const matching = allTz.filter(tz => getOffsetStr(tz) === targetOffsetStr);
+
+                // Update Title
+                if(listTitle) listTitle.innerText = `Regions matching ${utcStr} (${matching.length})`;
+
+                const frag = document.createDocumentFragment();
+                matching.forEach(tz => {
+                    const li = document.createElement('li');
+                    li.textContent = tz;
+                    // Highlight the current one
+                    if(tz === sysRegion) {
+                        li.className = "font-bold text-blue-600 bg-blue-50 px-1 rounded -ml-1";
+                    }
+                    frag.appendChild(li);
+                });
+                listEl.appendChild(frag);
+            } catch(e) {
+                listEl.innerHTML = '<li>Error calculating offsets.</li>';
+                console.error(e);
+            }
+        } else {
+            listEl.innerHTML = '<li>Not supported in this browser.</li>';
+        }
+
+        // Animate
+        m.classList.remove('hidden');
+        setTimeout(() => {
+            m.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closeTz() {
+        const m = document.getElementById('tz-modal');
+        const content = m.querySelector('div');
+        m.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => {
+            m.classList.add('hidden');
+        }, 300);
+    }
+
+    // --- 1. COOKIE LOGIC ---
+    function setCookie(n, v, d) { let e=""; if(d){const dt=new Date();dt.setTime(dt.getTime()+(d*24*60*60*1000));e="; expires="+dt.toUTCString();} document.cookie=n+"="+(v||"")+e+"; path=/"; }
+    function getCookie(n) { const ne=n+"="; const ca=document.cookie.split(';'); for(let i=0;i<ca.length;i++){ let c=ca[i]; while(c.charAt(0)==' ') c=c.substring(1,c.length); if(c.indexOf(ne)==0) return c.substring(ne.length,c.length); } return null; }
+
+    function showConsentModal() { const m=document.getElementById('cookie-modal'); const c=document.getElementById('cookie-content'); m.classList.remove('hidden'); setTimeout(()=>{m.classList.remove('opacity-0');c.classList.remove('scale-95');},50); }
+    function hideConsentModal() { const m=document.getElementById('cookie-modal'); m.classList.add('opacity-0'); setTimeout(()=>{m.classList.add('hidden');},300); }
+    function handleConsent(a) { const v=a?'accepted':'declined'; setCookie('speedtest_consent',v,365); hideConsentModal(); if(!a){ setCookie('speedtest_history',"",-1); } updateConsentStatus(v); renderHistory(); }
+    function disableHistory() { setCookie('speedtest_consent','declined',365); setCookie('speedtest_history',"",-1); updateConsentStatus('declined'); renderHistory(); }
+
+    function updateConsentStatus(s) {
+        const l=document.getElementById('consent-status'), be=document.getElementById('btn-enable-history'), bd=document.getElementById('btn-disable-history'), bc=document.getElementById('btn-clear-history');
+        if(s==='accepted'){ l.innerText="Active"; l.className="px-2 py-1.5 rounded bg-emerald-100 text-emerald-600 font-bold"; be.classList.add('hidden'); bd.classList.remove('hidden'); bc.classList.remove('hidden'); }
+        else { l.innerText="Disabled"; l.className="px-2 py-1.5 rounded bg-gray-100 text-gray-500 font-bold"; be.classList.remove('hidden'); bd.classList.add('hidden'); bc.classList.add('hidden'); }
+    }
+
+    document.addEventListener('DOMContentLoaded', ()=>{ const c=getCookie('speedtest_consent'); if(!c){showConsentModal(); updateConsentStatus(null);}else{updateConsentStatus(c);} renderHistory(); });
+
+    function saveResult(p,d,u) {
+        if(getCookie('speedtest_consent')!=='accepted') return;
+        let h=getCookie('speedtest_history'); try{h=h?JSON.parse(h):[];}catch(e){h=[];}
+        h.unshift({date:new Date().toLocaleTimeString()+" "+new Date().toLocaleDateString(), ping:p, dl:d, ul:u});
+        if(h.length>5) h.pop();
+        setCookie('speedtest_history',JSON.stringify(h),30); renderHistory();
+    }
+    function clearHistory(){ setCookie('speedtest_history',"",-1); renderHistory(); }
+    function renderHistory(){
+        const tb=document.getElementById('history-table-body'), c=getCookie('speedtest_consent');
+        if(c!=='accepted'){ tb.innerHTML=`<tr><td colspan="4" class="px-4 py-8 text-center text-gray-400"><p class="italic mb-2">History disabled.</p><button onclick="showConsentModal()" class="text-blue-500 underline font-medium">Enable</button></td></tr>`; return; }
+        let h=getCookie('speedtest_history'); try{h=h?JSON.parse(h):[];}catch(e){h=[];}
+        if(h.length===0){ tb.innerHTML=`<tr><td colspan="4" class="px-4 py-4 text-center text-gray-400 italic">No history found.</td></tr>`; return; }
+        let ht=''; h.forEach(i=>{ ht+=`<tr class="hover:bg-gray-50 transition"><td class="px-4 py-2 font-mono text-gray-500 text-xs">${i.date}</td><td class="px-4 py-2 font-bold">${i.ping}</td><td class="px-4 py-2 font-bold text-blue-600">${i.dl}</td><td class="px-4 py-2 font-bold text-purple-600">${i.ul}</td></tr>`; });
+        tb.innerHTML=ht;
+    }
+
+    // --- 2. MULTI-THREADED SPEEDTEST ENGINE ---
+    function updateGauge(v, l, u=false) {
+        const gv=document.getElementById('gauge-value'), gl=document.getElementById('gauge-label'), gf=document.getElementById('speed-gauge');
+        gv.innerText=v; gl.innerText=l; gf.style.stroke=u?"#9333ea":"#10b981";
+        let p=(v/100)*100; if(p>100)p=100; gf.style.strokeDasharray=`${p}, 100`;
+    }
+
+    async function fetchStream(url, duration, updateCallback) {
+        const start = performance.now();
+        let loaded = 0;
+        try {
+            const response = await fetch(url);
+            const reader = response.body.getReader();
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                loaded += value.length;
+                if (performance.now() - start > duration) { reader.cancel(); break; }
+                updateCallback(loaded);
+            }
+        } catch (e) { }
+        return loaded;
+    }
+
+    async function runHighPerformanceTest() {
+        const status=document.getElementById('test-state'), bar=document.getElementById('speed-progress'), icon=document.getElementById('speed-status-icon');
+        const dlEl=document.getElementById('dl-final'), ulEl=document.getElementById('ul-final'), pgEl=document.getElementById('ping-value');
+        const serverLoc=document.getElementById('server-location');
+
+        dlEl.innerText="-- Mbps"; ulEl.innerText="-- Mbps"; bar.style.width="0%";
+        icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600 blink";
+
+        let fP="--", fD="--", fU="--";
+
+        try {
+            // 1. SERVER INFO (Trace) & PING
+            status.innerText="Connecting to Server...";
+            const pS=performance.now();
+            const traceReq = await fetch('https://speed.cloudflare.com/cdn-cgi/trace');
+            const pEnd=performance.now();
+            fP = (pEnd-pS).toFixed(0)+" ms";
+            pgEl.innerText = fP;
+
+            const traceText = await traceReq.text();
+            const lines = traceText.split('\n');
+            let coloCode = "Unknown";
+            let locCode = "";
+            lines.forEach(l => {
+                if(l.startsWith('colo=')) coloCode = l.split('=')[1];
+                if(l.startsWith('loc=')) locCode = l.split('=')[1];
+            });
+            serverLoc.innerHTML = `${coloCode} <span class="text-gray-400 font-normal">(${locCode})</span>`;
+
+            // 2. DOWNLOAD (Multi-Stream)
+            status.innerText="Downloading (4 Streams)...";
+            updateGauge(0, "Mbps (Down)");
+
+            const streams = 4;
+            const duration = 5000;
+            const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000";
+
+            let startTime = performance.now();
+            const promises = Array(streams).fill(0).map(() => fetchStream(dlUrl + "&r=" + Math.random(), duration, ()=>{}));
+
+            const uiInterval = setInterval(() => {
+                const t = (performance.now() - startTime) / 1000;
+                if(t > 0) bar.style.width = Math.min((t/duration)*100, 100) + "%";
+            }, 100);
+
+            const results = await Promise.all(promises);
+            clearInterval(uiInterval);
+
+            const totalTime = (performance.now() - startTime) / 1000;
+            const grandTotalBytes = results.reduce((a, b) => a + b, 0);
+            const mbps = ((grandTotalBytes * 8) / totalTime / 1024 / 1024).toFixed(1);
+            fD = mbps + " Mbps";
+            dlEl.innerText = fD;
+            updateGauge(mbps, "Mbps (Down)");
+            bar.style.width = "50%";
+
+            // 3. UPLOAD
+            status.innerText="Uploading...";
+            updateGauge(0, "Mbps (Up)", true);
+
+            const upSize = 5 * 1024 * 1024;
+            const blob = new Blob([new Uint8Array(upSize)]);
+
+            startTime = performance.now();
+            const upPromises = Array(2).fill(0).map(async () => {
+                try { await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob }); return upSize; } catch(e) { return 0; }
+            });
+
+            const upResults = await Promise.all(upPromises);
+            const upTime = (performance.now() - startTime) / 1000;
+            const totalUpBytes = upResults.reduce((a, b) => a + b, 0);
+
+            if(totalUpBytes > 0) {
+                const upMbps = ((totalUpBytes * 8) / upTime / 1024 / 1024).toFixed(1);
+                fU = upMbps + " Mbps";
+                ulEl.innerText = fU;
+                updateGauge(upMbps, "Mbps (Up)", true);
+            } else {
+                fU = "CORS Error";
+                ulEl.innerText = "CORS/Block";
+            }
+
+            status.innerText="Complete";
+            status.className="text-xs font-bold text-emerald-600";
+            bar.style.width="100%";
+            icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600";
+
+            saveResult(fP, fD, fU);
+
+        } catch(e) {
+            console.error(e);
+            status.innerText="Network Error";
+            status.className="text-xs font-bold text-red-600";
+            icon.className="p-2 bg-red-50 rounded-lg text-red-600";
+        }
+    }
+
+    // --- 3. VPN & SYSTEM UTILS ---
+    function detectVPN(ipTimezone, isp) {
+        const vpnEl = document.getElementById('vpn-status');
+        const detailEl = document.getElementById('vpn-details');
+        const sysTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+        let reasons = [];
+        const lowerISP = isp ? isp.toLowerCase() : "";
+
+        // 1. Specific High-Probability Targets
+        const vpnMap = {
+            'cloudflare': 'Cloudflare (WARP/Relay)',
+            'm europe': 'M Europe (M247/VPN)',
+            'm247': 'M247 (Major VPN Infra)',
+            'datacamp': 'DataCamp Ltd (CDN77)',
+            'packethub': 'PacketHub (Nord/Surfshark)',
+            'expressvpn': 'ExpressVPN',
+            'nordvpn': 'NordVPN',
+            'protonvpn': 'ProtonVPN',
+            'digitalocean': 'DigitalOcean (Cloud)',
+            'aws': 'AWS (Cloud)',
+            'amazon': 'AWS (Cloud)',
+            'google': 'Google Cloud',
+            'microsoft': 'Azure/Microsoft',
+            'oracle': 'Oracle Cloud',
+            'linode': 'Linode/Akamai',
+            'hetzner': 'Hetzner',
+            'ovh': 'OVHcloud',
+            'vultr': 'Vultr'
+        };
+
+        let specificFound = false;
+        for (const [key, label] of Object.entries(vpnMap)) {
+            if (lowerISP.includes(key)) {
+                reasons.push(`Infra: ${label}`);
+                specificFound = true;
+            }
+        }
+
+        // 2. Generic Check (Only if no specific found to avoid redundancy)
+        if (!specificFound) {
+            const genericKeywords = ['vpn', 'hosting', 'cloud', 'datacenter', 'proxy'];
+            if (genericKeywords.some(k => lowerISP.includes(k))) {
+                reasons.push("Flagged: Datacenter/Cloud ISP");
+            }
+        }
+
+        // 3. Timezone Check
+        if (ipTimezone && sysTimezone && ipTimezone !== sysTimezone) {
+            reasons.push(`Flagged: Timezone Mismatch<br><span class="text-xs font-normal text-slate-500">(IP: ${ipTimezone} vs Sys: ${sysTimezone})</span>`);
+        }
+
+        if (reasons.length > 0) {
+            vpnEl.innerText = "Likely Detected";
+            vpnEl.className = "text-lg font-bold mt-1 text-orange-500";
+            // Join reasons nicely
+            detailEl.innerHTML = `<span class="font-semibold text-red-600">${reasons.join('<br>')}</span>`;
+        } else {
+            vpnEl.innerText = "Not Detected";
+            vpnEl.className = "text-lg font-bold mt-1 text-emerald-600";
+            detailEl.innerHTML = `System Time matches IP<br><span class="text-xs text-gray-400 font-normal">(${ipTimezone})</span>`;
+        }
+    }
+
+    // --- 4. DATA FETCHERS ---
+    function updateTimestamp() { const n=new Date(); const f=(x)=>String(x).padStart(2,'0'); document.getElementById('last-update').innerText=`${f(n.getDate())}/${f(n.getMonth()+1)}/${n.getFullYear()} , ${f(n.getHours())}:${f(n.getMinutes())}:${f(n.getSeconds())}`; }
+    setInterval(updateTimestamp,1000); updateTimestamp();
+
+    let map;
+    function initMap(lat,lng) { if(map)return; map=L.map('map',{zoomControl:false}).setView([lat,lng],13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map); L.marker([lat,lng]).addTo(map).bindPopup("<b>IP Location</b>").openPopup(); document.getElementById('map-coords').innerText=`${lat.toFixed(4)}, ${lng.toFixed(4)}`; }
+
+    async function fetchIPv4Data() { try{const r=await fetch('https://ipwho.is/');const d=await r.json();if(d.success){
+        document.getElementById('ipv4-display').innerText=d.ip;
+        document.getElementById('ipv4-loc').innerText=`${d.city}, ${d.region_code}`;
+        document.getElementById('isp-display').innerText=d.connection.isp||"Unknown";
+        document.getElementById('asn-display').innerText=`ASN: ${d.connection.asn}`;
+        document.getElementById('hostname-display').innerText=d.connection.domain||"No PTR Record";
+        initMap(d.latitude,d.longitude);
+        detectVPN(d.timezone.id, d.connection.isp);
+    }}catch(e){document.getElementById('ipv4-display').innerText="Error";}}
+
+    async function fetchIPv6Data() { try{const r=await fetch('https://api6.ipify.org?format=json');if(r.ok){const d=await r.json();document.getElementById('ipv6-display').innerText=d.ip;document.getElementById('ipv6-status').innerText="Active";document.getElementById('ipv6-status').className="text-xs text-emerald-500 font-bold mt-1";try{const dr=await fetch(`https://ipwho.is/${d.ip}`);const dd=await dr.json();if(dd.success){document.getElementById('ipv6-provider').innerText=dd.connection.isp||"Unknown";}else{document.getElementById('ipv6-provider').innerText="N/A";}}catch(err){document.getElementById('ipv6-provider').innerText="N/A";}}}catch(e){document.getElementById('ipv6-display').innerText="Not Detected";document.getElementById('ipv6-status').innerText="IPv4 Only";document.getElementById('ipv6-provider').innerText="N/A";}}
+
+    // --- 5. Multi-Probing DNS Detection ---
+    async function fetchDNS() {
+        const list = document.getElementById('dns-list');
+        const badge = document.getElementById('dns-count-badge');
+        list.innerHTML = '<li class="text-sm text-gray-500 flex items-center"><span class="loader mr-2"></span> Probing...</li>';
+
+        const detected = new Set();
+        // Probe 5 times to catch round-robin DNS
+        const attempts = 5;
+        const promises = Array(attempts).fill(0).map(async () => {
+            try {
+                const res = await fetch(`https://edns.ip-api.com/json?r=${Math.random()}`);
+                const data = await res.json();
+                return (data.dns && data.dns.ip) ? data.dns : null;
+            } catch(e) { return null; }
+        });
+
+        const results = await Promise.all(promises);
+        list.innerHTML = '';
+        let foundCount = 0;
+
+        results.forEach(dns => {
+            if(dns && !detected.has(dns.ip)) {
+                detected.add(dns.ip);
+                foundCount++;
+                list.innerHTML += `
+                        <li class="text-xl font-bold font-mono text-slate-800 mb-2 pb-2 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
+                            ${dns.ip}
+                            <span class="text-xs font-sans font-normal text-gray-400 block">
+                                (${dns.geo || "Unknown"})
+                            </span>
+                        </li>
+                    `;
+            }
+        });
+
+        if(foundCount > 0) {
+            badge.innerText = `${foundCount} DETECTED`;
+            badge.classList.remove('hidden');
+        } else {
+            list.innerHTML = '<li class="text-red-400 text-xs">Blocked / API Fail</li>';
+        }
+    }
+
+    function getWebRTCIPs() { const l=document.getElementById('webrtc-list'); const s=new Set(); const R=window.RTCPeerConnection||window.mozRTCPeerConnection||window.webkitRTCPeerConnection; if(!R){l.innerHTML='<li>Unsupported</li>';return;} const p=new R({iceServers:[]}); p.createDataChannel(''); p.onicecandidate=(e)=>{if(!e.candidate)return;const m=e.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/);if(m){const i=m[1];if(!s.has(i)){s.add(i);if(l.innerHTML.includes('Scanning'))l.innerHTML='';l.innerHTML+=`<li class="text-xl font-bold text-slate-800 font-mono mb-1">${i}</li>`;}}}; p.createOffer().then(d=>p.setLocalDescription(d)).catch(e=>{}); setTimeout(()=>{if(s.size===0)l.innerHTML='<li class="text-xs text-gray-400">Hidden by Browser Privacy</li>';},3000); }
+
+    async function detectSystem() {
+        const u=navigator.userAgent;
+        document.getElementById('ua-raw').innerText=u;
+
+        // --- NEW: Calculate UTC Offset for Display ---
+        const d = new Date();
+        const offset = -d.getTimezoneOffset(); // returns minutes (inverted)
+        const sign = offset >= 0 ? '+' : '-';
+        const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
+        const utcStr = `UTC${sign}${pad(offset/60)}:${pad(offset%60)}`;
+
+        document.getElementById('sys-tz').innerHTML = `Sys Timezone: <span class="font-bold text-slate-600">${utcStr}</span> <i class="fas fa-info-circle text-[10px] ml-1"></i>`;
+
+        let o="Unknown",b="Unknown"; if(navigator.userAgentData){const v=await navigator.userAgentData.getHighEntropyValues(["platformVersion"]);const m=parseInt(v.platformVersion?.split('.')[0]||0);o=(m>=13)?"Windows 11":"Windows 10";}else{if(u.includes("Win"))o="Windows";if(u.includes("Mac"))o="macOS";if(u.includes("Linux"))o="Linux";if(u.includes("Android"))o="Android";if(u.includes("like Mac"))o="iOS";} if(u.includes("Firefox"))b="Firefox";else if(u.includes("Chrome"))b="Chrome";else if(u.includes("Safari"))b="Safari";else if(u.includes("Edg"))b="Edge"; document.getElementById('os-name').innerText=o; document.getElementById('os-detail').innerText=(u.includes("64")?"64-bit":"32-bit"); document.getElementById('browser-name').innerText=b; const v=u.match(/(?:Chrome|Firefox|Version|Edg)\/([0-9.]+)/); document.getElementById('browser-ver').innerText=v?"v"+v[1]:"";
+    }
+    function copyUA() { navigator.clipboard.writeText(document.getElementById('ua-raw').innerText); alert("Copied!"); }
+
+    fetchIPv4Data(); fetchIPv6Data(); fetchDNS(); getWebRTCIPs(); detectSystem();
+</script>
+</body>
+</html>
