@@ -51,11 +51,27 @@
             background-color: #cbd5e1;
             border-radius: 10px;
         }
+
+        /* GAUGE STYLES */
         .gauge-bg { stroke: #e2e8f0; }
         .gauge-fill {
             stroke: #10b981;
-            transition: stroke-dashoffset 0.2s ease-out;
+            transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease; /* Faster transition for instant speed */
         }
+
+        .no-anim-trans {
+            transition: none !important;
+        }
+
+        /* Pulse Effect for the Stroke line only (Color glow) */
+        .gauge-pulse {
+            animation: gaugeStrokePulse 0.5s infinite alternate;
+        }
+        @keyframes gaugeStrokePulse {
+            0% { filter: drop-shadow(0 0 0px rgba(16, 185, 129, 0)); }
+            100% { filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.8)); }
+        }
+
         .blink { animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.5; } }
     </style>
@@ -505,8 +521,20 @@
         <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-cyan-500 relative">
             <div class="flex justify-between items-start">
                 <div class="w-full">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">VPN / Privacy Check</p>
-                    <h2 class="text-lg font-bold mt-1" id="vpn-status"><span class="loader"></span></h2>
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">VPN / Privacy Check</p>
+                            <h2 class="text-lg font-bold mt-1" id="vpn-status"><span class="loader"></span></h2>
+                        </div>
+
+                        <div class="flex items-center">
+                            <label class="inline-flex items-center cursor-pointer ml-2">
+                                <input type="checkbox" id="anim-toggle" class="sr-only peer" checked onchange="toggleAnimation()">
+                                <div class="relative w-7 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600"></div>
+                                <span class="ms-1.5 text-[10px] text-gray-400 font-medium uppercase tracking-wide">Anim</span>
+                            </label>
+                        </div>
+                    </div>
 
                     <button onclick="showVpnModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center mt-1 mb-2">
                         <span class="decoration-dotted underline underline-offset-4">More Info</span> <i class="fas fa-info-circle ml-1"></i>
@@ -551,7 +579,7 @@
             </div>
 
             <div class="flex flex-col md:flex-row items-center md:space-x-8 space-y-6 md:space-y-0 h-full justify-center pb-2">
-                <div class="relative w-44 h-44 flex-shrink-0">
+                <div class="relative w-44 h-44 flex-shrink-0" id="gauge-container">
                     <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                         <path class="gauge-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="2.5" />
                         <path id="speed-gauge" class="gauge-fill" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="2.5" stroke-dasharray="0, 100" />
@@ -881,6 +909,32 @@
         let p=(v/100)*100; if(p>100)p=100; gf.style.strokeDasharray=`${p}, 100`;
     }
 
+    // --- ANIMATION TOGGLE LOGIC ---
+    let animationEnabled = true;
+    function toggleAnimation() {
+        const toggle = document.getElementById('anim-toggle');
+        animationEnabled = toggle.checked;
+
+        const gaugeFill = document.getElementById('speed-gauge');
+        const progressBar = document.getElementById('speed-progress');
+        const gaugeContainer = document.getElementById('gauge-container');
+
+        if (animationEnabled) {
+            gaugeFill.classList.remove('no-anim-trans');
+            progressBar.classList.remove('no-anim-trans');
+            // If test is running, re-apply animation
+            if(document.getElementById('btn-card-speed').classList.contains('hidden')) {
+                gaugeContainer.classList.add('active-anim');
+                gaugeFill.classList.add('gauge-pulse');
+            }
+        } else {
+            gaugeFill.classList.add('no-anim-trans');
+            progressBar.classList.add('no-anim-trans');
+            gaugeFill.classList.remove('gauge-pulse');
+            gaugeContainer.classList.remove('active-anim');
+        }
+    }
+
     // --- STOP SPEEDTEST LOGIC ---
     let speedTestAbortController = null;
 
@@ -910,6 +964,8 @@
             document.getElementById('test-state').innerText = "Stopped";
             document.getElementById('test-state').className = "text-xs font-bold text-red-500";
             document.getElementById('speed-status-icon').className = "p-2 bg-gray-50 rounded-lg text-gray-400";
+            document.getElementById('speed-gauge').classList.remove('gauge-pulse');
+            document.getElementById('gauge-container').classList.remove('active-anim');
         }
     }
 
@@ -917,11 +973,9 @@
         // Toggle Buttons
         const btnStart = document.getElementById('btn-card-speed');
         const btnStop = document.getElementById('btn-stop-speed');
-        const headerBtn = document.getElementById('btn-header-speed');
 
         btnStart.classList.add('hidden');
         btnStop.classList.remove('hidden');
-        if(headerBtn) headerBtn.disabled = true;
 
         // Reset Controller
         speedTestAbortController = new AbortController();
@@ -930,9 +984,21 @@
         const status=document.getElementById('test-state'), bar=document.getElementById('speed-progress'), icon=document.getElementById('speed-status-icon');
         const dlEl=document.getElementById('dl-final'), ulEl=document.getElementById('ul-final'), pgEl=document.getElementById('ping-value');
         const serverLoc=document.getElementById('server-location');
+        const gaugeFill = document.getElementById('speed-gauge');
+        const gaugeContainer = document.getElementById('gauge-container');
 
         dlEl.innerText="-- Mbps"; ulEl.innerText="-- Mbps"; bar.style.width="0%";
-        icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600 blink";
+
+        // Apply Visuals based on Switch
+        if(animationEnabled) {
+            icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600 blink";
+            gaugeFill.classList.add('gauge-pulse');
+            gaugeContainer.classList.add('active-anim');
+        } else {
+            icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600"; // No blink
+            gaugeFill.classList.remove('gauge-pulse');
+            gaugeContainer.classList.remove('active-anim');
+        }
 
         let fP="--", fD="--", fU="--";
 
@@ -1019,6 +1085,8 @@
             status.className="text-xs font-bold text-emerald-600";
             bar.style.width="100%";
             icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600";
+            gaugeFill.classList.remove('gauge-pulse');
+            gaugeContainer.classList.remove('active-anim');
 
             saveResult(fP, fD, fU);
 
@@ -1032,11 +1100,12 @@
                 status.className = "text-xs font-bold text-red-600";
             }
             icon.className="p-2 bg-gray-50 rounded-lg text-gray-400";
+            gaugeFill.classList.remove('gauge-pulse');
+            gaugeContainer.classList.remove('active-anim');
         } finally {
             // Restore Buttons
             btnStart.classList.remove('hidden');
             btnStop.classList.add('hidden');
-            if(headerBtn) headerBtn.disabled = false;
         }
     }
 
