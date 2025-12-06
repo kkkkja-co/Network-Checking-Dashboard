@@ -188,6 +188,62 @@
     </div>
 </div>
 
+<div id="vpn-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300" onclick="closeVpnModal()">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <button onclick="closeVpnModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times text-lg"></i></button>
+        <div class="mb-5">
+            <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <i class="fas fa-shield-alt text-cyan-500"></i> VPN & Privacy Report
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">Detailed Analysis of your connection privacy</p>
+        </div>
+
+        <div class="space-y-4">
+            <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex justify-between items-center">
+                <span class="text-sm font-bold text-slate-600">Privacy Level</span>
+                <span id="vpn-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
+            </div>
+
+            <div class="bg-white p-2 rounded border border-gray-100 text-xs flex justify-between">
+                <span class="font-semibold text-slate-600">IP Fraud Risk:</span>
+                <span id="vpn-fraud-score" class="font-bold">--</span>
+            </div>
+
+            <div class="border-b border-gray-100 pb-3">
+                <div class="flex justify-between items-center mb-1">
+                    <p class="text-xs font-bold text-slate-700">1. ISP / ASN Check</p>
+                    <i id="icon-isp" class="fas fa-circle text-[10px] text-gray-300"></i>
+                </div>
+                <p class="text-[10px] text-gray-500" id="desc-isp">Analyzing provider name...</p>
+            </div>
+
+            <div class="border-b border-gray-100 pb-3">
+                <div class="flex justify-between items-center mb-1">
+                    <p class="text-xs font-bold text-slate-700">2. Timezone Consistency</p>
+                    <i id="icon-tz" class="fas fa-circle text-[10px] text-gray-300"></i>
+                </div>
+                <p class="text-[10px] text-gray-500" id="desc-tz">Comparing System vs IP Time...</p>
+            </div>
+
+            <div class="border-b border-gray-100 pb-3">
+                <div class="flex justify-between items-center mb-1">
+                    <p class="text-xs font-bold text-slate-700">3. Language / Locale</p>
+                    <i id="icon-lang" class="fas fa-circle text-[10px] text-gray-300"></i>
+                </div>
+                <p class="text-[10px] text-gray-500" id="desc-lang">Checking browser language vs IP country...</p>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <p class="text-xs font-bold text-slate-700">4. WebRTC Leak</p>
+                    <i id="icon-webrtc" class="fas fa-circle text-[10px] text-gray-300"></i>
+                </div>
+                <p class="text-[10px] text-gray-500" id="desc-webrtc">Checking for leaked IPs...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <div class="max-w-7xl mx-auto">
 
@@ -214,7 +270,7 @@
 
     <div class="flex justify-center mb-6">
         <span class="text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-full flex items-center shadow-sm">
-            <i class="fas fa-arrow-down mr-2 animate-bounce text-slate-500"></i> Scroll down for History
+            <i class="fas fa-arrow-down mr-2 animate-bounce text-slate-500"></i> Scroll down for more
         </span>
     </div>
 
@@ -291,22 +347,24 @@
             </div>
         </div>
 
-        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-pink-500 relative">
-            <div class="flex justify-between items-start mb-2">
+        <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-pink-500 relative h-full flex flex-col justify-between">
+            <div class="flex justify-between items-start mb-2 shrink-0">
                 <div class="w-full">
                     <div class="flex items-center justify-between pr-10">
                         <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">DNS Servers</p>
                         <span id="dns-count-badge" class="hidden text-[10px] bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">0 Found</span>
                     </div>
-                    <div class="custom-scroll max-h-24 overflow-y-auto mt-2">
-                        <ul id="dns-list" class="space-y-2">
-                            <li class="text-sm text-gray-600 flex items-center"><span class="loader mr-2"></span> Probing...</li>
-                        </ul>
-                    </div>
                 </div>
                 <div class="p-2 bg-pink-50 rounded-lg text-pink-600 ml-2 absolute top-5 right-5"><i class="fas fa-server"></i></div>
             </div>
-            <div class="pt-2 border-t border-gray-100 mt-auto">
+
+            <div class="h-40 overflow-y-auto custom-scroll relative mt-2 w-full">
+                <ul id="dns-list" class="space-y-2 h-full break-all">
+                    <li class="text-sm text-gray-600 flex items-center h-full"><span class="loader mr-2"></span> Probing...</li>
+                </ul>
+            </div>
+
+            <div class="pt-2 border-t border-gray-100 mt-auto shrink-0">
                 <p class="text-xs text-gray-400">Detected Resolvers</p>
             </div>
         </div>
@@ -330,6 +388,10 @@
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Operating System</p>
                     <h2 class="text-lg font-bold text-slate-800 mt-1" id="os-name">--</h2>
                     <p class="text-xs text-gray-500" id="os-detail">--</p>
+
+                    <button onclick="showUaModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center mt-1">
+                        <span class="decoration-dotted underline underline-offset-4">More Info</span> <i class="fas fa-info-circle ml-1"></i>
+                    </button>
                 </div>
                 <div class="p-2 bg-teal-50 rounded-lg text-teal-600 ml-2 absolute top-5 right-5"><i class="fas fa-microchip"></i></div>
             </div>
@@ -345,8 +407,8 @@
                     <h2 class="text-lg font-bold text-slate-800 mt-1" id="browser-name">--</h2>
                     <p class="text-xs text-gray-500 mb-1" id="browser-ver">--</p>
 
-                    <button onclick="showUaModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition decoration-dotted underline underline-offset-4 flex items-center">
-                        <i class="fas fa-info-circle mr-1"></i> More Info
+                    <button onclick="showUaModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center">
+                        <span class="decoration-dotted underline underline-offset-4">More Info</span> <i class="fas fa-info-circle ml-1"></i>
                     </button>
                 </div>
                 <div class="p-2 bg-orange-50 rounded-lg text-orange-600 ml-2 absolute top-5 right-5"><i class="fab fa-chrome"></i></div>
@@ -361,7 +423,12 @@
                 <div class="w-full">
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">VPN / Privacy Check</p>
                     <h2 class="text-lg font-bold mt-1" id="vpn-status"><span class="loader"></span></h2>
-                    <div id="vpn-details" class="text-xs text-gray-500 mt-1 leading-tight">Analyzing...</div>
+
+                    <button onclick="showVpnModal()" class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center mt-1 mb-2">
+                        <span class="decoration-dotted underline underline-offset-4">More Info</span> <i class="fas fa-info-circle ml-1"></i>
+                    </button>
+
+                    <div id="vpn-details" class="text-xs text-gray-500 leading-tight">Analyzing...</div>
                 </div>
                 <div class="p-2 bg-cyan-50 rounded-lg text-cyan-600 ml-2 absolute top-5 right-5"><i class="fas fa-user-secret"></i></div>
             </div>
@@ -432,9 +499,12 @@
                         <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200" id="speed-progress" style="width: 0%"></div>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="mt-4 flex space-x-2">
                         <button id="btn-card-speed" onclick="runHighPerformanceTest()" class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg shadow hover:bg-emerald-700 transition flex items-center justify-center font-bold disabled:opacity-50 disabled:cursor-not-allowed">
                             <i class="fas fa-play mr-2"></i> Start Speedtest
+                        </button>
+                        <button id="btn-stop-speed" onclick="stopSpeedTest()" class="hidden w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg shadow-sm border border-red-100 hover:bg-red-100 transition flex items-center justify-center font-bold">
+                            <i class="fas fa-stop mr-2"></i> Stop
                         </button>
                     </div>
                 </div>
@@ -612,6 +682,27 @@
         }, 300);
     }
 
+    // --- NEW: VPN MODAL LOGIC ---
+    function showVpnModal() {
+        const m = document.getElementById('vpn-modal');
+        const content = m.querySelector('div');
+        m.classList.remove('hidden');
+        setTimeout(() => {
+            m.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closeVpnModal() {
+        const m = document.getElementById('vpn-modal');
+        const content = m.querySelector('div');
+        m.classList.add('opacity-0');
+        content.classList.add('scale-95');
+        setTimeout(() => {
+            m.classList.add('hidden');
+        }, 300);
+    }
+
     // --- 1. COOKIE LOGIC ---
     function setCookie(n, v, d) { let e=""; if(d){const dt=new Date();dt.setTime(dt.getTime()+(d*24*60*60*1000));e="; expires="+dt.toUTCString();} document.cookie=n+"="+(v||"")+e+"; path=/"; }
     function getCookie(n) { const ne=n+"="; const ca=document.cookie.split(';'); for(let i=0;i<ca.length;i++){ let c=ca[i]; while(c.charAt(0)==' ') c=c.substring(1,c.length); if(c.indexOf(ne)==0) return c.substring(ne.length,c.length); } return null; }
@@ -685,11 +776,14 @@
         let p=(v/100)*100; if(p>100)p=100; gf.style.strokeDasharray=`${p}, 100`;
     }
 
-    async function fetchStream(url, duration, updateCallback) {
+    // --- STOP SPEEDTEST LOGIC ---
+    let speedTestAbortController = null;
+
+    async function fetchStream(url, duration, updateCallback, signal) {
         const start = performance.now();
         let loaded = 0;
         try {
-            const response = await fetch(url);
+            const response = await fetch(url, { signal });
             const reader = response.body.getReader();
             while (true) {
                 const { done, value } = await reader.read();
@@ -698,17 +792,35 @@
                 if (performance.now() - start > duration) { reader.cancel(); break; }
                 updateCallback(loaded);
             }
-        } catch (e) { }
+        } catch (e) {
+            if (e.name !== 'AbortError') throw e;
+        }
         return loaded;
     }
 
+    function stopSpeedTest() {
+        if(speedTestAbortController) {
+            speedTestAbortController.abort();
+            speedTestAbortController = null;
+            document.getElementById('test-state').innerText = "Stopped";
+            document.getElementById('test-state').className = "text-xs font-bold text-red-500";
+            document.getElementById('speed-status-icon').className = "p-2 bg-gray-50 rounded-lg text-gray-400";
+        }
+    }
+
     async function runHighPerformanceTest() {
-        // Toggle Buttons - Gray Out
-        const btn = document.getElementById('btn-card-speed');
+        // Toggle Buttons
+        const btnStart = document.getElementById('btn-card-speed');
+        const btnStop = document.getElementById('btn-stop-speed');
         const headerBtn = document.getElementById('btn-header-speed');
 
-        if(btn) { btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); }
-        if(headerBtn) { headerBtn.disabled = true; headerBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+        btnStart.classList.add('hidden');
+        btnStop.classList.remove('hidden');
+        if(headerBtn) headerBtn.disabled = true;
+
+        // Reset Controller
+        speedTestAbortController = new AbortController();
+        const signal = speedTestAbortController.signal;
 
         const status=document.getElementById('test-state'), bar=document.getElementById('speed-progress'), icon=document.getElementById('speed-status-icon');
         const dlEl=document.getElementById('dl-final'), ulEl=document.getElementById('ul-final'), pgEl=document.getElementById('ping-value');
@@ -723,7 +835,7 @@
             // 1. SERVER INFO (Trace) & PING
             status.innerText="Connecting to Server...";
             const pS=performance.now();
-            const traceReq = await fetch('https://speed.cloudflare.com/cdn-cgi/trace');
+            const traceReq = await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal });
             const pEnd=performance.now();
             fP = (pEnd-pS).toFixed(0)+" ms";
             pgEl.innerText = fP;
@@ -747,15 +859,18 @@
             const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000";
 
             let startTime = performance.now();
-            const promises = Array(streams).fill(0).map(() => fetchStream(dlUrl + "&r=" + Math.random(), duration, ()=>{}));
+            const promises = Array(streams).fill(0).map(() => fetchStream(dlUrl + "&r=" + Math.random(), duration, ()=>{}, signal));
 
             const uiInterval = setInterval(() => {
+                if(signal.aborted) { clearInterval(uiInterval); return; }
                 const t = (performance.now() - startTime) / 1000;
                 if(t > 0) bar.style.width = Math.min((t/duration)*100, 100) + "%";
             }, 100);
 
             const results = await Promise.all(promises);
             clearInterval(uiInterval);
+
+            if (signal.aborted) throw new Error('Aborted');
 
             const totalTime = (performance.now() - startTime) / 1000;
             const grandTotalBytes = results.reduce((a, b) => a + b, 0);
@@ -775,10 +890,13 @@
             startTime = performance.now();
             // Increased to 4 concurrent upload streams for better saturation
             const upPromises = Array(4).fill(0).map(async () => {
-                try { await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob }); return upSize; } catch(e) { return 0; }
+                try { await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob, signal }); return upSize; } catch(e) { return 0; }
             });
 
             const upResults = await Promise.all(upPromises);
+
+            if (signal.aborted) throw new Error('Aborted');
+
             const upTime = (performance.now() - startTime) / 1000;
             const totalUpBytes = upResults.reduce((a, b) => a + b, 0);
 
@@ -800,21 +918,48 @@
             saveResult(fP, fD, fU);
 
         } catch(e) {
-            console.error(e);
-            status.innerText="Network Error";
-            status.className="text-xs font-bold text-red-600";
-            icon.className="p-2 bg-red-50 rounded-lg text-red-600";
+            if (e.message === 'Aborted' || e.name === 'AbortError') {
+                status.innerText = "Stopped";
+                status.className = "text-xs font-bold text-orange-500";
+            } else {
+                console.error(e);
+                status.innerText = "Network Error";
+                status.className = "text-xs font-bold text-red-600";
+            }
+            icon.className="p-2 bg-gray-50 rounded-lg text-gray-400";
         } finally {
             // Restore Buttons
-            if(btn) { btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); }
-            if(headerBtn) { headerBtn.disabled = false; headerBtn.classList.remove('opacity-50', 'cursor-not-allowed'); }
+            btnStart.classList.remove('hidden');
+            btnStop.classList.add('hidden');
+            if(headerBtn) headerBtn.disabled = false;
         }
     }
 
     // --- 3. VPN & SYSTEM UTILS ---
-    function detectVPN(ipTz, ipUtc, isp) {
+
+    // --- Pre-Compiled High-Speed Lookups ---
+    const KNOWN_VPN_ASNS = new Set([
+        13335, 15169, 16509, 8075, 20473, 14061, 63949, 49335, 20940,
+        9009, 396982, 31898, 40021, 133877, 24940, 212238, 9009,
+        202425, 62240, 132203, 136787, 53667, 397223
+    ]);
+
+    const PROVIDER_NAMES = [
+        'cloudflare', 'google', 'amazon', 'aws', 'microsoft', 'azure',
+        'digitalocean', 'hetzner', 'ovh', 'm247', 'm europe', 'expressvpn',
+        'nordvpn', 'proton', 'surfshark', 'mullvad', 'tor exit',
+        'zenlayer', 'leaseweb', 'datacamp', 'packethub', 'hostinger'
+    ];
+
+    // Compiled Regex for O(1) matching of strings
+    const VPN_REGEX = new RegExp(PROVIDER_NAMES.join('|'), 'i');
+    const GENERIC_REGEX = /vpn|proxy|hosting|cloud|datacenter|vps|server|transit|colo/i;
+
+    function detectVPN(ipTz, ipUtc, isp, countryCode, org, asn) {
         const vpnEl = document.getElementById('vpn-status');
         const detailEl = document.getElementById('vpn-details');
+        const badgeEl = document.getElementById('vpn-risk-badge');
+        const fraudEl = document.getElementById('vpn-fraud-score');
 
         // System UTC Calculation
         const d = new Date();
@@ -822,65 +967,98 @@
         const sign = offset >= 0 ? '+' : '-';
         const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
         const sysUtcStr = `UTC${sign}${pad(offset/60)}:${pad(offset%60)}`;
-
-        // IP UTC Formatting (Normalizing input like "+09:00" to "UTC+09:00")
         const ipUtcStr = `UTC${ipUtc}`;
 
-        let reasons = [];
-        const lowerISP = isp ? isp.toLowerCase() : "";
+        let score = 0;
+        const reasons = [];
 
-        // 1. Specific High-Probability Targets
-        const vpnMap = {
-            'cloudflare': 'Cloudflare (WARP/Relay)',
-            'm europe': 'M Europe (M247/VPN)',
-            'm247': 'M247 (Major VPN Infra)',
-            'datacamp': 'DataCamp Ltd (CDN77)',
-            'packethub': 'PacketHub (Nord/Surfshark)',
-            'expressvpn': 'ExpressVPN',
-            'nordvpn': 'NordVPN',
-            'protonvpn': 'ProtonVPN',
-            'digitalocean': 'DigitalOcean (Cloud)',
-            'aws': 'AWS (Cloud)',
-            'amazon': 'AWS (Cloud)',
-            'google': 'Google Cloud',
-            'microsoft': 'Azure/Microsoft',
-            'oracle': 'Oracle Cloud',
-            'linode': 'Linode/Akamai',
-            'hetzner': 'Hetzner',
-            'ovh': 'OVHcloud',
-            'vultr': 'Vultr'
-        };
+        // Fast Prep
+        const asnNum = parseInt(asn);
+        const combinedName = (isp + " " + org + " " + asn).toLowerCase();
 
-        let specificFound = false;
-        for (const [key, label] of Object.entries(vpnMap)) {
-            if (lowerISP.includes(key)) {
-                reasons.push(`Infra: ${label}`);
-                specificFound = true;
+        // 1. ASN Check (Fastest - O(1))
+        let ispFlagged = false;
+        if (!isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
+            score += 50;
+            reasons.push(`ASN Match: ${asnNum}`);
+            ispFlagged = true;
+            document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
+            document.getElementById('desc-isp').innerText = `Flagged ASN: ${asnNum}`;
+        }
+        // 2. String Match (Fast - Compiled Regex)
+        else if (VPN_REGEX.test(combinedName)) {
+            score += 50;
+            const match = combinedName.match(VPN_REGEX)[0];
+            reasons.push(`Provider Match: ${match}`);
+            ispFlagged = true;
+            document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
+            document.getElementById('desc-isp').innerText = `Matched: ${match}`;
+        }
+
+        // 3. Generic Heuristics
+        if (!ispFlagged) {
+            if (GENERIC_REGEX.test(combinedName)) {
+                score += 20; // Lower score for generic terms
+                reasons.push("Generic Hosting Keyword");
+                document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
+                document.getElementById('desc-isp').innerText = "Generic Hosting Keyword";
+            } else {
+                document.getElementById('icon-isp').className = "fas fa-check-circle text-emerald-500";
+                document.getElementById('desc-isp').innerText = "Residential/Standard ISP";
             }
         }
 
-        // 2. Generic Check (Only if no specific found to avoid redundancy)
-        if (!specificFound) {
-            const genericKeywords = ['vpn', 'hosting', 'cloud', 'datacenter', 'proxy'];
-            if (genericKeywords.some(k => lowerISP.includes(k))) {
-                reasons.push("Flagged: Datacenter/Cloud ISP");
-            }
-        }
-
-        // 3. Timezone Check (UPDATED: Using UTC Offsets)
+        // 4. Timezone Check
         if (ipUtcStr !== sysUtcStr) {
-            reasons.push(`Flagged: Timezone Mismatch<br><span class="text-xs font-normal text-slate-500">(IP: ${ipUtcStr} vs Sys: ${sysUtcStr})</span>`);
+            score += 20;
+            reasons.push("Timezone Mismatch");
+            document.getElementById('icon-tz').className = "fas fa-exclamation-circle text-orange-500";
+            document.getElementById('desc-tz').innerText = `IP: ${ipUtcStr} vs Sys: ${sysUtcStr}`;
+        } else {
+            document.getElementById('icon-tz').className = "fas fa-check-circle text-emerald-500";
+            document.getElementById('desc-tz').innerText = "Matched";
         }
 
-        if (reasons.length > 0) {
+        // 5. Language Check (Visual Only)
+        const browserLang = navigator.language || "en";
+        document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
+        document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
+
+
+        // --- SCORING LOGIC ---
+
+        if (score >= 50) {
+            // DETECTED (Red) - Confirmed Match
+            vpnEl.innerText = "Detected";
+            vpnEl.className = "text-lg font-bold mt-1 text-red-600";
+            detailEl.innerHTML = ""; // Hidden per request
+
+            badgeEl.innerText = "High Anonymity";
+            badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
+            fraudEl.innerText = "High Risk (Flagged)";
+            fraudEl.className = "font-bold text-red-500";
+
+        } else if (score > 0) {
+            // LIKELY DETECTED (Orange) - Generic Keywords or Heuristics only
             vpnEl.innerText = "Likely Detected";
             vpnEl.className = "text-lg font-bold mt-1 text-orange-500";
-            // Join reasons nicely
-            detailEl.innerHTML = `<span class="font-semibold text-red-600">${reasons.join('<br>')}</span>`;
+            detailEl.innerHTML = "";
+
+            badgeEl.innerText = "Moderate Anonymity";
+            badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
+            fraudEl.innerText = "Medium Risk";
+            fraudEl.className = "font-bold text-orange-500";
+
         } else {
+            // NOT DETECTED (Black) - Clean
             vpnEl.innerText = "Not Detected";
-            vpnEl.className = "text-lg font-bold mt-1 text-emerald-600";
-            detailEl.innerHTML = `System Time matches IP<br><span class="text-xs text-gray-400 font-normal">(${sysUtcStr})</span>`;
+            vpnEl.className = "text-lg font-bold mt-1 text-slate-800";
+            detailEl.innerHTML = `Direct Connection`;
+
+            badgeEl.innerText = "Low Anonymity";
+            badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
+            fraudEl.innerText = "Low Risk (Clean)";
+            fraudEl.className = "font-bold text-emerald-500";
         }
     }
 
@@ -915,7 +1093,8 @@
         document.getElementById('hostname-display').innerText=d.connection.domain||"No PTR Record";
         initMap(d.latitude,d.longitude);
         // UPDATED: Pass 'utc' field to detectVPN for offset comparison
-        detectVPN(d.timezone.id, d.timezone.utc, d.connection.isp);
+        // Also passing org and asn now
+        detectVPN(d.timezone.id, d.timezone.utc, d.connection.isp, d.country_code, d.connection.org, d.connection.asn);
     }}catch(e){document.getElementById('ipv4-display').innerText="Error";}}
 
     async function fetchIPv6Data() { try{const r=await fetch('https://api6.ipify.org?format=json');if(r.ok){const d=await r.json();document.getElementById('ipv6-display').innerText=d.ip;document.getElementById('ipv6-status').innerText="Active";document.getElementById('ipv6-status').className="text-xs text-emerald-500 font-bold mt-1";try{const dr=await fetch(`https://ipwho.is/${d.ip}`);const dd=await dr.json();if(dd.success){document.getElementById('ipv6-provider').innerText=dd.connection.isp||"Unknown";}else{document.getElementById('ipv6-provider').innerText="N/A";}}catch(err){document.getElementById('ipv6-provider').innerText="N/A";}}}catch(e){document.getElementById('ipv6-display').innerText="Not Detected";document.getElementById('ipv6-status').innerText="IPv4 Only";document.getElementById('ipv6-provider').innerText="N/A";}}
@@ -924,7 +1103,7 @@
     async function fetchDNS() {
         const list = document.getElementById('dns-list');
         const badge = document.getElementById('dns-count-badge');
-        list.innerHTML = '<li class="text-sm text-gray-500 flex items-center"><span class="loader mr-2"></span> Probing...</li>';
+        list.innerHTML = '<li class="text-sm text-gray-600 flex items-center h-full"><span class="loader mr-2"></span> Probing...</li>';
 
         const detected = new Set();
         // Probe 5 times to catch round-robin DNS
@@ -945,11 +1124,15 @@
             if(dns && !detected.has(dns.ip)) {
                 detected.add(dns.ip);
                 foundCount++;
+
+                // DATA SANITIZATION
+                const geo = dns.geo ? `(${dns.geo})` : '';
+
                 list.innerHTML += `
                         <li class="text-xl font-bold font-mono text-slate-800 mb-2 pb-2 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
                             ${dns.ip}
                             <span class="text-xs font-sans font-normal text-gray-400 block">
-                                (${dns.geo || "Unknown"})
+                                ${geo}
                             </span>
                         </li>
                     `;
@@ -964,7 +1147,55 @@
         }
     }
 
-    function getWebRTCIPs() { const l=document.getElementById('webrtc-list'); const s=new Set(); const R=window.RTCPeerConnection||window.mozRTCPeerConnection||window.webkitRTCPeerConnection; if(!R){l.innerHTML='<li>Unsupported</li>';return;} const p=new R({iceServers:[]}); p.createDataChannel(''); p.onicecandidate=(e)=>{if(!e.candidate)return;const m=e.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/);if(m){const i=m[1];if(!s.has(i)){s.add(i);if(l.innerHTML.includes('Scanning'))l.innerHTML='';l.innerHTML+=`<li class="text-xl font-bold text-slate-800 font-mono mb-1">${i}</li>`;}}}; p.createOffer().then(d=>p.setLocalDescription(d)).catch(e=>{}); setTimeout(()=>{if(s.size===0)l.innerHTML='<li class="text-xs text-gray-400">Hidden by Browser Privacy</li>';},3000); }
+    // UPDATED: WEBRTC LEAK CHECK INTEGRATION
+    function getWebRTCIPs() {
+        const l=document.getElementById('webrtc-list');
+        const s=new Set();
+        const R=window.RTCPeerConnection||window.mozRTCPeerConnection||window.webkitRTCPeerConnection;
+
+        if(!R){
+            l.innerHTML='<li>Unsupported</li>';
+            document.getElementById('icon-webrtc').className = "fas fa-minus-circle text-gray-300";
+            document.getElementById('desc-webrtc').innerText = "Browser not supported";
+            return;
+        }
+
+        const p=new R({iceServers:[]});
+        p.createDataChannel('');
+
+        p.onicecandidate=(e)=>{
+            if(!e.candidate)return;
+            const m=e.candidate.candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/);
+            if(m){
+                const i=m[1];
+                if(!s.has(i)){
+                    s.add(i);
+                    if(l.innerHTML.includes('Scanning'))l.innerHTML='';
+                    l.innerHTML+=`<li class="text-xl font-bold text-slate-800 font-mono mb-1">${i}</li>`;
+
+                    // Simple Leak Check Logic:
+                    // If a private IP is found (192.168... 10...), it's normal.
+                    // If a public IP is found and it differs from the main IP, it's a leak.
+                    // This logic is simplified for client-side without full STUN server control.
+                    if(!i.startsWith('192.168.') && !i.startsWith('10.') && !i.startsWith('172.')) {
+                        document.getElementById('icon-webrtc').className = "fas fa-exclamation-triangle text-orange-500";
+                        document.getElementById('desc-webrtc').innerText = "Public IP Detected via WebRTC";
+                    } else {
+                        document.getElementById('icon-webrtc').className = "fas fa-check-circle text-emerald-500";
+                        document.getElementById('desc-webrtc').innerText = "Only Local IPs detected";
+                    }
+                }
+            }
+        };
+        p.createOffer().then(d=>p.setLocalDescription(d)).catch(e=>{});
+        setTimeout(()=>{
+            if(s.size===0) {
+                l.innerHTML='<li class="text-xs text-gray-400">Hidden by Browser Privacy</li>';
+                document.getElementById('icon-webrtc').className = "fas fa-shield-alt text-emerald-500";
+                document.getElementById('desc-webrtc').innerText = "WebRTC Disabled/Hidden";
+            }
+        },3000);
+    }
 
     async function detectSystem() {
         const u=navigator.userAgent;
