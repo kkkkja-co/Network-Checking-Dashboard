@@ -1764,128 +1764,204 @@
 
     async function fetchIPv6Data() { try{const r=await fetch('https://api6.ipify.org?format=json');if(r.ok){const d=await r.json();document.getElementById('ipv6-display').innerText=d.ip;document.getElementById('ipv6-status').innerText="Active";document.getElementById('ipv6-status').className="text-xs text-emerald-500 font-bold mt-1";try{const dr=await fetch(`https://ipwho.is/${d.ip}`);const dd=await dr.json();if(dd.success){document.getElementById('ipv6-provider').innerText=dd.connection.isp||"Unknown";}else{document.getElementById('ipv6-provider').innerText="N/A";}}catch(err){document.getElementById('ipv6-provider').innerText="N/A";}}}catch(e){document.getElementById('ipv6-display').innerText="Not Detected";document.getElementById('ipv6-status').innerText="IPv4 Only";document.getElementById('ipv6-provider').innerText="N/A";}}
 
-    // --- 5. Multi-Probing DNS Detection ---
+    // --- 5. UPDATED: DNS Detection (No "N/A" Fallback) ---
     async function fetchDNS() {
         const list = document.getElementById('dns-list');
         const badge = document.getElementById('dns-count-badge');
-        list.innerHTML = '<li class="text-sm text-gray-600 flex items-center h-full"><span class="loader mr-2"></span> Probing...</li>';
 
-        const detected = new Set();
-        // Probe 5 times to catch round-robin DNS
-        const attempts = 5;
-        const promises = Array(attempts).fill(0).map(async () => {
-            try {
-                const res = await fetch(`https://edns.ip-api.com/json?r=${Math.random()}`);
-                const data = await res.json();
-                return (data.dns && data.dns.ip) ? data.dns : null;
-            } catch(e) { return null; }
-        });
+        // UI Reset
+        list.innerHTML = `
+            <li class="text-sm text-gray-600 flex items-center h-full">
+                <span class="loader mr-2"></span>
+                <span class="flex flex-col">
+                    <span>Probing DNS Resolvers...</span>
+                    <span class="text-[10px] text-gray-400">Fetching raw provider data</span>
+                </span>
+            </li>`;
 
-        const results = await Promise.all(promises);
-        list.innerHTML = '';
-        let foundCount = 0;
+        const detected = new Map();
+        const BATCH_SIZE = 10;
 
+        const runBatch = async () => {
+            const promises = Array(BATCH_SIZE).fill(0).map(async () => {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+                    const res = await fetch(`https://edns.ip-api.com/json?r=${Math.random()}`, {
+                        signal: controller.signal,
+                        cache: 'no-store'
+                    });
+                    clearTimeout(timeoutId);
+
+                    const data = await res.json();
+                    return (data.dns && data.dns.ip) ? data.dns : null;
+                } catch(e) { return null; }
+            });
+            return Promise.all(promises);
+        };
+
+        // Execution
+        let results = await runBatch();
+        await new Promise(r => setTimeout(r, 250));
+        const results2 = await runBatch();
+        results = results.concat(results2);
+
+        // Process Data
+        let totalSuccessful = 0;
         results.forEach(dns => {
-            if(dns && !detected.has(dns.ip)) {
-                detected.add(dns.ip);
-                foundCount++;
-
-                // DATA SANITIZATION
-                const geo = dns.geo ? `(${dns.geo})` : '';
-
-                list.innerHTML += `
-                        <li class="text-xl font-bold font-mono text-slate-800 mb-2 pb-2 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
-                            ${dns.ip}
-                            <span class="text-xs font-sans font-normal text-gray-400 block">
-                                ${geo}
-                            </span>
-                        </li>
-                    `;
+            if(dns) {
+                totalSuccessful++;
+                if(detected.has(dns.ip)) {
+                    detected.get(dns.ip).count++;
+                } else {
+                    detected.set(dns.ip, { data: dns, count: 1 });
+                }
             }
         });
 
-        if(foundCount > 0) {
-            badge.innerText = `${foundCount} DETECTED`;
+        // Render
+        list.innerHTML = '';
+        const uniqueCount = detected.size;
+
+        if(uniqueCount > 0) {
+            badge.innerText = `${uniqueCount} SERVER${uniqueCount > 1 ? 'S' : ''}`;
             badge.classList.remove('hidden');
+
+            const sorted = Array.from(detected.values()).sort((a, b) => b.count - a.count);
+
+            sorted.forEach(item => {
+                const dns = item.data;
+                const percentage = Math.round((item.count / totalSuccessful) * 100);
+
+                // --- PROVIDER NAMING LOGIC ---
+                // 1. Get the raw ISP string. Default to empty string if null.
+                let providerName = dns.isp || "";
+
+                // 2. Optional: Beautify ONLY major Public DNS for readability.
+                // Otherwise, the raw 'providerName' is preserved.
+                const lowerIsp = providerName.toLowerCase();
+
+                if (lowerIsp.includes("google")) providerName = "Google DNS";
+                else if (lowerIsp.includes("cloudflare")) providerName = "Cloudflare";
+                else if (lowerIsp.includes("opendns")) providerName = "OpenDNS";
+                else if (lowerIsp.includes("quad9")) providerName = "Quad9";
+                else if (lowerIsp.includes("cisco")) providerName = "Cisco Umbrella";
+
+                // 3. NO "N/A" FALLBACK
+                // We show exactly what 'providerName' is, even if it is the raw string.
+
+                const geoInfo = dns.geo || "";
+
+                list.innerHTML += `
+                    <li class="mb-3 pb-2 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
+                        <div class="flex justify-between items-end mb-1">
+                            <span class="text-sm font-bold text-slate-700 font-mono">${dns.ip}</span>
+                            <span class="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 rounded">${percentage}% Traffic</span>
+                        </div>
+                        <div class="flex justify-between items-start">
+                             <div class="flex flex-col leading-tight">
+                                <span class="text-xs font-bold text-blue-600 break-all">${providerName}</span>
+                                <span class="text-[10px] text-gray-400 mt-0.5">${geoInfo}</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-100 h-1 mt-1.5 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full transition-all duration-500" style="width: ${percentage}%"></div>
+                        </div>
+                    </li>
+                `;
+            });
         } else {
-            list.innerHTML = '<li class="text-red-400 text-xs">Blocked / API Fail</li>';
+            list.innerHTML = `
+                <li class="p-3 bg-red-50 rounded border border-red-100 text-center">
+                    <p class="text-xs font-bold text-red-600">Detection Failed</p>
+                    <p class="text-[10px] text-red-400 mt-1">Check adblocker or network settings</p>
+                </li>`;
         }
     }
 
     // UPDATED: WebRTC Leak Check (Smart Logic)
     // UPDATED: WebRTC Leak Check with "VPN Off" Logic
+    // --- 6. UPDATED: WebRTC Leak Check (Fix for VPN False Positives) ---
     function getWebRTCIPs() {
         const l = document.getElementById('webrtc-list');
         const icon = document.getElementById('icon-webrtc');
         const desc = document.getElementById('desc-webrtc');
 
-        // Store unique IPs found by WebRTC
         const foundIPs = new Set();
         let isScanning = true;
 
         const R = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
         if (!R) {
             l.innerHTML = '<li>Unsupported</li>';
-            icon.className = "fas fa-minus-circle text-gray-300";
-            desc.innerText = "Browser not supported";
             return;
         }
 
         const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         const p = new R(config);
-        p.createDataChannel('');
 
-        // 1. Gather Candidates
+        // Create a data channel to force ICE candidate gathering
+        try { p.createDataChannel(''); } catch(e) {}
+
         p.onicecandidate = (e) => {
             if (!e.candidate) return;
             const candidate = e.candidate.candidate;
+            // Extract IP using Regex
             const ipMatch = candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/);
 
             if (ipMatch) {
                 const ip = ipMatch[1];
                 if (candidate.indexOf(".local") > -1) return; // Ignore mDNS
+
                 if (!foundIPs.has(ip)) {
                     foundIPs.add(ip);
                     if (isScanning) {
-                        l.innerHTML = ''; // Clear "Scanning..." text on first find
+                        l.innerHTML = '';
                         isScanning = false;
                     }
-                    l.innerHTML += `<li class="text-xl font-bold text-slate-800 font-mono mb-1">${ip}</li>`;
+
+                    // Helper to check if IP is private
+                    // UPDATED: Now includes 100.64.0.0/10 (CGNAT/VPN) and 169.254 (Link Local)
+                    const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|169\.254\.|100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.|fd|fc|fe80)/i.test(ip);
+
+                    const cssClass = isPrivate ? "text-gray-400" : "text-slate-800 font-bold";
+                    const note = isPrivate ? " (Local/VPN)" : "";
+
+                    l.innerHTML += `<li class="${cssClass} font-mono text-sm mb-1">${ip}${note}</li>`;
                 }
             }
         };
 
         p.createOffer().then(d => p.setLocalDescription(d)).catch(e => {});
 
-        // 2. Continuous Analysis (Polling)
-        // Checks every 500ms to see if Dashboard IPs are loaded, then compares.
+        // Continuous Analysis
         const analyzer = setInterval(() => {
             const ipv4 = document.getElementById('ipv4-display').innerText.trim();
             const ipv6 = document.getElementById('ipv6-display').innerText.trim();
             const vpnStatusText = document.getElementById('vpn-status').innerText;
             const isVpnOff = vpnStatusText.includes("Not Detected");
 
-            // Stop if IPs aren't ready yet (prevents false positive)
             if (ipv4 === '--' || ipv4.includes('Loader') || ipv4 === 'Error') {
                 desc.innerText = "Waiting for Main IP...";
                 return;
             }
 
-            // If we have IPs, analyze them against the set
-            let status = "safe"; // safe | exposed | leak
+            let status = "safe";
 
-            if (foundIPs.size === 0) {
-                // Nothing found yet
-                return;
-            }
+            if (foundIPs.size === 0) return;
 
-            // Iterate all found WebRTC IPs
             foundIPs.forEach(ip => {
-                const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|fd00:|fc00:)/.test(ip);
+                // Same Private IP Regex for logic check
+                const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|169\.254\.|100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.|fd|fc|fe80)/i.test(ip);
 
                 if (!isPrivate) {
-                    // Check strict match against Dashboard
-                    const matchesTunnel = (ip === ipv4) || (ip === ipv6);
+                    // Normalize IPs for comparison (lowercase)
+                    const normIp = ip.toLowerCase();
+                    const normV4 = ipv4.toLowerCase();
+                    const normV6 = ipv6.toLowerCase();
+
+                    // Check strict match against Dashboard IPs
+                    const matchesTunnel = (normIp === normV4) || (normIp === normV6);
 
                     if (!matchesTunnel) {
                         status = "leak"; // Priority 1: Critical Leak
@@ -1895,28 +1971,27 @@
                 }
             });
 
-            // 3. Update UI based on final status
+            // UI Update
             if (status === "leak") {
                 icon.className = "fas fa-exclamation-triangle text-red-600 blink";
                 desc.innerText = "CRITICAL: Real IP Leaked!";
                 desc.className = "text-[10px] text-red-600 font-bold";
-                clearInterval(analyzer); // Stop checking once we find a leak
+                clearInterval(analyzer);
             }
             else if (status === "exposed") {
-                icon.className = "fas fa-exclamation-triangle text-red-600 blink";
+                icon.className = "fas fa-exclamation-triangle text-orange-500";
                 desc.innerText = "VPN Off — WebRTC Exposed";
-                desc.className = "text-[10px] text-red-600 font-bold";
+                desc.className = "text-[10px] text-orange-600 font-bold";
             }
             else {
-                // Safe or Local Only
                 icon.className = "fas fa-check-circle text-emerald-500";
                 desc.innerText = "Safe (Matches Tunnel IP)";
                 desc.className = "text-[10px] text-emerald-600 font-bold";
             }
 
-        }, 1000); // Run every second
+        }, 1000);
 
-        // Timeout to stop "Scanning" if nothing found
+        // Timeout fallback
         setTimeout(() => {
             if (foundIPs.size === 0) {
                 l.innerHTML = '<li class="text-xs text-gray-400">Hidden by Browser Privacy</li>';
