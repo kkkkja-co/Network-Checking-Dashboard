@@ -1,71 +1,128 @@
-# Network Checking Dashboard
+# 🌐 Network Dashboard
 
-A comprehensive, privacy-focused, client-side network analysis tool. This dashboard provides detailed information about your internet connection, performs advanced VPN/Proxy detection, and runs high-performance speed tests without storing your personal data on a backend server.
+A powerful, **single-file** network analysis dashboard that runs entirely in your web browser. It provides real-time insights into your connection, detects VPNs/Proxies with high precision, analyzes network speed, and checks for privacy leaks—all without sending your data to a backend server.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Platform](https://img.shields.io/badge/platform-Web-orange.svg)
-![Privacy](https://img.shields.io/badge/privacy-Client--Side-green.svg)
+### 🔗 **Live Website:** [net.bunorden.com](https://net.bunorden.com) *(Website Is Hosted on Cloudflare Pages)*
 
-## 🚀 Features
+-----
 
-### 🌐 IP & Network Analysis
-* **Dual Stack Detection:** Displays both **Public IPv4** and **Public IPv6** addresses.
-* **ISP & ASN:** Identifies your Internet Service Provider and Autonomous System Number.
-* **Geolocation:** Visualizes your approximate location on an interactive map (Leaflet/OSM).
-* **Hostname/PTR:** Performs reverse DNS lookups to find your hostname.
+## ✨ Key Features
 
-### 🛡️ Privacy & Security Checks
-* **Advanced VPN Detection:**
-    * **ISP Analysis:** Checks your ISP against a database of known datacenter and VPN providers.
-    * **Timezone Heuristics:** Compares your System Timezone (UTC Offset) against your IP Address Timezone to detect location spoofing/mismatches.
-* **WebRTC Leak Test:** Scans for local LAN IPs exposed via WebRTC.
-* **DNS Leak Test:** Probes multiple times to identify which DNS servers your request is actually routing through.
+* **📍 IP & Geolocation:** Instantly detects Public IPv4, IPv6, ISP, ASN, and precise location mapping.
+* **🛡️ Advanced VPN Detection:**
+    * Identifies over **50+ VPN brands** (Nord, Express, PIA, Proton, etc.).
+    * Distinguishes between Commercial VPNs, Corporate Infrastructure, and Residential connections.
+    * Analyzes IP Timezone vs. System Timezone consistency.
+* **🚀 High-Performance Speed Test:**
+    * **Multi-Stream Architecture:** Uses 4 concurrent upload/download streams for network saturation.
+    * **Smart Warm-up:** Discards TCP slow-start phase for accurate results.
+    * **CORS-Resilient:** Prevents browser freezing if connections are blocked.
+    * **Server Trace:** Identifies the exact Cloudflare datacenter handling your traffic.
+* **🕵️ Privacy Leak Checks:**
+    * **WebRTC Analysis:** Smart detection that distinguishes between safe tunneling and critical real-IP leaks.
+    * **DNS Probing:** Detects the number of resolving servers to identify DNS leaks.
+* **💻 Device Fingerprinting:** Detailed breakdown of OS, Hardware Concurrency, Browser Engine, and Screen capabilities.
+* **📜 Local History:** Saves your test results locally (via Cookies) so you can track performance over time.
 
-### ⚡ Performance Tools
-* **Multi-Stream Speed Test:**
-    * Utilizes **Cloudflare's Edge Network** for testing.
-    * Runs **4 concurrent download streams** to saturate bandwidth for accurate results.
-    * Measures Latency (Ping), Download, and Upload speeds.
-* **Local History:** Saves your last 5 test results locally (via Cookies) for quick comparison.
+-----
 
-### 💻 System Info
-* **Browser Fingerprinting:** Displays User Agent, Browser Name, Engine, and Operating System details.
-* **System Time Analysis:** Shows precise local time, UTC time, and IANA Region codes.
+## 🔒 Privacy Philosophy
 
----
+**Zero Backend Storage.**
+This dashboard is a **Client-Side Application**.
 
-## 🔒 Privacy Policy
+* We do not own servers that store your data.
+* We do not track your behavior using analytics.
+* All logic (VPN detection, Speed calculation) runs locally in your browser's JavaScript engine.
 
-**We take privacy seriously.**
+*Note: The application connects directly to third-party public APIs (listed below) to fetch data. Your IP address is visible to them during the request, but is not stored by us.*
 
-1.  **Client-Side Execution:** This dashboard runs entirely within your web browser. There is no proprietary backend server collecting your data.
-2.  **No Logging:** We do not log IP addresses, location data, or speed test results.
-3.  **Local Storage:** History data is stored in a cookie on *your* device only. You can clear this at any time via the dashboard.
-4.  **Third-Party APIs:** We rely on public APIs (Cloudflare, ipwho.is, ipify) to fetch network data. These requests are made directly from your browser to the provider.
-
----
+-----
 
 ## 🛠️ Installation & Usage
 
-### 🌍 Online Access
-You can use the fully functional dashboard directly in your browser at:
-👉 **[net.bunorden.com](https://net.bunorden.com)**
+### Option 1: Clone & Run Locally (Recommended)
 
-### 🏠 Run Locally
-Since this is a client-side application using CDNs, no build process is required if you want to host it yourself.
+Because modern browsers enforce strict CORS policies on `fetch` streams (used for the Speed Test), **opening the file directly via double-click (`file://`) may break the speed test.**
 
-**Method 1: Direct Open**
-1.  Clone the repository:
+1.  **Clone the repository:**
+
     ```bash
-    git clone [https://github.com/kkkkja-co/Network-Checking-Dashboard.git](https://github.com/kkkkja-co/Network-Checking-Dashboard.git)
+    git clone https://github.com/kkkkja-co/Network-Checking-Dashboard.git
+    cd Network-Checking-Dashboard
     ```
-2.  Navigate to the folder.
-3.  Double-click `index.html` to open it in your default web browser.
 
-**Method 2: Local Server**
-If you prefer to run it via a local server (to avoid CORS issues with certain strict browser settings):
+2.  **Run on a local server:**
 
-```bash
-# If you have Python installed
-python3 -m http.server 8000
-# Then open http://localhost:8000 in your browser
+    **Using Python:**
+
+    ```bash
+    python3 -m http.server 8000
+    # Then open http://localhost:8000 in your browser
+    ```
+
+    **Using VS Code:**
+
+    * Install the "Live Server" extension.
+    * Right-click `index.html` -\> **"Open with Live Server"**.
+
+### Option 2: Host Static
+
+You can upload `index.html` to any static host like **Cloudflare Pages**, **GitHub Pages**, **Vercel**, or **Netlify**. No backend configuration is required.
+
+-----
+
+## 🧩 APIs & Data Sources
+
+This dashboard utilizes the following third-party APIs. By using this tool, you are subject to their respective Terms of Service.
+
+| Service | Purpose |
+| :--- | :--- |
+| **Cloudflare** | Speed Test Engine, Latency Check, Server Tracing |
+| **ipwho.is** | IP Geolocation, ISP, and ASN Data |
+| **ipify** | IPv6 Connectivity Check |
+| **ip-api** | DNS Leak Probing |
+| **OpenStreetMap** | Map Visualizations (via Leaflet.js) |
+
+-----
+
+## ⚙️ Configuration
+
+You can customize the detection logic by editing the constants in the `<script>` section of `index.html`:
+
+* **`KNOWN_VPN_ASNS`**: Add or remove Autonomous System Numbers to flag as hosting/VPN providers.
+* **`VPN_BRAND_MAP`**: Customize the regex detection for specific VPN brands or organization names.
+
+<!-- end list -->
+
+```javascript
+// Example: Adding a custom detection rule
+const VPN_BRAND_MAP = [
+    { keys: ['my-custom-vpn'], label: 'Detected (My Custom VPN)' },
+    // ... existing rules
+];
+```
+
+-----
+
+## 🤝 Contributing
+
+Contributions are welcome\! If you find a VPN provider that isn't detected or want to improve the speed test algorithm:
+
+1.  Fork the repository.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
+
+-----
+
+## 📄 License
+
+Distributed under the **MIT License**. See `LICENSE` for more information.
+
+-----
+
+## ⚠️ Disclaimer
+
+This tool is provided "as is" without warranty of any kind. Speed test results are estimates based on browser performance and may differ from native application tests. The developer is not responsible for any data usage charges incurred while running speed tests.
