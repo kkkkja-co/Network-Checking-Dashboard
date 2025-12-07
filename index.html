@@ -1762,7 +1762,52 @@
         detectVPN(d.timezone.id, d.timezone.utc, d.connection.isp, d.country_code, d.connection.org, d.connection.asn);
     }}catch(e){document.getElementById('ipv4-display').innerText="Error";}}
 
-    async function fetchIPv6Data() { try{const r=await fetch('https://api6.ipify.org?format=json');if(r.ok){const d=await r.json();document.getElementById('ipv6-display').innerText=d.ip;document.getElementById('ipv6-status').innerText="Active";document.getElementById('ipv6-status').className="text-xs text-emerald-500 font-bold mt-1";try{const dr=await fetch(`https://ipwho.is/${d.ip}`);const dd=await dr.json();if(dd.success){document.getElementById('ipv6-provider').innerText=dd.connection.isp||"Unknown";}else{document.getElementById('ipv6-provider').innerText="N/A";}}catch(err){document.getElementById('ipv6-provider').innerText="N/A";}}}catch(e){document.getElementById('ipv6-display').innerText="Not Detected";document.getElementById('ipv6-status').innerText="IPv4 Only";document.getElementById('ipv6-provider').innerText="N/A";}}
+    // --- UPDATED: IPv6 Detection with Fallback Provider ---
+    async function fetchIPv6Data() {
+        try {
+            // 1. Force IPv6 Connection to get the Address
+            const r = await fetch('https://api6.ipify.org?format=json');
+
+            if(r.ok) {
+                const d = await r.json();
+                document.getElementById('ipv6-display').innerText = d.ip;
+                document.getElementById('ipv6-status').innerText = "Active";
+                document.getElementById('ipv6-status').className = "text-xs text-emerald-500 font-bold mt-1";
+
+                // 2. Get Metadata (ISP Name)
+                // Strategy: Try ipapi.co first, fall back to ipwho.is
+                try {
+                    const dr = await fetch(`https://ipapi.co/${d.ip}/json/`);
+                    if (!dr.ok) throw new Error("ipapi failed");
+
+                    const dd = await dr.json();
+                    const provider = dd.org || dd.asn || "Unknown";
+                    document.getElementById('ipv6-provider').innerText = provider;
+
+                } catch (primaryErr) {
+                    console.log("Primary IPv6 API failed, trying backup...");
+
+                    // Backup: ipwho.is
+                    try {
+                        const dr2 = await fetch(`https://ipwho.is/${d.ip}`);
+                        const dd2 = await dr2.json();
+                        if(dd2.success) {
+                            document.getElementById('ipv6-provider').innerText = dd2.connection.isp || dd2.connection.org || "Unknown";
+                        } else {
+                            document.getElementById('ipv6-provider').innerText = "Unknown (API Limit)";
+                        }
+                    } catch(backupErr) {
+                        document.getElementById('ipv6-provider').innerText = "Unknown";
+                    }
+                }
+            }
+        } catch(e) {
+            // General Failure (User likely has no IPv6)
+            document.getElementById('ipv6-display').innerText = "Not Detected";
+            document.getElementById('ipv6-status').innerText = "IPv4 Only";
+            document.getElementById('ipv6-provider').innerText = "--";
+        }
+    }
 
     // --- 5. UPDATED: DNS Detection (No "N/A" Fallback) ---
     async function fetchDNS() {
