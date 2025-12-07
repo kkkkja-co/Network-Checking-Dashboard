@@ -1502,6 +1502,8 @@
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     // --- UPDATED: Comprehensive VPN Brand Mapping ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
+    // --- UPDATED: Comprehensive VPN Brand Mapping ---
+    // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
         { keys: ['london trust media', 'private internet access'], label: 'Likely PIA - London Trust Media' },
@@ -1525,15 +1527,30 @@
         { keys: ['airvpn'], label: 'Likely AirVPN - AirVPN' },
         { keys: ['torguard'], label: 'Likely TorGuard - TorGuard' },
 
-        // --- TIER 2: SHARED INFRASTRUCTURE GROUPS (Backbones) ---
-        // NetProtect/Stackpath group (StrongVPN, IPVanish, Encrypt.me, etc.)
-        { keys: ['strong technology', 'strongvpn', 'ipvanish', 'netprotect', 'highwinds', 'stackpath', 'performive'], label: 'Likely StrongVPN/IPVanish/Speedtest VPN - NetProtect' },
+        // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (Your Updates) ---
 
-        // M247 group (Used by almost everyone as secondary locations)
+        // Host Universal -> Surfshark
+        { keys: ['host universal'], label: 'Possibly Surfshark - Host Universal' },
+
+        // Datacamp -> Surfshark / PIA / Proton
+        { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA/Proton - Datacamp' },
+
+        // Estnoc -> Datacenter / Possibly Nord/Surfshark/Proton
+        { keys: ['estnoc'], label: 'Datacenter / Possibly Nord/Surfshark/Proton - Estnoc' },
+
+        // Orion -> Datacenter / Possibly Proton
+        { keys: ['orion'], label: 'Datacenter / Possibly Proton - Orion' },
+
+        // xTom -> Datacenter / Possibly Proton
+        { keys: ['xtom'], label: 'Datacenter / Possibly Proton - xTom' },
+
+
+        // --- TIER 3: SHARED INFRASTRUCTURE GROUPS ---
+        // NetProtect/Stackpath group
+        { keys: ['strong technology', 'strongvpn', 'ipvanish', 'netprotect', 'highwinds', 'stackpath', 'performive'], label: 'Likely StrongVPN/IPVanish - NetProtect' },
+
+        // M247 group
         { keys: ['m247', 'm europe', 'ipxo'], label: 'Likely Nord/Surfshark/Proton - M247' },
-
-        // Datacamp group (CDN77)
-        { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA - Datacamp' },
 
         // GSL group
         { keys: ['tzulo', 'gsl networks'], label: 'Likely PureVPN/CyberGhost - GSL' },
@@ -1541,11 +1558,11 @@
         // Clouvider group
         { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
 
-        // Leaseweb (Heavily used by PIA and others)
+        // Leaseweb
         { keys: ['leaseweb'], label: 'Likely PIA/PrivateVPN - Leaseweb' },
 
-        // --- TIER 3: GENERIC CLOUD/VPS ---
-        { keys: ['cloudflare', 'warp'], label: 'Likely WARP/Apple iCloud Private Relay - Cloudflare' },
+        // --- TIER 4: GENERIC CLOUD/VPS ---
+        { keys: ['cloudflare', 'warp'], label: 'Likely WARP/iCloud Relay - Cloudflare' },
         { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
         { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
         { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
@@ -1557,7 +1574,7 @@
         { keys: ['oracle', 'oracle cloud'], label: 'Likely Oracle Cloud VPN - Oracle' },
         { keys: ['alibaba'], label: 'Likely Alibaba Cloud VPN - Alibaba' },
 
-        // --- TIER 4: ANONYMITY NETWORKS ---
+        // --- TIER 5: ANONYMITY NETWORKS ---
         { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network - Tor Exit Node' }
     ];
 
