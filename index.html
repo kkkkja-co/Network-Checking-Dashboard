@@ -1498,7 +1498,7 @@
         14618   // Fastly
     ]);
 
-    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes Dotsrc) ---
+    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes QuxLabs AB) ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
@@ -1525,7 +1525,10 @@
 
         // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (High Risk) ---
 
-        // NEW ENTRY: Dotsrc -> Generic/Datacenter / Possibly Tor Network
+        // NEW ENTRY: QuxLabs AB -> Generic/Datacenter / Possibly Tor Network
+        { keys: ['quxlabs ab', 'quxlabs'], label: 'Possibly Tor Network / Datacenter - QuxLabs AB' },
+
+        // Dotsrc -> Generic/Datacenter / Possibly Tor Network
         { keys: ['dotsrc', 'forening for dotsrc'], label: 'Possibly Tor Network / Datacenter - Dotsrc' },
 
         // Stiftung Erneuerbare Freiheit -> Likely Tor Network
@@ -1698,8 +1701,27 @@
         document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
         document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
 
-        // 7. TOR Check (generic)
-        if (/tor exit|tor project|onion/i.test(combinedName)) {
+        // 7. TOR Check (MODIFIED LOGIC)
+        const torKeywords = ['tor network', 'ielo liazo', '100up', 'online.net', 'stiftung erneuerbare freiheit', 'linode', 'dotsrc', 'quxlabs'];
+        let isTorMatch = false;
+
+        if (matchedBrand) {
+            const matchedLower = matchedBrand.toLowerCase();
+            isTorMatch = torKeywords.some(k => matchedLower.includes(k));
+        }
+
+        if (isTorMatch) {
+            document.getElementById('icon-tor').className = "fas fa-exclamation-circle text-orange-500";
+
+            if (matchedBrand.includes("Tor Exit Node")) {
+                document.getElementById('desc-tor').innerText = "Confirmed Tor Exit Node";
+                document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
+            } else {
+                // Set to "Maybe" for all Likely/Possible Tor infra matches
+                document.getElementById('desc-tor').innerText = "Maybe (Infra Match)";
+            }
+        } else if (/tor exit|tor project|onion/i.test(combinedName)) {
+            // Fallback for generic text matches if the Map entry wasn't specific
             document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
         } else {
@@ -1707,12 +1729,13 @@
             document.getElementById('desc-tor').innerText = "No Tor fingerprints found";
         }
 
+
         // --- SCORING & DISPLAY ---
         if (score >= 50) {
             // DETECTED (Red)
             const finalName = matchedBrand || "Detected (Unknown)";
             const finalNameLower = finalName.toLowerCase();
-            let cardStatus = "VPN Detected"; // Default for generic match
+            let cardStatus = "VPN Detected";
 
             // 1. Refine Status based on confidence modifiers
             if (finalName.includes("Possible")) {
@@ -1721,14 +1744,15 @@
                 cardStatus = "Likely VPN";
             }
 
-            // 2. Refine specifically for Tor/Anonymity infra (Tier 2/5 entries)
-            if (finalNameLower.includes('tor network') || finalNameLower.includes('ielo liazo') || finalNameLower.includes('100up') || finalNameLower.includes('online.net') || finalNameLower.includes('stiftung erneuerbare freiheit')) {
-                if (finalName.includes("Possible")) {
-                    cardStatus = "Possibly Tor";
-                } else if (finalName.includes("Likely")) {
-                    cardStatus = "Likely Tor";
-                } else if (finalName.includes("Tor Exit Node") || finalName.includes("Tor Network")) {
+            // 2. Refine specifically for Tor/Anonymity infra (MODIFIED STATUS)
+            if (isTorMatch) {
+                if (finalName.includes("Possible") || finalName.includes("Likely")) {
+                    // Set both Likely and Possibly to the user's specific phrase
+                    cardStatus = "Tor Network May Detected";
+                } else if (finalName.includes("Tor Exit Node")) {
                     cardStatus = "Tor Confirmed";
+                } else {
+                    cardStatus = "Tor Network May Detected"; // Catch any other Tor keyword match
                 }
             }
 
