@@ -1352,6 +1352,8 @@
 
     // --- UPDATED: Precision Brand Mapping (Clean Labels) ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
+    // --- UPDATED: Precision Brand Mapping ---
+    // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // 1. SPECIFIC COMMERCIAL BRANDS (Direct Match)
         { keys: ['proton ag', 'protonvpn'], label: 'Likely ProtonVPN - Proton AG' },
@@ -1365,6 +1367,10 @@
         { keys: ['ivpn'], label: 'Likely IVPN - IVPN' },
         { keys: ['ovpn'], label: 'Likely OVPN - OVPN' },
 
+        // --- UPDATED: StrongVPN / IPVanish / Speedtest VPN Group ---
+        // These providers all share the NetProtect / Highwinds / Stackpath infrastructure.
+        { keys: ['strong technology', 'strongvpn', 'ipvanish', 'netprotect', 'highwinds', 'stackpath', 'performive'], label: 'Likely StrongVPN/IPVanish/Speedtest VPN - NetProtect' },
+
         // 2. SHARED INFRASTRUCTURE (The "Big 3" Datacenters)
         { keys: ['m247', 'm europe', 'ipxo'], label: 'Likely Nord/Surfshark/Proton - M247' },
         { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA - Datacamp' },
@@ -1372,12 +1378,10 @@
         { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
 
         // 3. GENERIC CLOUD/VPS
-        // UPDATED LABEL HERE:
         { keys: ['cloudflare', 'warp'], label: 'Likely WARP/Apple iCloud Private Relay - Cloudflare' },
 
         { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
         { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
-        { keys: ['highwinds', 'stackpath', 'performive'], label: 'Likely IPVanish/Stackpath - Stackpath' },
         { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
         { keys: ['linode', 'akamai'], label: 'Likely Self-Hosted VPN - Linode' },
         { keys: ['ovh', 'ovh sas'], label: 'Likely Self-Hosted VPN - OVH' },
