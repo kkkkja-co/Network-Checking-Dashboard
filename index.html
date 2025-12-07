@@ -1308,48 +1308,86 @@
     }
 
     // --- 3. VPN & SYSTEM UTILS ---
-
     // --- UPDATED: Comprehensive VPN/Hosting ASN Database ---
     const KNOWN_VPN_ASNS = new Set([
-        // --- MAJOR VPN BRANDS (Exclusive ASNs) ---
+        // --- TIER 1: EXCLUSIVE VPN BRANDS ---
         209854, // Surfshark (Cyberzone)
         216025, // Mullvad VPN
         39351,  // Mullvad (31173 Services AB)
-        209103, 62371, 199218, // ProtonVPN (Proton AG)
-        136787, 147049, 141039, 207137, // NordVPN (Packethub S.A.)
+        209103, 62371, 199218, 57169, // ProtonVPN (Proton AG)
+        136787, 147049, 141039, 207137, 211366, // NordVPN (Packethub S.A.)
         137409, // ExpressVPN (LogicWeb/GSL)
+        47583,  // ExpressVPN (HostRoyale)
+        397223, // ExpressVPN (Datacamp)
+        60341,  // TunnelBear
 
-        // --- COMMON VPN INFRASTRUCTURE (Shared Providers) ---
-        // These are used by Nord, Express, IPVanish, CyberGhost, etc.
-        9009,   // M247 (Major VPN Transit)
-        60068,  // Datacamp Limited / CDN77 (Major VPN Transit)
-        212238, // Datacamp Limited
-        62240,  // Clouvider (ExpressVPN/Others)
-        20473,  // The Constant Company (Vultr)
-        63949,  // Akamai (Linode)
-        14061,  // DigitalOcean
-        16509, 14618, // Amazon AWS
-        15169, 396982, // Google Cloud
-        8075,   // Microsoft Azure
-        24940,  // Hetzner Online
-        16276,  // OVH SAS
-        13335,  // Cloudflare (WARP)
+        // --- TIER 2: SHARED VPN BACKBONES (The "Big 5") ---
+        // M247 (Nord, Surfshark, Proton, CyberGhost, Windscribe, etc.)
+        9009, 212238, 201814,
 
-        // --- ADDITIONAL HOSTING/PRIVACY NETWORKS ---
+        // Datacamp / CDN77 / DataPacket (Surfshark, PIA, Zenmate)
+        60068, 212238, 42473,
+
+        // Leaseweb (Private Internet Access - PIA, PrivateVPN)
+        16265, 28753, 395954, 60626, 57043, 18779,
+
+        // GSL Networks & Tzulo (PureVPN, CyberGhost)
+        54095, 137409, 11878,
+
+        // NetProtect / Stackpath / Highwinds (IPVanish, StrongVPN, Encrypt.me)
+        33438, 12989, 54600, 30635, 6939,
+
+        // --- TIER 3: CLOUD VPS PROVIDERS (Self-Hosted/Generic) ---
+        // DigitalOcean
+        14061, 202018, 62567, 393406,
+
+        // The Constant Company (Vultr) - Heavily used by IPVanish
+        20473, 64515, 206443,
+
+        // Akamai / Linode
+        63949, 21844, 17204,
+
+        // OVH SAS
+        16276, 35540, 9989,
+
+        // Hetzner Online
+        24940, 213230, 47232,
+
+        // Amazon AWS (Common ranges)
+        16509, 14618, 7224, 8987,
+
+        // Google Cloud
+        15169, 396982, 19527,
+
+        // Microsoft Azure
+        8075, 8074,
+
+        // Oracle Cloud
+        31898,
+
+        // --- TIER 4: HIGH-RISK HOSTING & PROXY NETWORKS ---
+        13335,  // Cloudflare (WARP / iCloud Relay)
         53667,  // FranTech (BuyVM)
         202425, // IP Volume
         132203, // Tencent Cloud
-        49335,  // Rayo Byte
-        31898,  // Oracle Cloud
+        49335,  // Rayo Byte (Residential Proxies)
         40021,  // Contabo
         262287, // Latitude.sh
         396356, // Latitude.sh
         21859,  // Zenlayer
         203020, // HostRoyale
         22363,  // Powerhouse Management
-        136557  // Host Universal
+        136557, // Host Universal
+        8100,   // QuadraNet
+        40676,  // Psychz Networks
+        395092, // Shock Hosting
+        19318,  // Intergrid
+        29802,  // Hivelocity
+        14618   // Fastly
     ]);
 
+    // --- UPDATED: Comprehensive VPN Brand Mapping ---
+    // Format: "Likely [VPN Names] - [ASN/Infra]"
     // --- UPDATED: Comprehensive VPN Brand Mapping ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
@@ -1368,7 +1406,7 @@
         { keys: ['tunnelbear'], label: 'Likely TunnelBear - TunnelBear' },
         { keys: ['hide.me', 'hide me'], label: 'Likely Hide.me - Hide.me' },
         { keys: ['privax', 'hidemyass', 'hma'], label: 'Likely HMA (HideMyAss) - Privax' },
-        { keys: ['gz systems', 'gaditek', 'purevpn'], label: 'Likely PureVPN - GZ Systems' },
+        { keys: ['gz systems', 'gaditek', 'purevpn', 'secure internet'], label: 'Likely PureVPN - GZ Systems' },
         { keys: ['peakstar', 'atlas'], label: 'Likely Atlas VPN - Peakstar' },
         { keys: ['ivpn'], label: 'Likely IVPN - IVPN' },
         { keys: ['ovpn'], label: 'Likely OVPN - OVPN' },
@@ -1410,6 +1448,7 @@
         // --- TIER 4: ANONYMITY NETWORKS ---
         { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network - Tor Exit Node' }
     ];
+
     // Priority 2: Generic list of known providers/terms for regex matching
     const PROVIDER_NAMES = [
         'cloudflare', 'google', 'amazon', 'aws', 'microsoft', 'azure',
