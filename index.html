@@ -973,8 +973,7 @@
     });
 
     // UPDATED SAVE RESULT FUNCTION
-    // UPDATED SAVE RESULT FUNCTION
-    function saveResult(p, d, u, s) { // Added 's' parameter
+    function saveResult(p, d, u, s, prov) { // Added 'prov' (Provider) parameter
         if (getCookie('speedtest_consent') !== 'accepted') return;
         let h = getCookie('speedtest_history');
         try { h = h ? JSON.parse(h) : []; } catch (e) { h = []; }
@@ -994,8 +993,17 @@
 
         const fullDate = `${timeStr} ${dateStr} (${utcStr})`;
 
-        // Added 'server: s' to the object
-        h.unshift({ date: fullDate, ping: p, dl: d, ul: u, ip: ip, isp: isp, server: s || 'Unknown' });
+        // Store Provider AND Server
+        h.unshift({
+            date: fullDate,
+            ping: p,
+            dl: d,
+            ul: u,
+            ip: ip,
+            isp: isp,
+            server: s || 'Unknown',
+            provider: prov || 'Unknown' // New Field
+        });
 
         const limit = getHistoryLimit();
         while (h.length > limit) h.pop();
@@ -1006,7 +1014,6 @@
 
     function clearHistory(){ setCookie('speedtest_history',"",-1); renderHistory(); }
 
-    // UPDATED RENDER HISTORY FUNCTION
     // UPDATED RENDER HISTORY FUNCTION
     function renderHistory() {
         const tb = document.getElementById('history-table-body'), c = getCookie('speedtest_consent');
@@ -1024,11 +1031,19 @@
 
         let ht = '';
         h.forEach(i => {
+            // Fallback for old records that didn't have a provider saved
+            const providerDisplay = i.provider ? i.provider : 'Cloudflare';
+
             ht += `<tr class="hover:bg-gray-50 transition">
                 <td class="px-4 py-2 font-mono text-gray-500 text-xs">${i.date}</td>
                 <td class="px-4 py-2 font-mono text-xs text-slate-600">${i.ip || '-'}</td>
                 <td class="px-4 py-2 text-xs text-slate-600 max-w-[120px] truncate" title="${i.isp || ''}">${i.isp || '-'}</td>
-                <td class="px-4 py-2 text-xs text-slate-500 font-mono">${i.server || '-'}</td>
+
+                <td class="px-4 py-2 text-xs">
+                    <div class="font-bold text-slate-700">${providerDisplay}</div>
+                    <div class="text-[10px] text-gray-400 font-mono">${i.server || '-'}</div>
+                </td>
+
                 <td class="px-4 py-2 font-bold">${i.ping}</td>
                 <td class="px-4 py-2 font-bold text-blue-600">${i.dl}</td>
                 <td class="px-4 py-2 font-bold text-purple-600">${i.ul}</td>
@@ -1112,7 +1127,6 @@
             gaugeContainer.classList.add('active-anim');
         }
 
-        // Helper Calculation
         function calculateSpeed(currentBytes, startBytes, currentTime, startTime) {
             const bytesDiff = currentBytes - startBytes;
             const timeDiff = (currentTime - startTime) / 1000;
@@ -1122,10 +1136,11 @@
 
         let fP = "--", fD = "--", fU = "--";
         let jitterVal = "0";
-        let detectedServer = "Unknown"; // NEW VARIABLE TO STORE SERVER
+        let detectedServer = "Unknown";
+        const detectedProvider = "Cloudflare"; // Hardcoded Provider Name
 
         try {
-            // PHASE 1: LATENCY & SERVER TRACE
+            // PHASE 1: LATENCY
             status.innerText = "Measuring Latency...";
             const pings = [];
             for (let i = 0; i < 10; i++) {
@@ -1147,19 +1162,17 @@
                 pgEl.innerText = fP + " ms";
             }
 
-            // GET SERVER LOCATION AND STORE IT
+            // GET SERVER LOCATION
             await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal })
                 .then(r => r.text())
                 .then(t => {
                     const loc = t.match(/loc=(.+)/)?.[1] || "UNK";
                     const colo = t.match(/colo=(.+)/)?.[1] || "UNK";
-                    detectedServer = `${colo} (${loc})`; // Store for history
+                    detectedServer = `${colo} (${loc})`;
                     serverLoc.innerHTML = `${colo} <span class="text-gray-400 font-normal">(${loc})</span>`;
-                }).catch(() => {
-                    detectedServer = "Unknown";
-                });
+                }).catch(() => {});
 
-            // PHASE 2: DOWNLOAD (Smart Warm-up)
+            // PHASE 2: DOWNLOAD
             status.innerText = "Downloading (Warm-up)...";
             const dlDuration = 10000;
             const warmUpTime = 2000;
@@ -1272,8 +1285,8 @@
 
             lastSpeedData = { dl: fD, ul: fU, ping: fP, jitter: jitterVal, ploss: "0% (Estimated)" };
 
-            // PASS DETECTED SERVER TO SAVE FUNCTION
-            saveResult(fP + " ms", fD, fU, detectedServer);
+            // PASS DETECTED PROVIDER TO SAVE FUNCTION
+            saveResult(fP + " ms", fD, fU, detectedServer, detectedProvider);
 
         } catch (e) {
             if (e.message === 'Aborted' || e.name === 'AbortError') {
