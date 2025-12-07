@@ -1,21 +1,19 @@
-MIT License
+PROPRIETARY LICENSE
 
-Copyright (c) 2025 net.bunorden.com
+Copyright (c) 2025 Bunorden. All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software is provided for private, personal use only. Unauthorized commercial use, modification, distribution, or public hosting of this software is strictly prohibited.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. LICENSE GRANT
+   You are granted a limited, non-exclusive, non-transferable license to:
+   a. Download and install this software on personal devices.
+   b. Self-host this software on a personal server (local or VPS) for private, personal use only.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. RESTRICTIONS
+   a. No Commercial Use: You may not use this software for any commercial purpose, business operations, or revenue-generating activities.
+   b. No Public Access: You may not host this software for access by the general public or offer it as a service to third parties.
+   c. No Modification: You may not modify, alter, reverse engineer, or create derivative works based on the source code of this software.
+   d. No Source Distribution: You may not redistribute, sub-license, or republish the source code or file archives to any third party or public repository.
+
+3. DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
