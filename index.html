@@ -1723,9 +1723,9 @@
 
             // 1. Refine Status based on confidence modifiers
             if (finalName.includes("Possible")) {
-                cardStatus = "Possibly VPN";
+                cardStatus = "VPN Detected";
             } else if (finalName.includes("Likely")) {
-                cardStatus = "Likely VPN";
+                cardStatus = "VPN Detected";
             }
 
             // 2. Refine specifically for Tor/Anonymity infra (MODIFIED STATUS & FRAUD RISK)
