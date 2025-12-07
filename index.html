@@ -1498,11 +1498,7 @@
         14618   // Fastly
     ]);
 
-    // --- UPDATED: Comprehensive VPN Brand Mapping ---
-    // Format: "Likely [VPN Names] - [ASN/Infra]"
-    // --- UPDATED: Comprehensive VPN Brand Mapping ---
-    // Format: "Likely [VPN Names] - [ASN/Infra]"
-    // --- UPDATED: Comprehensive VPN Brand Mapping ---
+    // --- UPDATED: Comprehensive VPN Brand Mapping (Linode now flagged for Tor) ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
@@ -1517,7 +1513,7 @@
         { keys: ['golden frog', 'vyprvpn'], label: 'Likely VyprVPN - Golden Frog' },
         { keys: ['zenmate', 'zenguard'], label: 'Likely ZenMate - Zenguard' },
         { keys: ['windscribe'], label: 'Likely Windscribe - Windscribe' },
-        { keys: ['tunnelbear'], label: 'Likely TunnelBear - TunnelBear' },
+        { keys: ['tunnelbear'], 'label': 'Likely TunnelBear - TunnelBear' },
         { keys: ['hide.me', 'hide me'], label: 'Likely Hide.me - Hide.me' },
         { keys: ['privax', 'hidemyass', 'hma'], label: 'Likely HMA (HideMyAss) - Privax' },
         { keys: ['gz systems', 'gaditek', 'purevpn', 'secure internet'], label: 'Likely PureVPN - GZ Systems' },
@@ -1527,10 +1523,22 @@
         { keys: ['airvpn'], label: 'Likely AirVPN - AirVPN' },
         { keys: ['torguard'], label: 'Likely TorGuard - TorGuard' },
 
-        // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (Your Updates) ---
+        // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (High Risk) ---
 
-        // Host Universal -> Surfshark
-        { keys: ['host universal'], label: 'Possibly Surfshark - Host Universal' },
+        // Stiftung Erneuerbare Freiheit -> Likely Tor Network
+        { keys: ['stiftung erneuerbare freiheit', 'erneur freih'], label: 'Likely Tor Network - Stiftung Erneuerbare Freiheit' },
+
+        // Online.net -> Likely Tor Network
+        { keys: ['online.net', 'online sas'], label: 'Likely Tor Network - Online.net' },
+
+        // 100UP -> Likely Tor Network
+        { keys: ['100up'], label: 'Likely Tor Network - 100UP' },
+
+        // IELO LIAZO SERVICES SAS -> Likely Tor Network
+        { keys: ['ielo liazo', 'lazo services'], label: 'Likely Tor Network - IELO LIAZO' },
+
+        // Host Universal -> Possible Surfshark
+        { keys: ['host universal'], label: 'Possible Surfshark - Host Universal' },
 
         // Datacamp -> Surfshark / PIA / Proton
         { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA/Proton - Datacamp' },
@@ -1553,7 +1561,7 @@
         { keys: ['m247', 'm europe', 'ipxo'], label: 'Likely Nord/Surfshark/Proton - M247' },
 
         // GSL group
-        { keys: ['tzulo', 'gsl networks'], label: 'Likely Proton/PureVPN/CyberGhost - GSL' },
+        { keys: ['tzulo', 'gsl networks'], label: 'Likely PureVPN/CyberGhost - GSL' },
 
         // Clouvider group
         { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
@@ -1561,12 +1569,15 @@
         // Leaseweb
         { keys: ['leaseweb'], label: 'Likely PIA/PrivateVPN - Leaseweb' },
 
-        // --- TIER 4: GENERIC CLOUD/VPS ---
+        // --- TIER 4: GENERIC CLOUD/VPS (Updated Linode entry) ---
         { keys: ['cloudflare', 'warp'], label: 'Likely WARP/iCloud Relay - Cloudflare' },
         { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
         { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
         { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
-        { keys: ['linode', 'akamai'], label: 'Likely Self-Hosted VPN - Linode' },
+
+        // Linode entry updated here
+        { keys: ['linode', 'akamai'], label: 'Likely Tor Network / Self-Hosted VPN - Linode/Akamai' },
+
         { keys: ['ovh', 'ovh sas'], label: 'Likely Self-Hosted VPN - OVH' },
         { keys: ['hetzner'], label: 'Likely Self-Hosted VPN - Hetzner' },
         { keys: ['amazon', 'aws'], label: 'Likely AWS VPN - AWS' },
@@ -1601,7 +1612,7 @@
         const detailEl = document.getElementById('vpn-details');
         const badgeEl = document.getElementById('vpn-risk-badge');
         const fraudEl = document.getElementById('vpn-fraud-score');
-        const providerNameEl = document.getElementById('vpn-provider-name'); // Targets the new section
+        const providerNameEl = document.getElementById('vpn-provider-name');
 
         // System UTC Calculation
         const d = new Date();
@@ -1618,7 +1629,7 @@
         const asnNum = parseInt(asn);
         const combinedName = (isp + " " + org + " " + asn).toLowerCase();
 
-        // 1. Check Priority Mappings first (Custom Branding)
+        // 1. Check Priority Mappings (VPN_BRAND_MAP)
         let matchedBrand = null;
         for (const brand of VPN_BRAND_MAP) {
             if (brand.keys.some(k => combinedName.includes(k))) {
@@ -1684,7 +1695,7 @@
         document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
         document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
 
-        // 7. TOR Check
+        // 7. TOR Check (generic)
         if (/tor exit|tor project|onion/i.test(combinedName)) {
             document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
@@ -1697,20 +1708,41 @@
         if (score >= 50) {
             // DETECTED (Red)
             const finalName = matchedBrand || "Detected (Unknown)";
-            vpnEl.innerText = "VPN Detected";
+            const finalNameLower = finalName.toLowerCase();
+            let cardStatus = "VPN Detected"; // Default for generic match
+
+            // 1. Refine Status based on confidence modifiers
+            if (finalName.includes("Possible")) {
+                cardStatus = "Possibly VPN";
+            } else if (finalName.includes("Likely")) {
+                cardStatus = "Likely VPN";
+            }
+
+            // 2. Refine specifically for Tor/Anonymity infra (Tier 2/5 entries)
+            if (finalNameLower.includes('tor network') || finalNameLower.includes('ielo liazo') || finalNameLower.includes('100up') || finalNameLower.includes('online.net') || finalNameLower.includes('stiftung erneuerbare freiheit')) {
+                if (finalName.includes("Possible")) {
+                    cardStatus = "Possibly Tor";
+                } else if (finalName.includes("Likely")) {
+                    cardStatus = "Likely Tor";
+                } else if (finalName.includes("Tor Exit Node") || finalName.includes("Tor Network")) {
+                    cardStatus = "Tor Confirmed";
+                }
+            }
+
+            vpnEl.innerText = cardStatus;
             vpnEl.className = "text-lg font-bold mt-1 text-red-600";
             detailEl.innerHTML = "";
 
             providerNameEl.innerText = finalName.replace("Detected (Likely ", "").replace(")", "");
-            providerNameEl.className = "font-bold text-red-600"; // Highlights name in Red
+            providerNameEl.className = "font-bold text-red-600";
 
-            if (matchedBrand === 'Tor Network') {
+            if (cardStatus.includes("Tor")) {
                 badgeEl.innerText = "High Anonymity (Tor)";
                 fraudEl.innerText = "High Risk (Tor)";
                 fraudEl.className = "font-bold text-red-500";
             } else {
                 badgeEl.innerText = "High Anonymity";
-                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
+                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700";
                 fraudEl.innerText = "High Risk (Flagged)";
                 fraudEl.className = "font-bold text-red-500";
             }
@@ -1722,7 +1754,7 @@
             detailEl.innerHTML = "";
 
             providerNameEl.innerText = "Generic / Datacenter";
-            providerNameEl.className = "font-bold text-orange-500"; // Highlights name in Orange
+            providerNameEl.className = "font-bold text-orange-500";
 
             badgeEl.innerText = "Moderate Anonymity";
             badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
@@ -1736,10 +1768,10 @@
             detailEl.innerHTML = `Direct Connection`;
 
             providerNameEl.innerText = "Residential / None";
-            providerNameEl.className = "font-bold text-emerald-600"; // Highlights name in Green
+            providerNameEl.className = "font-bold text-emerald-600";
 
             badgeEl.innerText = "Low Anonymity";
-            badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
+            badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
             fraudEl.innerText = "Low Risk (Clean)";
             fraudEl.className = "font-bold text-emerald-500";
         }
