@@ -1844,6 +1844,8 @@
         const detected = new Map();
         const BATCH_SIZE = 10;
 
+// Inside your fetchDNS function, update the runBatch function:
+
         const runBatch = async () => {
             const promises = Array(BATCH_SIZE).fill(0).map(async () => {
                 try {
@@ -1856,9 +1858,22 @@
                     });
                     clearTimeout(timeoutId);
 
+                    // CRITICAL: Check for non-200 status codes returned by the API server
+                    if (!res.ok) {
+                        // If the API returns 429 (Rate Limit) or 500, we still return null
+                        console.warn(`DNS Probe API returned status code: ${res.status}`);
+                        return null;
+                    }
+
                     const data = await res.json();
                     return (data.dns && data.dns.ip) ? data.dns : null;
-                } catch(e) { return null; }
+
+                } catch(e) {
+                    // This catches network errors, ad-blocker blocks, and timeouts.
+                    // We simply log and return null so the other 19 attempts continue.
+                    console.error("DNS Probe attempt failed:", e.message);
+                    return null;
+                }
             });
             return Promise.all(promises);
         };
