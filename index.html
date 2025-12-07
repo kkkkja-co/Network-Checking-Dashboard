@@ -1646,7 +1646,10 @@
         const l = document.getElementById('webrtc-list');
         const icon = document.getElementById('icon-webrtc');
         const desc = document.getElementById('desc-webrtc');
-        const s = new Set();
+
+        // Store unique IPs found by WebRTC
+        const foundIPs = new Set();
+        let isScanning = true;
 
         const R = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
         if (!R) {
@@ -1660,87 +1663,97 @@
         const p = new R(config);
         p.createDataChannel('');
 
+        // 1. Gather Candidates
         p.onicecandidate = (e) => {
             if (!e.candidate) return;
-
             const candidate = e.candidate.candidate;
-            // Regex captures standard IPv4 and IPv6
             const ipMatch = candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/);
 
             if (ipMatch) {
                 const ip = ipMatch[1];
-                if (candidate.indexOf(".local") > -1) return; // Ignore local mDNS
-
-                if (!s.has(ip)) {
-                    s.add(ip);
-                    if (l.innerHTML.includes('Scanning')) l.innerHTML = '';
+                if (candidate.indexOf(".local") > -1) return; // Ignore mDNS
+                if (!foundIPs.has(ip)) {
+                    foundIPs.add(ip);
+                    if (isScanning) {
+                        l.innerHTML = ''; // Clear "Scanning..." text on first find
+                        isScanning = false;
+                    }
                     l.innerHTML += `<li class="text-xl font-bold text-slate-800 font-mono mb-1">${ip}</li>`;
-
-                    // --- LOGIC START ---
-                    const ipv4 = document.getElementById('ipv4-display').innerText.trim();
-                    const ipv6 = document.getElementById('ipv6-display').innerText.trim(); // NEW: Get IPv6
-                    const vpnStatusText = document.getElementById('vpn-status').innerText;
-
-                    // Check if Dashboard thinks VPN is Off
-                    const isVpnOff = vpnStatusText.includes("Not Detected");
-                    const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|fd00:|fc00:)/.test(ip);
-
-                    // Wait if IPv4 is still loading
-                    if (ipv4 === '--' || ipv4.includes('Loader') || ipv4 === 'Error') {
-                        desc.innerText = "Waiting for Main IP...";
-                        return;
-                    }
-
-                    if (isPrivate) {
-                        // LAN IPs are safe
-                        if (icon.className.indexOf('text-red') === -1) {
-                            icon.className = "fas fa-check-circle text-emerald-500";
-                            desc.innerText = "Local IPs only (Safe)";
-                            desc.className = "text-[10px] text-gray-500";
-                        }
-                    } else {
-                        // PUBLIC IP FOUND
-
-                        // CHECK: Does it match IPv4 OR IPv6?
-                        const matchesTunnel = (ip === ipv4) || (ip === ipv6);
-
-                        if (matchesTunnel) {
-                            // The WebRTC IP matches one of the Dashboard IPs.
-
-                            if (isVpnOff) {
-                                // Matches, but VPN detection says "Not Detected"
-                                icon.className = "fas fa-exclamation-triangle text-red-600 blink";
-                                desc.innerText = "VPN Off — WebRTC Exposed";
-                                desc.className = "text-[10px] text-red-600 font-bold";
-                            } else {
-                                // Matches, and VPN is detected -> SAFE
-                                icon.className = "fas fa-check-circle text-emerald-500";
-                                desc.innerText = "Safe (Matches Tunnel IP)";
-                                desc.className = "text-[10px] text-emerald-600 font-bold";
-                            }
-                        } else {
-                            // DOES NOT MATCH EITHER -> CRITICAL LEAK
-                            // This means WebRTC is bypassing the VPN tunnel
-                            icon.className = "fas fa-exclamation-triangle text-red-600 blink";
-                            desc.innerText = "CRITICAL: Real IP Leaked!";
-                            desc.className = "text-[10px] text-red-600 font-bold";
-                        }
-                    }
-                    // --- LOGIC END ---
                 }
             }
         };
 
         p.createOffer().then(d => p.setLocalDescription(d)).catch(e => {});
 
+        // 2. Continuous Analysis (Polling)
+        // Checks every 500ms to see if Dashboard IPs are loaded, then compares.
+        const analyzer = setInterval(() => {
+            const ipv4 = document.getElementById('ipv4-display').innerText.trim();
+            const ipv6 = document.getElementById('ipv6-display').innerText.trim();
+            const vpnStatusText = document.getElementById('vpn-status').innerText;
+            const isVpnOff = vpnStatusText.includes("Not Detected");
+
+            // Stop if IPs aren't ready yet (prevents false positive)
+            if (ipv4 === '--' || ipv4.includes('Loader') || ipv4 === 'Error') {
+                desc.innerText = "Waiting for Main IP...";
+                return;
+            }
+
+            // If we have IPs, analyze them against the set
+            let status = "safe"; // safe | exposed | leak
+
+            if (foundIPs.size === 0) {
+                // Nothing found yet
+                return;
+            }
+
+            // Iterate all found WebRTC IPs
+            foundIPs.forEach(ip => {
+                const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|fd00:|fc00:)/.test(ip);
+
+                if (!isPrivate) {
+                    // Check strict match against Dashboard
+                    const matchesTunnel = (ip === ipv4) || (ip === ipv6);
+
+                    if (!matchesTunnel) {
+                        status = "leak"; // Priority 1: Critical Leak
+                    } else if (status !== "leak" && isVpnOff) {
+                        status = "exposed"; // Priority 2: Matches but VPN is off
+                    }
+                }
+            });
+
+            // 3. Update UI based on final status
+            if (status === "leak") {
+                icon.className = "fas fa-exclamation-triangle text-red-600 blink";
+                desc.innerText = "CRITICAL: Real IP Leaked!";
+                desc.className = "text-[10px] text-red-600 font-bold";
+                clearInterval(analyzer); // Stop checking once we find a leak
+            }
+            else if (status === "exposed") {
+                icon.className = "fas fa-exclamation-triangle text-red-600 blink";
+                desc.innerText = "VPN Off — WebRTC Exposed";
+                desc.className = "text-[10px] text-red-600 font-bold";
+            }
+            else {
+                // Safe or Local Only
+                icon.className = "fas fa-check-circle text-emerald-500";
+                desc.innerText = "Safe (Matches Tunnel IP)";
+                desc.className = "text-[10px] text-emerald-600 font-bold";
+            }
+
+        }, 1000); // Run every second
+
+        // Timeout to stop "Scanning" if nothing found
         setTimeout(() => {
-            if (s.size === 0) {
+            if (foundIPs.size === 0) {
                 l.innerHTML = '<li class="text-xs text-gray-400">Hidden by Browser Privacy</li>';
                 icon.className = "fas fa-shield-alt text-emerald-500";
                 desc.innerText = "WebRTC Disabled/Hidden";
                 desc.className = "text-[10px] text-gray-500";
+                clearInterval(analyzer);
             }
-        }, 3000);
+        }, 5000);
     }
 
 
