@@ -275,16 +275,17 @@
                 <span id="vpn-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
             </div>
 
-            <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
+            <div class="bg-purple-50 p-3 rounded-lg border border-purple-100 h-auto min-h-[80px]">
                 <h4 class="text-xs font-bold text-purple-500 uppercase mb-2">Provider & Risk Analysis</h4>
-                <div class="grid grid-cols-2 gap-y-2 text-xs">
-                    <div>
-                        <span class="text-gray-400 block">Detected Provider</span>
-                        <span class="font-bold text-slate-700" id="vpn-provider-name">--</span>
+
+                <div class="grid grid-cols-2 gap-4 text-xs items-start">
+                    <div class="flex flex-col">
+                        <span class="text-gray-400 mb-0.5">Detected Provider</span>
+                        <span class="font-bold text-slate-700 break-words whitespace-normal leading-snug" id="vpn-provider-name">--</span>
                     </div>
-                    <div>
-                        <span class="text-gray-400 block">IP Fraud Risk</span>
-                        <span class="font-bold text-slate-700" id="vpn-fraud-score">--</span>
+                    <div class="flex flex-col">
+                        <span class="text-gray-400 mb-0.5">IP Fraud Risk</span>
+                        <span class="font-bold text-slate-700 break-words" id="vpn-fraud-score">--</span>
                     </div>
                 </div>
             </div>
@@ -1308,50 +1309,84 @@
 
     // --- 3. VPN & SYSTEM UTILS ---
 
-    // --- UPDATED: Expanded High-Speed ASN Lookups ---
+    // --- UPDATED: Comprehensive VPN/Hosting ASN Database ---
     const KNOWN_VPN_ASNS = new Set([
-        // Original List
-        13335, 15169, 16509, 8075, 20473, 14061, 63949, 49335, 20940,
-        396982, 31898, 40021, 133877, 24940, 212238, 202425, 62240,
-        132203, 136787, 53667, 397223,
-        // Added ASNs (M247, Datacamp, Clouvider, Packethub, etc.)
-        9009, 212238, 60068, 62240, 136787, 147049, 141039, 207137,
-        208172, 396356, 131199, 21859, 39287, 42708, 203020, 22363,
-        262287, 136557, 25369, 174, 39351, 56655
+        // --- MAJOR VPN BRANDS (Exclusive ASNs) ---
+        209854, // Surfshark (Cyberzone)
+        216025, // Mullvad VPN
+        39351,  // Mullvad (31173 Services AB)
+        209103, 62371, 199218, // ProtonVPN (Proton AG)
+        136787, 147049, 141039, 207137, // NordVPN (Packethub S.A.)
+        137409, // ExpressVPN (LogicWeb/GSL)
+
+        // --- COMMON VPN INFRASTRUCTURE (Shared Providers) ---
+        // These are used by Nord, Express, IPVanish, CyberGhost, etc.
+        9009,   // M247 (Major VPN Transit)
+        60068,  // Datacamp Limited / CDN77 (Major VPN Transit)
+        212238, // Datacamp Limited
+        62240,  // Clouvider (ExpressVPN/Others)
+        20473,  // The Constant Company (Vultr)
+        63949,  // Akamai (Linode)
+        14061,  // DigitalOcean
+        16509, 14618, // Amazon AWS
+        15169, 396982, // Google Cloud
+        8075,   // Microsoft Azure
+        24940,  // Hetzner Online
+        16276,  // OVH SAS
+        13335,  // Cloudflare (WARP)
+
+        // --- ADDITIONAL HOSTING/PRIVACY NETWORKS ---
+        53667,  // FranTech (BuyVM)
+        202425, // IP Volume
+        132203, // Tencent Cloud
+        49335,  // Rayo Byte
+        31898,  // Oracle Cloud
+        40021,  // Contabo
+        262287, // Latitude.sh
+        396356, // Latitude.sh
+        21859,  // Zenlayer
+        203020, // HostRoyale
+        22363,  // Powerhouse Management
+        136557  // Host Universal
     ]);
 
-    // --- UPDATED: Comprehensive VPN Brand Mapping ---
-    // Priority 1: Map Infrastructure names to Likely VPN Brands
+    // --- UPDATED: Precision Brand Mapping (Clean Labels) ---
+    // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
-        // Cloudflare / Apple iCloud Relay (Specific Request)
-        { keys: ['cloudflare'], label: 'Detected (Likely WARP / Apple iCloud Private Relay)' },
-        // NordVPN (Packethub is their primary AS)
-        { keys: ['packethub'], label: 'Detected (Likely NordVPN)' },
-        // Surfshark / PIA (Datacamp Limited)
-        { keys: ['datacamp', 'cyberzone'], label: 'Detected (Likely Surfshark / PIA)' },
-        // ProtonVPN (Proton AG + M247)
-        { keys: ['proton ag', 'protonvpn'], label: 'Detected (Likely ProtonVPN)' },
-        // ExpressVPN (Clouvider / DigitalOcean sometimes)
-        { keys: ['clouvider', 'expressvpn', 'highwinds'], label: 'Detected (Likely ExpressVPN)' },
-        // Mullvad (M247 / 31173 Services AB / Terrahost)
-        { keys: ['31173 services ab', 'terrahost', 'mullvad', 'amnezia'], label: 'Detected (Likely Mullvad)' },
-        // Windscribe / CyberGhost / HideMyAss (Often M247)
-        { keys: ['m247', 'm europe'], label: 'Detected (Likely CyberGhost / Windscribe / Proton)' },
-        // PureVPN (GSL Networks / Tzulo)
-        { keys: ['tzulo', 'gsl networks', 'purevpn'], label: 'Detected (Likely PureVPN)' },
-        // IPVanish (Highwinds / Stackpath)
-        { keys: ['ipvanish', 'stackpath'], label: 'Detected (Likely IPVanish)' },
-        // Hide.me
-        { keys: ['hide.me', 'hide me'], label: 'Detected (Likely Hide.me)' },
-        // OVPN
-        { keys: ['ovpn'], label: 'Detected (Likely OVPN)' },
-        // IVPN
-        { keys: ['ivpn'], label: 'Detected (Likely IVPN)' },
-        // Tor
-        { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network' },
-        // Generic Hosting Providers often used for VPNs
-        { keys: ['cdn77', 'datapacket'], label: 'Detected (Likely Nord/Surfshark Infra)' },
-        { keys: ['digitalocean', 'vultr', 'linode', 'hetzner', 'ovh', 'choopa'], label: 'Detected (VPS/Hosting)' }
+        // 1. SPECIFIC COMMERCIAL BRANDS (Direct Match)
+        { keys: ['proton ag', 'protonvpn'], label: 'Likely ProtonVPN - Proton AG' },
+        { keys: ['mullvad', '31173 services', 'amnezia'], label: 'Likely Mullvad - 31173 Services' },
+        { keys: ['cyberzone', 'surfshark'], label: 'Likely Surfshark - Cyberzone' },
+        { keys: ['packethub', 'nordvpn'], label: 'Likely NordVPN - Packethub' },
+        { keys: ['expressvpn', 'expressnetw'], label: 'Likely ExpressVPN - ExpressNetw' },
+        { keys: ['logicweb'], label: 'Likely ExpressVPN - LogicWeb' },
+        { keys: ['windscribe'], label: 'Likely Windscribe - Windscribe' },
+        { keys: ['hide.me', 'hide me'], label: 'Likely Hide.me - Hide.me' },
+        { keys: ['ivpn'], label: 'Likely IVPN - IVPN' },
+        { keys: ['ovpn'], label: 'Likely OVPN - OVPN' },
+
+        // 2. SHARED INFRASTRUCTURE (The "Big 3" Datacenters)
+        { keys: ['m247', 'm europe', 'ipxo'], label: 'Likely Nord/Surfshark/Proton - M247' },
+        { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA - Datacamp' },
+        { keys: ['tzulo', 'gsl networks'], label: 'Likely PureVPN/CyberGhost - GSL' },
+        { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
+
+        // 3. GENERIC CLOUD/VPS
+        // UPDATED LABEL HERE:
+        { keys: ['cloudflare', 'warp'], label: 'Likely WARP/Apple iCloud Private Relay - Cloudflare' },
+
+        { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
+        { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
+        { keys: ['highwinds', 'stackpath', 'performive'], label: 'Likely IPVanish/Stackpath - Stackpath' },
+        { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
+        { keys: ['linode', 'akamai'], label: 'Likely Self-Hosted VPN - Linode' },
+        { keys: ['ovh', 'ovh sas'], label: 'Likely Self-Hosted VPN - OVH' },
+        { keys: ['hetzner'], label: 'Likely Self-Hosted VPN - Hetzner' },
+        { keys: ['amazon', 'aws'], label: 'Likely AWS VPN - AWS' },
+        { keys: ['microsoft', 'azure'], label: 'Likely Azure VPN - Azure' },
+
+        // 4. ANONYMITY NETWORKS
+        { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network - Tor Exit Node' }
     ];
 
     // Priority 2: Generic list of known providers/terms for regex matching
