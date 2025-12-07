@@ -1498,7 +1498,7 @@
         14618   // Fastly
     ]);
 
-    // --- UPDATED: Comprehensive VPN Brand Mapping (Linode now flagged for Tor) ---
+    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes Dotsrc) ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
@@ -1514,7 +1514,7 @@
         { keys: ['zenmate', 'zenguard'], label: 'Likely ZenMate - Zenguard' },
         { keys: ['windscribe'], label: 'Likely Windscribe - Windscribe' },
         { keys: ['tunnelbear'], 'label': 'Likely TunnelBear - TunnelBear' },
-        { keys: ['hide.me', 'hide me'], label: 'Likely Hide.me - Hide.me' },
+        { keys: ['hide.me', 'hide me'], label: 'Likely Hide.me - Hide-me' },
         { keys: ['privax', 'hidemyass', 'hma'], label: 'Likely HMA (HideMyAss) - Privax' },
         { keys: ['gz systems', 'gaditek', 'purevpn', 'secure internet'], label: 'Likely PureVPN - GZ Systems' },
         { keys: ['peakstar', 'atlas'], label: 'Likely Atlas VPN - Peakstar' },
@@ -1524,6 +1524,9 @@
         { keys: ['torguard'], label: 'Likely TorGuard - TorGuard' },
 
         // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (High Risk) ---
+
+        // NEW ENTRY: Dotsrc -> Generic/Datacenter / Possibly Tor Network
+        { keys: ['dotsrc', 'forening for dotsrc'], label: 'Possibly Tor Network / Datacenter - Dotsrc' },
 
         // Stiftung Erneuerbare Freiheit -> Likely Tor Network
         { keys: ['stiftung erneuerbare freiheit', 'erneur freih'], label: 'Likely Tor Network - Stiftung Erneuerbare Freiheit' },
