@@ -274,16 +274,31 @@
                 <span class="text-sm font-bold text-slate-600">Privacy Level</span>
                 <span id="vpn-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
             </div>
-            <div class="bg-white p-2 rounded border border-gray-100 text-xs flex justify-between">
-                <span class="font-semibold text-slate-600">IP Fraud Risk:</span>
-                <span id="vpn-fraud-score" class="font-bold">--</span>
+
+            <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                <h4 class="text-xs font-bold text-purple-500 uppercase mb-2">Provider & Risk Analysis</h4>
+                <div class="grid grid-cols-2 gap-y-2 text-xs">
+                    <div>
+                        <span class="text-gray-400 block">Detected Provider</span>
+                        <span class="font-bold text-slate-700" id="vpn-provider-name">--</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-400 block">IP Fraud Risk</span>
+                        <span class="font-bold text-slate-700" id="vpn-fraud-score">--</span>
+                    </div>
+                </div>
             </div>
+
             <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
                 <h4 class="text-xs font-bold text-blue-500 uppercase mb-2">Tracking Protection</h4>
                 <div class="grid grid-cols-2 gap-y-2 text-xs">
-                    <div><span class="text-gray-400 block">Do Not Track</span><span class="font-bold text-slate-700" id="priv-dnt">--</span></div>
+                    <div>
+                        <span class="text-gray-400 block">Do Not Track</span>
+                        <span class="font-bold text-slate-700" id="priv-dnt">--</span>
+                    </div>
                 </div>
             </div>
+
             <div class="border-b border-gray-100 pb-3">
                 <div class="flex justify-between items-center mb-1"><p class="text-xs font-bold text-slate-700">1. ISP / ASN Check</p><i id="icon-isp" class="fas fa-circle text-[10px] text-gray-300"></i></div>
                 <p class="text-[10px] text-gray-500" id="desc-isp">Analyzing provider name...</p>
@@ -658,6 +673,7 @@
                         <th class="px-4 py-2">Time</th>
                         <th class="px-4 py-2">IP Address</th>
                         <th class="px-4 py-2">ISP</th>
+                        <th class="px-4 py-2">Server</th>
                         <th class="px-4 py-2">Latency</th>
                         <th class="px-4 py-2">Download</th>
                         <th class="px-4 py-2">Upload</th>
@@ -957,56 +973,68 @@
     });
 
     // UPDATED SAVE RESULT FUNCTION
-    function saveResult(p,d,u) {
-        if(getCookie('speedtest_consent')!=='accepted') return;
-        let h=getCookie('speedtest_history'); try{h=h?JSON.parse(h):[];}catch(e){h=[];}
+    // UPDATED SAVE RESULT FUNCTION
+    function saveResult(p, d, u, s) { // Added 's' parameter
+        if (getCookie('speedtest_consent') !== 'accepted') return;
+        let h = getCookie('speedtest_history');
+        try { h = h ? JSON.parse(h) : []; } catch (e) { h = []; }
 
-        // Grab values from DOM
         const ip = document.getElementById('ipv4-display').innerText || '--';
         const isp = document.getElementById('isp-display').innerText || '--';
 
-        // 24h format manually to ensure consistency
         const dateObj = new Date();
-        const f = (x) => String(x).padStart(2,'0');
+        const f = (x) => String(x).padStart(2, '0');
         const timeStr = `${f(dateObj.getHours())}:${f(dateObj.getMinutes())}`;
-        const dateStr = `${f(dateObj.getDate())}/${f(dateObj.getMonth()+1)}/${dateObj.getFullYear()}`;
+        const dateStr = `${f(dateObj.getDate())}/${f(dateObj.getMonth() + 1)}/${dateObj.getFullYear()}`;
 
-        // Offset
         const offset = -dateObj.getTimezoneOffset();
         const sign = offset >= 0 ? '+' : '-';
         const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-        const utcStr = `UTC${sign}${pad(offset/60)}:${pad(offset%60)}`;
+        const utcStr = `UTC${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
 
         const fullDate = `${timeStr} ${dateStr} (${utcStr})`;
 
-        h.unshift({date:fullDate, ping:p, dl:d, ul:u, ip:ip, isp:isp});
+        // Added 'server: s' to the object
+        h.unshift({ date: fullDate, ping: p, dl: d, ul: u, ip: ip, isp: isp, server: s || 'Unknown' });
 
-        // UPDATED LIMIT CHECK
         const limit = getHistoryLimit();
-        while(h.length > limit) h.pop();
+        while (h.length > limit) h.pop();
 
-        setCookie('speedtest_history',JSON.stringify(h),30); renderHistory();
+        setCookie('speedtest_history', JSON.stringify(h), 30);
+        renderHistory();
     }
 
     function clearHistory(){ setCookie('speedtest_history',"",-1); renderHistory(); }
 
     // UPDATED RENDER HISTORY FUNCTION
-    function renderHistory(){
-        const tb=document.getElementById('history-table-body'), c=getCookie('speedtest_consent');
-        if(c!=='accepted'){ tb.innerHTML=`<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400"><p class="italic mb-2">History disabled.</p><button onclick="showConsentModal()" class="text-blue-500 underline font-medium">Enable</button></td></tr>`; return; }
-        let h=getCookie('speedtest_history'); try{h=h?JSON.parse(h):[];}catch(e){h=[];}
-        if(h.length===0){ tb.innerHTML=`<tr><td colspan="6" class="px-4 py-4 text-center text-gray-400 italic">No history found.</td></tr>`; return; }
-        let ht=''; h.forEach(i=>{
-            ht+=`<tr class="hover:bg-gray-50 transition">
+    // UPDATED RENDER HISTORY FUNCTION
+    function renderHistory() {
+        const tb = document.getElementById('history-table-body'), c = getCookie('speedtest_consent');
+        if (c !== 'accepted') {
+            tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400"><p class="italic mb-2">History disabled.</p><button onclick="showConsentModal()" class="text-blue-500 underline font-medium">Enable</button></td></tr>`;
+            return;
+        }
+        let h = getCookie('speedtest_history');
+        try { h = h ? JSON.parse(h) : []; } catch (e) { h = []; }
+
+        if (h.length === 0) {
+            tb.innerHTML = `<tr><td colspan="7" class="px-4 py-4 text-center text-gray-400 italic">No history found.</td></tr>`;
+            return;
+        }
+
+        let ht = '';
+        h.forEach(i => {
+            ht += `<tr class="hover:bg-gray-50 transition">
                 <td class="px-4 py-2 font-mono text-gray-500 text-xs">${i.date}</td>
                 <td class="px-4 py-2 font-mono text-xs text-slate-600">${i.ip || '-'}</td>
                 <td class="px-4 py-2 text-xs text-slate-600 max-w-[120px] truncate" title="${i.isp || ''}">${i.isp || '-'}</td>
+                <td class="px-4 py-2 text-xs text-slate-500 font-mono">${i.server || '-'}</td>
                 <td class="px-4 py-2 font-bold">${i.ping}</td>
                 <td class="px-4 py-2 font-bold text-blue-600">${i.dl}</td>
                 <td class="px-4 py-2 font-bold text-purple-600">${i.ul}</td>
             </tr>`;
         });
-        tb.innerHTML=ht;
+        tb.innerHTML = ht;
     }
 
     // --- 2. MULTI-THREADED SPEEDTEST ENGINE ---
@@ -1055,14 +1083,12 @@
     }
 
     async function runHighPerformanceTest() {
-        // Toggle Buttons
+        // --- SETUP ---
         const btnStart = document.getElementById('btn-card-speed');
         const btnStop = document.getElementById('btn-stop-speed');
-
         btnStart.classList.add('hidden');
         btnStop.classList.remove('hidden');
 
-        // Reset Controller
         speedTestAbortController = new AbortController();
         const signal = speedTestAbortController.signal;
 
@@ -1076,162 +1102,162 @@
         const gaugeFill = document.getElementById('speed-gauge');
         const gaugeContainer = document.getElementById('gauge-container');
 
-        dlEl.innerText = "-- Mbps";
-        ulEl.innerText = "-- Mbps";
-        bar.style.width = "0%";
+        // Reset
+        dlEl.innerText = "-- Mbps"; ulEl.innerText = "-- Mbps"; bar.style.width = "0%";
+        updateGauge(0, "Ready");
 
-        // Apply Visuals
         if (animationEnabled) {
             icon.className = "p-2 bg-emerald-50 rounded-lg text-emerald-600 blink";
             gaugeFill.classList.add('gauge-pulse');
             gaugeContainer.classList.add('active-anim');
         }
 
+        // Helper Calculation
+        function calculateSpeed(currentBytes, startBytes, currentTime, startTime) {
+            const bytesDiff = currentBytes - startBytes;
+            const timeDiff = (currentTime - startTime) / 1000;
+            if (timeDiff <= 0) return 0;
+            return ((bytesDiff * 8) / timeDiff / 1024 / 1024).toFixed(1);
+        }
+
         let fP = "--", fD = "--", fU = "--";
         let jitterVal = "0";
+        let detectedServer = "Unknown"; // NEW VARIABLE TO STORE SERVER
 
         try {
-            // 1. SERVER INFO (Trace) & PING BURST
-            status.innerText = "Measuring Latency & Jitter...";
-
-            // Ping Burst for Jitter
+            // PHASE 1: LATENCY & SERVER TRACE
+            status.innerText = "Measuring Latency...";
             const pings = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < 10; i++) {
                 try {
                     const pS = performance.now();
                     await fetch('https://speed.cloudflare.com/cdn-cgi/trace?r=' + Math.random(), { signal });
                     const pE = performance.now();
                     pings.push(pE - pS);
-                } catch (e) {
-                    // Ignore ping errors to allow test to continue
-                }
+                } catch (e) { if (signal.aborted) throw e; }
             }
 
             if (pings.length > 0) {
+                pings.sort((a, b) => a - b);
+                if (pings.length > 4) { pings.pop(); pings.shift(); }
                 const avgPing = pings.reduce((a, b) => a + b, 0) / pings.length;
-                // Calculate Jitter
                 const variance = pings.reduce((a, b) => a + Math.pow(b - avgPing, 2), 0) / pings.length;
                 jitterVal = Math.sqrt(variance).toFixed(1);
-                fP = Math.round(avgPing) + " ms";
-            } else {
-                fP = "Error";
+                fP = Math.round(avgPing);
+                pgEl.innerText = fP + " ms";
             }
-            pgEl.innerText = fP;
 
-            // Get Location Code (Safe Fetch)
-            try {
-                const traceReq = await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal });
-                const traceText = await traceReq.text();
-                const lines = traceText.split('\n');
-                let coloCode = "Unknown";
-                let locCode = "";
-                lines.forEach(l => {
-                    if (l.startsWith('colo=')) coloCode = l.split('=')[1];
-                    if (l.startsWith('loc=')) locCode = l.split('=')[1];
+            // GET SERVER LOCATION AND STORE IT
+            await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal })
+                .then(r => r.text())
+                .then(t => {
+                    const loc = t.match(/loc=(.+)/)?.[1] || "UNK";
+                    const colo = t.match(/colo=(.+)/)?.[1] || "UNK";
+                    detectedServer = `${colo} (${loc})`; // Store for history
+                    serverLoc.innerHTML = `${colo} <span class="text-gray-400 font-normal">(${loc})</span>`;
+                }).catch(() => {
+                    detectedServer = "Unknown";
                 });
-                serverLoc.innerHTML = `${coloCode} <span class="text-gray-400 font-normal">(${locCode})</span>`;
-            } catch (e) {
-                serverLoc.innerHTML = `Unknown <span class="text-gray-400 font-normal">(Cors/Block)</span>`;
-            }
 
-            // 2. DOWNLOAD (High Concurrency & Looping)
-            status.innerText = "Downloading (10 Streams)...";
-            updateGauge(0, "Mbps (Down)");
+            // PHASE 2: DOWNLOAD (Smart Warm-up)
+            status.innerText = "Downloading (Warm-up)...";
+            const dlDuration = 10000;
+            const warmUpTime = 2000;
+            const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000";
+            let dlStartTime = performance.now();
+            let dlTotalBytes = 0;
+            let dlWarmUpDone = false;
+            let dlBytesAtWarmUp = 0;
+            let dlTimeAtWarmUp = 0;
 
-            const streams = 10;
-            const duration = 8000; // 8 Seconds
-            const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000"; // 50MB chunks
-
-            let startTime = performance.now();
-            let totalBytesLoaded = 0;
-
-            // Worker-like loop for download streams
-            const dlPromises = Array(streams).fill(0).map(async () => {
-                while (performance.now() - startTime < duration) {
+            const dlPromises = Array(6).fill(0).map(async () => {
+                while ((performance.now() - dlStartTime) < dlDuration) {
                     try {
                         const response = await fetch(dlUrl + "&r=" + Math.random(), { signal });
                         const reader = response.body.getReader();
                         while (true) {
                             const { done, value } = await reader.read();
                             if (done) break;
-                            totalBytesLoaded += value.length;
-                            if (performance.now() - startTime > duration) {
-                                reader.cancel();
-                                return;
-                            }
+                            dlTotalBytes += value.length;
+                            if ((performance.now() - dlStartTime) > dlDuration) { reader.cancel(); return; }
                         }
-                    } catch (e) {
-                        // FIX: Return on ALL errors to prevent infinite loop freezing
-                        return;
-                    }
+                    } catch (e) { return; }
                 }
             });
 
-            const uiInterval = setInterval(() => {
-                if (signal.aborted) { clearInterval(uiInterval); return; }
-                const t = (performance.now() - startTime) / 1000;
-                if (t > 0.5) {
-                    const currentMbps = ((totalBytesLoaded * 8) / t / 1024 / 1024).toFixed(1);
-                    updateGauge(currentMbps, "Mbps (Down)");
-                    bar.style.width = Math.min((t / duration) * 50, 50) + "%";
+            const dlTimer = setInterval(() => {
+                if (signal.aborted) { clearInterval(dlTimer); return; }
+                const now = performance.now();
+                const elapsed = now - dlStartTime;
+                if (!dlWarmUpDone && elapsed > warmUpTime) {
+                    dlWarmUpDone = true;
+                    dlBytesAtWarmUp = dlTotalBytes;
+                    dlTimeAtWarmUp = now;
+                    status.innerText = "Downloading (Measuring)...";
                 }
-            }, 200);
+                if (elapsed > 500) {
+                    let currentSpeed = 0;
+                    if (dlWarmUpDone) currentSpeed = calculateSpeed(dlTotalBytes, dlBytesAtWarmUp, now, dlTimeAtWarmUp);
+                    else currentSpeed = calculateSpeed(dlTotalBytes, 0, now, dlStartTime);
+                    updateGauge(currentSpeed, "Mbps (Down)");
+                    bar.style.width = Math.min((elapsed / dlDuration) * 50, 50) + "%";
+                }
+            }, 100);
 
             await Promise.all(dlPromises);
-            clearInterval(uiInterval);
-
+            clearInterval(dlTimer);
             if (signal.aborted) throw new Error('Aborted');
 
-            const totalTime = (performance.now() - startTime) / 1000;
-            const mbps = ((totalBytesLoaded * 8) / totalTime / 1024 / 1024).toFixed(1);
-            fD = mbps + " Mbps";
+            fD = calculateSpeed(dlTotalBytes, dlBytesAtWarmUp, performance.now(), dlTimeAtWarmUp) + " Mbps";
             dlEl.innerText = fD;
-            updateGauge(mbps, "Mbps (Down)");
-            bar.style.width = "50%";
 
-            // 3. UPLOAD
-            status.innerText = "Uploading (10 Streams)...";
+            // PHASE 3: UPLOAD
+            status.innerText = "Uploading (Warm-up)...";
             updateGauge(0, "Mbps (Up)", true);
+            const ulDuration = 8000;
+            const upChunkSize = 2 * 1024 * 1024;
+            const blob = new Blob([new Uint8Array(upChunkSize)]);
+            let ulStartTime = performance.now();
+            let ulTotalBytes = 0;
+            let ulWarmUpDone = false;
+            let ulBytesAtWarmUp = 0;
+            let ulTimeAtWarmUp = 0;
 
-            const upSize = 5 * 1024 * 1024; // 5MB Chunks (Reduced for compatibility)
-            const blob = new Blob([new Uint8Array(upSize)]);
-            let totalUpBytes = 0;
-            startTime = performance.now();
-
-            const upPromises = Array(streams).fill(0).map(async () => {
-                while (performance.now() - startTime < duration) {
+            const ulPromises = Array(4).fill(0).map(async () => {
+                while ((performance.now() - ulStartTime) < ulDuration) {
                     try {
                         await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob, signal });
-                        totalUpBytes += upSize;
-                    } catch (e) {
-                        // FIX: Return on ALL errors to prevent infinite loop freezing
-                        return;
-                    }
+                        ulTotalBytes += upChunkSize;
+                    } catch (e) { return; }
                 }
             });
 
-            const upUiInterval = setInterval(() => {
-                if (signal.aborted) { clearInterval(upUiInterval); return; }
-                const t = (performance.now() - startTime) / 1000;
-                if (t > 0.5) {
-                    const currentUpMbps = ((totalUpBytes * 8) / t / 1024 / 1024).toFixed(1);
-                    updateGauge(currentUpMbps, "Mbps (Up)", true);
-                    bar.style.width = 50 + Math.min((t / duration) * 50, 50) + "%";
+            const ulTimer = setInterval(() => {
+                if (signal.aborted) { clearInterval(ulTimer); return; }
+                const now = performance.now();
+                const elapsed = now - ulStartTime;
+                if (!ulWarmUpDone && elapsed > warmUpTime) {
+                    ulWarmUpDone = true;
+                    ulBytesAtWarmUp = ulTotalBytes;
+                    ulTimeAtWarmUp = now;
+                    status.innerText = "Uploading (Measuring)...";
                 }
-            }, 200);
+                if (elapsed > 500) {
+                    let currentSpeed = 0;
+                    if (ulWarmUpDone) currentSpeed = calculateSpeed(ulTotalBytes, ulBytesAtWarmUp, now, ulTimeAtWarmUp);
+                    else currentSpeed = calculateSpeed(ulTotalBytes, 0, now, ulStartTime);
+                    updateGauge(currentSpeed, "Mbps (Up)", true);
+                    bar.style.width = 50 + Math.min((elapsed / ulDuration) * 50, 50) + "%";
+                }
+            }, 100);
 
-            await Promise.all(upPromises);
-            clearInterval(upUiInterval);
-
+            await Promise.all(ulPromises);
+            clearInterval(ulTimer);
             if (signal.aborted) throw new Error('Aborted');
 
-            const upTime = (performance.now() - startTime) / 1000;
-            // Handle case where upload was fully blocked by CORS
-            if (totalUpBytes > 0) {
-                const upMbps = ((totalUpBytes * 8) / upTime / 1024 / 1024).toFixed(1);
-                fU = upMbps + " Mbps";
+            if (ulTotalBytes > 0) {
+                fU = calculateSpeed(ulTotalBytes, ulBytesAtWarmUp, performance.now(), ulTimeAtWarmUp) + " Mbps";
                 ulEl.innerText = fU;
-                updateGauge(upMbps, "Mbps (Up)", true);
             } else {
                 fU = "Failed (CORS)";
                 ulEl.innerText = "Blocked";
@@ -1244,16 +1270,10 @@
             gaugeFill.classList.remove('gauge-pulse');
             gaugeContainer.classList.remove('active-anim');
 
-            // STORE DETAILS FOR MODAL
-            lastSpeedData = {
-                dl: fD,
-                ul: fU,
-                ping: fP.replace(" ms", ""),
-                jitter: jitterVal,
-                ploss: "0% (Estimated)"
-            };
+            lastSpeedData = { dl: fD, ul: fU, ping: fP, jitter: jitterVal, ploss: "0% (Estimated)" };
 
-            saveResult(fP, fD, fU);
+            // PASS DETECTED SERVER TO SAVE FUNCTION
+            saveResult(fP + " ms", fD, fU, detectedServer);
 
         } catch (e) {
             if (e.message === 'Aborted' || e.name === 'AbortError') {
@@ -1261,14 +1281,13 @@
                 status.className = "text-xs font-bold text-orange-500";
             } else {
                 console.error(e);
-                status.innerText = "Network Error";
+                status.innerText = "Error";
                 status.className = "text-xs font-bold text-red-600";
             }
             icon.className = "p-2 bg-gray-50 rounded-lg text-gray-400";
             gaugeFill.classList.remove('gauge-pulse');
             gaugeContainer.classList.remove('active-anim');
         } finally {
-            // Restore Buttons
             btnStart.classList.remove('hidden');
             btnStop.classList.add('hidden');
         }
@@ -1345,6 +1364,7 @@
         const detailEl = document.getElementById('vpn-details');
         const badgeEl = document.getElementById('vpn-risk-badge');
         const fraudEl = document.getElementById('vpn-fraud-score');
+        const providerNameEl = document.getElementById('vpn-provider-name'); // Targets the new section
 
         // System UTC Calculation
         const d = new Date();
@@ -1376,7 +1396,7 @@
 
         let ispFlagged = !!matchedBrand;
 
-        // 2. ASN Check (Fastest - O(1)) if not already matched
+        // 2. ASN Check
         if (!ispFlagged && !isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
             score += 50;
             reasons.push(`ASN Match: ${asnNum}`);
@@ -1385,7 +1405,7 @@
             document.getElementById('desc-isp').innerText = `Flagged ASN: ${asnNum}`;
         }
 
-        // 3. String Match (Fast - Compiled Regex) if not already matched
+        // 3. String Match
         if (!ispFlagged && VPN_REGEX.test(combinedName)) {
             score += 50;
             const match = combinedName.match(VPN_REGEX)[0];
@@ -1401,7 +1421,7 @@
         // 4. Generic Heuristics
         if (!ispFlagged) {
             if (GENERIC_REGEX.test(combinedName)) {
-                score += 20; // Lower score for generic terms
+                score += 20;
                 reasons.push("Generic Hosting Keyword");
                 document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
                 document.getElementById('desc-isp').innerText = "Generic Hosting Keyword";
@@ -1422,12 +1442,12 @@
             document.getElementById('desc-tz').innerText = "Matched";
         }
 
-        // 6. Language Check (Visual Only)
+        // 6. Language Check
         const browserLang = navigator.language || "en";
         document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
         document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
 
-        // 7. TOR Specific Logic (Visual check for modal)
+        // 7. TOR Check
         if (/tor exit|tor project|onion/i.test(combinedName)) {
             document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
@@ -1436,18 +1456,20 @@
             document.getElementById('desc-tor').innerText = "No Tor fingerprints found";
         }
 
-        // --- SCORING & DISPLAY LOGIC ---
-
+        // --- SCORING & DISPLAY ---
         if (score >= 50) {
-            // DETECTED (Red) - Confirmed Match
-            vpnEl.innerText = matchedBrand || "Detected"; // Use custom label if available
+            // DETECTED (Red)
+            const finalName = matchedBrand || "Detected (Unknown)";
+            vpnEl.innerText = "VPN Detected";
             vpnEl.className = "text-lg font-bold mt-1 text-red-600";
-            detailEl.innerHTML = ""; // Hidden per request
+            detailEl.innerHTML = "";
 
-            // Special Check for Tor Labeling override
+            providerNameEl.innerText = finalName.replace("Detected (Likely ", "").replace(")", "");
+            providerNameEl.className = "font-bold text-red-600"; // Highlights name in Red
+
             if (matchedBrand === 'Tor Network') {
-                vpnEl.innerText = "Tor Network";
                 badgeEl.innerText = "High Anonymity (Tor)";
+                fraudEl.innerText = "High Risk (Tor)";
                 fraudEl.className = "font-bold text-red-500";
             } else {
                 badgeEl.innerText = "High Anonymity";
@@ -1457,10 +1479,13 @@
             }
 
         } else if (score > 0) {
-            // LIKELY DETECTED (Orange) - Generic Keywords or Heuristics only
+            // LIKELY (Orange)
             vpnEl.innerText = "Likely Detected";
             vpnEl.className = "text-lg font-bold mt-1 text-orange-500";
             detailEl.innerHTML = "";
+
+            providerNameEl.innerText = "Generic / Datacenter";
+            providerNameEl.className = "font-bold text-orange-500"; // Highlights name in Orange
 
             badgeEl.innerText = "Moderate Anonymity";
             badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
@@ -1468,10 +1493,13 @@
             fraudEl.className = "font-bold text-orange-500";
 
         } else {
-            // NOT DETECTED (Black) - Clean
+            // CLEAN (Green/Black)
             vpnEl.innerText = "Not Detected";
             vpnEl.className = "text-lg font-bold mt-1 text-slate-800";
             detailEl.innerHTML = `Direct Connection`;
+
+            providerNameEl.innerText = "Residential / None";
+            providerNameEl.className = "font-bold text-emerald-600"; // Highlights name in Green
 
             badgeEl.innerText = "Low Anonymity";
             badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
@@ -1479,7 +1507,6 @@
             fraudEl.className = "font-bold text-emerald-500";
         }
     }
-
     // --- 4. DATA FETCHERS ---
     function updateTimestamp() {
         const n = new Date();
