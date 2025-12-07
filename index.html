@@ -1284,24 +1284,50 @@
 
     // --- 3. VPN & SYSTEM UTILS ---
 
-    // --- Pre-Compiled High-Speed Lookups ---
+    // --- UPDATED: Expanded High-Speed ASN Lookups ---
     const KNOWN_VPN_ASNS = new Set([
+        // Original List
         13335, 15169, 16509, 8075, 20473, 14061, 63949, 49335, 20940,
-        9009, 396982, 31898, 40021, 133877, 24940, 212238, 9009,
-        202425, 62240, 132203, 136787, 53667, 397223
+        396982, 31898, 40021, 133877, 24940, 212238, 202425, 62240,
+        132203, 136787, 53667, 397223,
+        // Added ASNs (M247, Datacamp, Clouvider, Packethub, etc.)
+        9009, 212238, 60068, 62240, 136787, 147049, 141039, 207137,
+        208172, 396356, 131199, 21859, 39287, 42708, 203020, 22363,
+        262287, 136557, 25369, 174, 39351, 56655
     ]);
 
+    // --- UPDATED: Comprehensive VPN Brand Mapping ---
     // Priority 1: Map Infrastructure names to Likely VPN Brands
     const VPN_BRAND_MAP = [
-        { keys: ['cloudflare'], label: 'Detected (Likely WARP/Apple iCloud Private Relay)' },
+        // Cloudflare / Apple iCloud Relay (Specific Request)
+        { keys: ['cloudflare'], label: 'Detected (Likely WARP / Apple iCloud Private Relay)' },
+        // NordVPN (Packethub is their primary AS)
         { keys: ['packethub'], label: 'Detected (Likely NordVPN)' },
-        { keys: ['cyberzone', 'datacamp'], label: 'Detected (Likely Surfshark)' },
-        { keys: ['m247', 'm europe'], label: 'Detected (Likely Proton/Nord/Surfshark)' },
-        { keys: ['clouvider'], label: 'Detected (Likely ExpressVPN)' },
-        { keys: ['terrahost'], label: 'Detected (Likely Mullvad)' },
-        { keys: ['cdn77', 'datapacket'], label: 'Detected (Likely Nord/Surfshark)' },
-        { keys: ['tzulo'], label: 'Detected (Likely PureVPN)' },
-        { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network' }
+        // Surfshark / PIA (Datacamp Limited)
+        { keys: ['datacamp', 'cyberzone'], label: 'Detected (Likely Surfshark / PIA)' },
+        // ProtonVPN (Proton AG + M247)
+        { keys: ['proton ag', 'protonvpn'], label: 'Detected (Likely ProtonVPN)' },
+        // ExpressVPN (Clouvider / DigitalOcean sometimes)
+        { keys: ['clouvider', 'expressvpn', 'highwinds'], label: 'Detected (Likely ExpressVPN)' },
+        // Mullvad (M247 / 31173 Services AB / Terrahost)
+        { keys: ['31173 services ab', 'terrahost', 'mullvad', 'amnezia'], label: 'Detected (Likely Mullvad)' },
+        // Windscribe / CyberGhost / HideMyAss (Often M247)
+        { keys: ['m247', 'm europe'], label: 'Detected (Likely CyberGhost / Windscribe / Proton)' },
+        // PureVPN (GSL Networks / Tzulo)
+        { keys: ['tzulo', 'gsl networks', 'purevpn'], label: 'Detected (Likely PureVPN)' },
+        // IPVanish (Highwinds / Stackpath)
+        { keys: ['ipvanish', 'stackpath'], label: 'Detected (Likely IPVanish)' },
+        // Hide.me
+        { keys: ['hide.me', 'hide me'], label: 'Detected (Likely Hide.me)' },
+        // OVPN
+        { keys: ['ovpn'], label: 'Detected (Likely OVPN)' },
+        // IVPN
+        { keys: ['ivpn'], label: 'Detected (Likely IVPN)' },
+        // Tor
+        { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network' },
+        // Generic Hosting Providers often used for VPNs
+        { keys: ['cdn77', 'datapacket'], label: 'Detected (Likely Nord/Surfshark Infra)' },
+        { keys: ['digitalocean', 'vultr', 'linode', 'hetzner', 'ovh', 'choopa'], label: 'Detected (VPS/Hosting)' }
     ];
 
     // Priority 2: Generic list of known providers/terms for regex matching
@@ -1315,7 +1341,7 @@
         'pia', 'cyberghost', 'strongvpn', 'fastestvpn', 'ivacy', 'veepn', 'torguard',
         'airvpn', 'perfectprivacy', 'cactusvpn', 'ovpn', 'hide.me',
         'privatevpn', 'protonvpn', 'vultr', 'linode', 'choopa', 'performive',
-        'shock hosting', 'teraswitch', 'melbicom'
+        'shock hosting', 'teraswitch', 'melbicom', 'packethub', 'datacamp'
     ];
 
     // Compiled Regex for O(1) matching of strings
