@@ -1350,36 +1350,52 @@
         136557  // Host Universal
     ]);
 
-    // --- UPDATED: Precision Brand Mapping (Clean Labels) ---
-    // Format: "Likely [VPN Names] - [ASN/Infra]"
-    // --- UPDATED: Precision Brand Mapping ---
+    // --- UPDATED: Comprehensive VPN Brand Mapping ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
-        // 1. SPECIFIC COMMERCIAL BRANDS (Direct Match)
+        // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
+        { keys: ['london trust media', 'private internet access'], label: 'Likely PIA - London Trust Media' },
         { keys: ['proton ag', 'protonvpn'], label: 'Likely ProtonVPN - Proton AG' },
         { keys: ['mullvad', '31173 services', 'amnezia'], label: 'Likely Mullvad - 31173 Services' },
         { keys: ['cyberzone', 'surfshark'], label: 'Likely Surfshark - Cyberzone' },
         { keys: ['packethub', 'nordvpn'], label: 'Likely NordVPN - Packethub' },
         { keys: ['expressvpn', 'expressnetw'], label: 'Likely ExpressVPN - ExpressNetw' },
         { keys: ['logicweb'], label: 'Likely ExpressVPN - LogicWeb' },
+        { keys: ['aura', 'anchorfree', 'pango', 'hotspot shield'], label: 'Likely Hotspot Shield - Aura/Pango' },
+        { keys: ['golden frog', 'vyprvpn'], label: 'Likely VyprVPN - Golden Frog' },
+        { keys: ['zenmate', 'zenguard'], label: 'Likely ZenMate - Zenguard' },
         { keys: ['windscribe'], label: 'Likely Windscribe - Windscribe' },
+        { keys: ['tunnelbear'], label: 'Likely TunnelBear - TunnelBear' },
         { keys: ['hide.me', 'hide me'], label: 'Likely Hide.me - Hide.me' },
+        { keys: ['privax', 'hidemyass', 'hma'], label: 'Likely HMA (HideMyAss) - Privax' },
+        { keys: ['gz systems', 'gaditek', 'purevpn'], label: 'Likely PureVPN - GZ Systems' },
+        { keys: ['peakstar', 'atlas'], label: 'Likely Atlas VPN - Peakstar' },
         { keys: ['ivpn'], label: 'Likely IVPN - IVPN' },
         { keys: ['ovpn'], label: 'Likely OVPN - OVPN' },
+        { keys: ['airvpn'], label: 'Likely AirVPN - AirVPN' },
+        { keys: ['torguard'], label: 'Likely TorGuard - TorGuard' },
 
-        // --- UPDATED: StrongVPN / IPVanish / Speedtest VPN Group ---
-        // These providers all share the NetProtect / Highwinds / Stackpath infrastructure.
+        // --- TIER 2: SHARED INFRASTRUCTURE GROUPS (Backbones) ---
+        // NetProtect/Stackpath group (StrongVPN, IPVanish, Encrypt.me, etc.)
         { keys: ['strong technology', 'strongvpn', 'ipvanish', 'netprotect', 'highwinds', 'stackpath', 'performive'], label: 'Likely StrongVPN/IPVanish/Speedtest VPN - NetProtect' },
 
-        // 2. SHARED INFRASTRUCTURE (The "Big 3" Datacenters)
+        // M247 group (Used by almost everyone as secondary locations)
         { keys: ['m247', 'm europe', 'ipxo'], label: 'Likely Nord/Surfshark/Proton - M247' },
+
+        // Datacamp group (CDN77)
         { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA - Datacamp' },
+
+        // GSL group
         { keys: ['tzulo', 'gsl networks'], label: 'Likely PureVPN/CyberGhost - GSL' },
+
+        // Clouvider group
         { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
 
-        // 3. GENERIC CLOUD/VPS
-        { keys: ['cloudflare', 'warp'], label: 'Likely WARP/Apple iCloud Private Relay - Cloudflare' },
+        // Leaseweb (Heavily used by PIA and others)
+        { keys: ['leaseweb'], label: 'Likely PIA/PrivateVPN - Leaseweb' },
 
+        // --- TIER 3: GENERIC CLOUD/VPS ---
+        { keys: ['cloudflare', 'warp'], label: 'Likely WARP/Apple iCloud Private Relay - Cloudflare' },
         { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
         { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
         { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
@@ -1388,11 +1404,12 @@
         { keys: ['hetzner'], label: 'Likely Self-Hosted VPN - Hetzner' },
         { keys: ['amazon', 'aws'], label: 'Likely AWS VPN - AWS' },
         { keys: ['microsoft', 'azure'], label: 'Likely Azure VPN - Azure' },
+        { keys: ['oracle', 'oracle cloud'], label: 'Likely Oracle Cloud VPN - Oracle' },
+        { keys: ['alibaba'], label: 'Likely Alibaba Cloud VPN - Alibaba' },
 
-        // 4. ANONYMITY NETWORKS
+        // --- TIER 4: ANONYMITY NETWORKS ---
         { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network - Tor Exit Node' }
     ];
-
     // Priority 2: Generic list of known providers/terms for regex matching
     const PROVIDER_NAMES = [
         'cloudflare', 'google', 'amazon', 'aws', 'microsoft', 'azure',
