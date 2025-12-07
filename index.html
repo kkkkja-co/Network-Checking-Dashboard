@@ -1498,7 +1498,7 @@
         14618   // Fastly
     ]);
 
-    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes QuxLabs AB) ---
+    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes 1337 Services GmbH) ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
@@ -1525,7 +1525,13 @@
 
         // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (High Risk) ---
 
-        // NEW ENTRY: QuxLabs AB -> Generic/Datacenter / Possibly Tor Network
+        // NEW ENTRY: 1337 Services GmbH -> Generic/Datacenter / Possibly Tor Network
+        { keys: ['1337 services gmbh', '1337 services'], label: 'Possibly Tor Network / Datacenter - 1337 Services GmbH' },
+
+        // FlokiNET ehf -> Generic/Datacenter / Possibly Tor Network
+        { keys: ['flokinet ehf', 'flokinet'], label: 'Possibly Tor Network / Datacenter - FlokiNET ehf' },
+
+        // QuxLabs AB -> Generic/Datacenter / Possibly Tor Network
         { keys: ['quxlabs ab', 'quxlabs'], label: 'Possibly Tor Network / Datacenter - QuxLabs AB' },
 
         // Dotsrc -> Generic/Datacenter / Possibly Tor Network
@@ -1701,8 +1707,8 @@
         document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
         document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
 
-        // 7. TOR Check (MODIFIED LOGIC)
-        const torKeywords = ['tor network', 'ielo liazo', '100up', 'online.net', 'stiftung erneuerbare freiheit', 'linode', 'dotsrc', 'quxlabs'];
+        // 7. TOR Check
+        const torKeywords = ['tor network', 'ielo liazo', '100up', 'online.net', 'stiftung erneuerbare freiheit', 'linode', 'dotsrc', 'quxlabs', 'flokinet', '1337 services'];
         let isTorMatch = false;
 
         if (matchedBrand) {
@@ -1717,11 +1723,9 @@
                 document.getElementById('desc-tor').innerText = "Confirmed Tor Exit Node";
                 document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             } else {
-                // Set to "Maybe" for all Likely/Possible Tor infra matches
                 document.getElementById('desc-tor').innerText = "Maybe (Infra Match)";
             }
         } else if (/tor exit|tor project|onion/i.test(combinedName)) {
-            // Fallback for generic text matches if the Map entry wasn't specific
             document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
         } else {
@@ -1734,7 +1738,6 @@
         if (score >= 50) {
             // DETECTED (Red)
             const finalName = matchedBrand || "Detected (Unknown)";
-            const finalNameLower = finalName.toLowerCase();
             let cardStatus = "VPN Detected";
 
             // 1. Refine Status based on confidence modifiers
@@ -1744,16 +1747,29 @@
                 cardStatus = "Likely VPN";
             }
 
-            // 2. Refine specifically for Tor/Anonymity infra (MODIFIED STATUS)
+            // 2. Refine specifically for Tor/Anonymity infra (MODIFIED STATUS & FRAUD RISK)
             if (isTorMatch) {
                 if (finalName.includes("Possible") || finalName.includes("Likely")) {
-                    // Set both Likely and Possibly to the user's specific phrase
                     cardStatus = "Tor Network May Detected";
                 } else if (finalName.includes("Tor Exit Node")) {
                     cardStatus = "Tor Confirmed";
                 } else {
-                    cardStatus = "Tor Network May Detected"; // Catch any other Tor keyword match
+                    cardStatus = "Tor Network May Detected";
                 }
+
+                // *** USER REQUESTED CHANGE: Downgrade Fraud Risk for Tor ***
+                fraudEl.innerText = "Medium Risk (Tor)";
+                fraudEl.className = "font-bold text-orange-500";
+
+                badgeEl.innerText = "High Anonymity (Tor)";
+                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
+
+            } else {
+                // Generic VPN (Nord, PIA, etc.) - Remains High Risk
+                badgeEl.innerText = "High Anonymity";
+                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700";
+                fraudEl.innerText = "High Risk (Flagged)";
+                fraudEl.className = "font-bold text-red-500";
             }
 
             vpnEl.innerText = cardStatus;
@@ -1762,17 +1778,6 @@
 
             providerNameEl.innerText = finalName.replace("Detected (Likely ", "").replace(")", "");
             providerNameEl.className = "font-bold text-red-600";
-
-            if (cardStatus.includes("Tor")) {
-                badgeEl.innerText = "High Anonymity (Tor)";
-                fraudEl.innerText = "High Risk (Tor)";
-                fraudEl.className = "font-bold text-red-500";
-            } else {
-                badgeEl.innerText = "High Anonymity";
-                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700";
-                fraudEl.innerText = "High Risk (Flagged)";
-                fraudEl.className = "font-bold text-red-500";
-            }
 
         } else if (score > 0) {
             // LIKELY (Orange)
