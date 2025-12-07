@@ -52,11 +52,13 @@
             border-radius: 10px;
         }
 
-        /* GAUGE STYLES */
+        /* GAUGE STYLES - UPDATED ANIMATION */
         .gauge-bg { stroke: #e2e8f0; }
         .gauge-fill {
             stroke: #10b981;
-            transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease; /* Faster transition for instant speed */
+            stroke-linecap: round; /* Rounded tip for the filling bar */
+            /* Transition stroke-dasharray for smooth filling, stroke color for mode change */
+            transition: stroke-dasharray 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s ease;
         }
 
         .no-anim-trans {
@@ -1033,56 +1035,92 @@
             });
             serverLoc.innerHTML = `${coloCode} <span class="text-gray-400 font-normal">(${locCode})</span>`;
 
-            // 2. DOWNLOAD (Multi-Stream)
-            status.innerText="Downloading (4 Streams)...";
+            // 2. DOWNLOAD (High Concurrency & Looping)
+            status.innerText="Downloading (10 Streams)...";
             updateGauge(0, "Mbps (Down)");
 
-            const streams = 4;
-            const duration = 5000;
-            const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000";
+            const streams = 10;
+            const duration = 8000; // Increased to 8s
+            const dlUrl = "https://speed.cloudflare.com/__down?bytes=100000000"; // 100MB Chunks
 
             let startTime = performance.now();
-            const promises = Array(streams).fill(0).map(() => fetchStream(dlUrl + "&r=" + Math.random(), duration, ()=>{}, signal));
+            let totalBytesLoaded = 0;
+
+            // Worker-like loop for download streams
+            const dlPromises = Array(streams).fill(0).map(async () => {
+                while (performance.now() - startTime < duration) {
+                    try {
+                        const response = await fetch(dlUrl + "&r=" + Math.random(), { signal });
+                        const reader = response.body.getReader();
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+                            totalBytesLoaded += value.length;
+                            if (performance.now() - startTime > duration) {
+                                reader.cancel();
+                                return;
+                            }
+                        }
+                    } catch (e) { if (e.name === 'AbortError') return; }
+                }
+            });
 
             const uiInterval = setInterval(() => {
                 if(signal.aborted) { clearInterval(uiInterval); return; }
                 const t = (performance.now() - startTime) / 1000;
-                if(t > 0) bar.style.width = Math.min((t/duration)*100, 100) + "%";
-            }, 100);
+                if (t > 0.5) {
+                    const currentMbps = ((totalBytesLoaded * 8) / t / 1024 / 1024).toFixed(1);
+                    updateGauge(currentMbps, "Mbps (Down)");
+                    bar.style.width = Math.min((t/duration)*50, 50) + "%";
+                }
+            }, 200);
 
-            const results = await Promise.all(promises);
+            await Promise.all(dlPromises);
             clearInterval(uiInterval);
 
             if (signal.aborted) throw new Error('Aborted');
 
             const totalTime = (performance.now() - startTime) / 1000;
-            const grandTotalBytes = results.reduce((a, b) => a + b, 0);
-            const mbps = ((grandTotalBytes * 8) / totalTime / 1024 / 1024).toFixed(1);
+            const mbps = ((totalBytesLoaded * 8) / totalTime / 1024 / 1024).toFixed(1);
             fD = mbps + " Mbps";
             dlEl.innerText = fD;
             updateGauge(mbps, "Mbps (Down)");
             bar.style.width = "50%";
 
-            // 3. UPLOAD
-            status.innerText="Uploading (4 Streams)...";
+            // 3. UPLOAD (High Concurrency & Looping)
+            status.innerText="Uploading (10 Streams)...";
             updateGauge(0, "Mbps (Up)", true);
 
-            const upSize = 5 * 1024 * 1024;
+            const upSize = 25 * 1024 * 1024; // 25MB Chunks
             const blob = new Blob([new Uint8Array(upSize)]);
-
+            let totalUpBytes = 0;
             startTime = performance.now();
-            // Increased to 4 concurrent upload streams for better saturation
-            const upPromises = Array(4).fill(0).map(async () => {
-                try { await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob, signal }); return upSize; } catch(e) { return 0; }
+
+            const upPromises = Array(streams).fill(0).map(async () => {
+                while (performance.now() - startTime < duration) {
+                    try {
+                        await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob, signal });
+                        totalUpBytes += upSize;
+                    } catch(e) { if (e.name === 'AbortError') return; }
+                }
             });
 
-            const upResults = await Promise.all(upPromises);
+            const upUiInterval = setInterval(() => {
+                if(signal.aborted) { clearInterval(upUiInterval); return; }
+                const t = (performance.now() - startTime) / 1000;
+                if (t > 0.5) {
+                    const currentUpMbps = ((totalUpBytes * 8) / t / 1024 / 1024).toFixed(1);
+                    updateGauge(currentUpMbps, "Mbps (Up)", true);
+                    bar.style.width = 50 + Math.min((t/duration)*50, 50) + "%";
+                }
+            }, 200);
+
+            await Promise.all(upPromises);
+            clearInterval(upUiInterval);
 
             if (signal.aborted) throw new Error('Aborted');
 
             const upTime = (performance.now() - startTime) / 1000;
-            const totalUpBytes = upResults.reduce((a, b) => a + b, 0);
-
             if(totalUpBytes > 0) {
                 const upMbps = ((totalUpBytes * 8) / upTime / 1024 / 1024).toFixed(1);
                 fU = upMbps + " Mbps";
