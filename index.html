@@ -1641,6 +1641,7 @@
     }
 
     // UPDATED: WebRTC Leak Check (Smart Logic)
+    // UPDATED: WebRTC Leak Check with "VPN Off" Logic
     function getWebRTCIPs() {
         const l = document.getElementById('webrtc-list');
         const icon = document.getElementById('icon-webrtc');
@@ -1655,7 +1656,6 @@
             return;
         }
 
-        // STUN server to provoke Public IP candidates
         const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
         const p = new R(config);
         p.createDataChannel('');
@@ -1664,7 +1664,6 @@
             if (!e.candidate) return;
 
             const candidate = e.candidate.candidate;
-            // Match IPv4 or IPv6
             const ipMatch = candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/);
 
             if (ipMatch) {
@@ -1674,24 +1673,25 @@
                 if (!s.has(ip)) {
                     s.add(ip);
                     if (l.innerHTML.includes('Scanning')) l.innerHTML = '';
-
-                    // Display found IP
                     l.innerHTML += `<li class="text-xl font-bold text-slate-800 font-mono mb-1">${ip}</li>`;
 
-                    // --- NEW LOGIC START ---
+                    // --- LOGIC START ---
                     const dashboardIP = document.getElementById('ipv4-display').innerText.trim();
+                    const vpnStatusText = document.getElementById('vpn-status').innerText;
 
-                    // Regex for Private IPs (LAN)
+                    // Check if VPN is effectively OFF (Not Detected)
+                    const isVpnOff = vpnStatusText.includes("Not Detected");
+
                     const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|fd00:|fc00:)/.test(ip);
 
-                    // 1. If Dashboard IP hasn't loaded yet, wait.
+                    // Wait for main IP to load
                     if (dashboardIP === '--' || dashboardIP.includes('Loader') || dashboardIP === 'Error') {
                         desc.innerText = "Waiting for Main IP...";
                         return;
                     }
 
                     if (isPrivate) {
-                        // LAN IPs are usually safe/normal
+                        // LAN IPs are safe
                         if (icon.className.indexOf('text-red') === -1) {
                             icon.className = "fas fa-check-circle text-emerald-500";
                             desc.innerText = "Local IPs only (Safe)";
@@ -1700,27 +1700,34 @@
                     } else {
                         // PUBLIC IP FOUND
                         if (ip === dashboardIP) {
-                            // MATCH: The WebRTC IP matches the VPN IP.
-                            // This is SAFE because the tunnel is capturing WebRTC traffic.
-                            icon.className = "fas fa-check-circle text-emerald-500";
-                            desc.innerText = "Safe (Matches Tunnel IP)";
-                            desc.className = "text-[10px] text-emerald-600 font-bold";
+                            // The WebRTC IP matches the Main IP.
+                            // NOW CHECK: Is the VPN actually On?
+
+                            if (isVpnOff) {
+                                // MATCHES, BUT VPN IS OFF -> EXPOSED
+                                icon.className = "fas fa-exclamation-triangle text-red-600 blink";
+                                desc.innerText = "VPN Off — WebRTC Exposed";
+                                desc.className = "text-[10px] text-red-600 font-bold";
+                            } else {
+                                // MATCHES AND VPN IS ON -> SAFE (TUNNELED)
+                                icon.className = "fas fa-check-circle text-emerald-500";
+                                desc.innerText = "Safe (Matches Tunnel IP)";
+                                desc.className = "text-[10px] text-emerald-600 font-bold";
+                            }
                         } else {
-                            // MISMATCH: The WebRTC IP is Public AND different from VPN IP.
-                            // This is a LEAK (Real IP exposed).
+                            // DOES NOT MATCH -> CRITICAL LEAK (Split Tunnel or Leak)
                             icon.className = "fas fa-exclamation-triangle text-red-600 blink";
                             desc.innerText = "CRITICAL: Real IP Leaked!";
                             desc.className = "text-[10px] text-red-600 font-bold";
                         }
                     }
-                    // --- NEW LOGIC END ---
+                    // --- LOGIC END ---
                 }
             }
         };
 
         p.createOffer().then(d => p.setLocalDescription(d)).catch(e => {});
 
-        // Timeout fallback if nothing found
         setTimeout(() => {
             if (s.size === 0) {
                 l.innerHTML = '<li class="text-xs text-gray-400">Hidden by Browser Privacy</li>';
