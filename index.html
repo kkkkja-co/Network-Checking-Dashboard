@@ -1066,67 +1066,81 @@
         speedTestAbortController = new AbortController();
         const signal = speedTestAbortController.signal;
 
-        const status=document.getElementById('test-state'), bar=document.getElementById('speed-progress'), icon=document.getElementById('speed-status-icon');
-        const dlEl=document.getElementById('dl-final'), ulEl=document.getElementById('ul-final'), pgEl=document.getElementById('ping-value');
-        const serverLoc=document.getElementById('server-location');
+        const status = document.getElementById('test-state');
+        const bar = document.getElementById('speed-progress');
+        const icon = document.getElementById('speed-status-icon');
+        const dlEl = document.getElementById('dl-final');
+        const ulEl = document.getElementById('ul-final');
+        const pgEl = document.getElementById('ping-value');
+        const serverLoc = document.getElementById('server-location');
         const gaugeFill = document.getElementById('speed-gauge');
         const gaugeContainer = document.getElementById('gauge-container');
 
-        dlEl.innerText="-- Mbps"; ulEl.innerText="-- Mbps"; bar.style.width="0%";
+        dlEl.innerText = "-- Mbps";
+        ulEl.innerText = "-- Mbps";
+        bar.style.width = "0%";
 
-        // Apply Visuals based on Switch
-        if(animationEnabled) {
-            icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600 blink";
+        // Apply Visuals
+        if (animationEnabled) {
+            icon.className = "p-2 bg-emerald-50 rounded-lg text-emerald-600 blink";
             gaugeFill.classList.add('gauge-pulse');
             gaugeContainer.classList.add('active-anim');
-        } else {
-            icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600"; // No blink
-            gaugeFill.classList.remove('gauge-pulse');
-            gaugeContainer.classList.remove('active-anim');
         }
 
-        let fP="--", fD="--", fU="--";
+        let fP = "--", fD = "--", fU = "--";
         let jitterVal = "0";
 
         try {
             // 1. SERVER INFO (Trace) & PING BURST
-            status.innerText="Measuring Latency & Jitter...";
+            status.innerText = "Measuring Latency & Jitter...";
 
             // Ping Burst for Jitter
             const pings = [];
-            for(let i=0; i<5; i++) {
-                const pS = performance.now();
-                await fetch('https://speed.cloudflare.com/cdn-cgi/trace?r='+Math.random(), { signal });
-                const pE = performance.now();
-                pings.push(pE - pS);
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const pS = performance.now();
+                    await fetch('https://speed.cloudflare.com/cdn-cgi/trace?r=' + Math.random(), { signal });
+                    const pE = performance.now();
+                    pings.push(pE - pS);
+                } catch (e) {
+                    // Ignore ping errors to allow test to continue
+                }
             }
-            const avgPing = pings.reduce((a,b)=>a+b,0)/pings.length;
-            const minPing = Math.min(...pings);
-            // Calculate Jitter (Standard Deviation or Variance)
-            const variance = pings.reduce((a,b)=>a + Math.pow(b-avgPing, 2), 0) / pings.length;
-            jitterVal = Math.sqrt(variance).toFixed(1);
-            fP = Math.round(avgPing)+" ms";
+
+            if (pings.length > 0) {
+                const avgPing = pings.reduce((a, b) => a + b, 0) / pings.length;
+                // Calculate Jitter
+                const variance = pings.reduce((a, b) => a + Math.pow(b - avgPing, 2), 0) / pings.length;
+                jitterVal = Math.sqrt(variance).toFixed(1);
+                fP = Math.round(avgPing) + " ms";
+            } else {
+                fP = "Error";
+            }
             pgEl.innerText = fP;
 
-            // Get Location Code
-            const traceReq = await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal });
-            const traceText = await traceReq.text();
-            const lines = traceText.split('\n');
-            let coloCode = "Unknown";
-            let locCode = "";
-            lines.forEach(l => {
-                if(l.startsWith('colo=')) coloCode = l.split('=')[1];
-                if(l.startsWith('loc=')) locCode = l.split('=')[1];
-            });
-            serverLoc.innerHTML = `${coloCode} <span class="text-gray-400 font-normal">(${locCode})</span>`;
+            // Get Location Code (Safe Fetch)
+            try {
+                const traceReq = await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal });
+                const traceText = await traceReq.text();
+                const lines = traceText.split('\n');
+                let coloCode = "Unknown";
+                let locCode = "";
+                lines.forEach(l => {
+                    if (l.startsWith('colo=')) coloCode = l.split('=')[1];
+                    if (l.startsWith('loc=')) locCode = l.split('=')[1];
+                });
+                serverLoc.innerHTML = `${coloCode} <span class="text-gray-400 font-normal">(${locCode})</span>`;
+            } catch (e) {
+                serverLoc.innerHTML = `Unknown <span class="text-gray-400 font-normal">(Cors/Block)</span>`;
+            }
 
             // 2. DOWNLOAD (High Concurrency & Looping)
-            status.innerText="Downloading (10 Streams)...";
+            status.innerText = "Downloading (10 Streams)...";
             updateGauge(0, "Mbps (Down)");
 
             const streams = 10;
-            const duration = 8000; // Increased to 8s
-            const dlUrl = "https://speed.cloudflare.com/__down?bytes=100000000"; // 100MB Chunks
+            const duration = 8000; // 8 Seconds
+            const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000"; // 50MB chunks
 
             let startTime = performance.now();
             let totalBytesLoaded = 0;
@@ -1140,24 +1154,26 @@
                         while (true) {
                             const { done, value } = await reader.read();
                             if (done) break;
-                            loaded += value.length;
                             totalBytesLoaded += value.length;
                             if (performance.now() - startTime > duration) {
                                 reader.cancel();
                                 return;
                             }
                         }
-                    } catch (e) { if (e.name === 'AbortError') return; }
+                    } catch (e) {
+                        // FIX: Return on ALL errors to prevent infinite loop freezing
+                        return;
+                    }
                 }
             });
 
             const uiInterval = setInterval(() => {
-                if(signal.aborted) { clearInterval(uiInterval); return; }
+                if (signal.aborted) { clearInterval(uiInterval); return; }
                 const t = (performance.now() - startTime) / 1000;
                 if (t > 0.5) {
                     const currentMbps = ((totalBytesLoaded * 8) / t / 1024 / 1024).toFixed(1);
                     updateGauge(currentMbps, "Mbps (Down)");
-                    bar.style.width = Math.min((t/duration)*50, 50) + "%";
+                    bar.style.width = Math.min((t / duration) * 50, 50) + "%";
                 }
             }, 200);
 
@@ -1173,11 +1189,11 @@
             updateGauge(mbps, "Mbps (Down)");
             bar.style.width = "50%";
 
-            // 3. UPLOAD (High Concurrency & Looping)
-            status.innerText="Uploading (10 Streams)...";
+            // 3. UPLOAD
+            status.innerText = "Uploading (10 Streams)...";
             updateGauge(0, "Mbps (Up)", true);
 
-            const upSize = 25 * 1024 * 1024; // 25MB Chunks
+            const upSize = 5 * 1024 * 1024; // 5MB Chunks (Reduced for compatibility)
             const blob = new Blob([new Uint8Array(upSize)]);
             let totalUpBytes = 0;
             startTime = performance.now();
@@ -1187,17 +1203,20 @@
                     try {
                         await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob, signal });
                         totalUpBytes += upSize;
-                    } catch(e) { if (e.name === 'AbortError') return; }
+                    } catch (e) {
+                        // FIX: Return on ALL errors to prevent infinite loop freezing
+                        return;
+                    }
                 }
             });
 
             const upUiInterval = setInterval(() => {
-                if(signal.aborted) { clearInterval(upUiInterval); return; }
+                if (signal.aborted) { clearInterval(upUiInterval); return; }
                 const t = (performance.now() - startTime) / 1000;
                 if (t > 0.5) {
                     const currentUpMbps = ((totalUpBytes * 8) / t / 1024 / 1024).toFixed(1);
                     updateGauge(currentUpMbps, "Mbps (Up)", true);
-                    bar.style.width = 50 + Math.min((t/duration)*50, 50) + "%";
+                    bar.style.width = 50 + Math.min((t / duration) * 50, 50) + "%";
                 }
             }, 200);
 
@@ -1207,20 +1226,21 @@
             if (signal.aborted) throw new Error('Aborted');
 
             const upTime = (performance.now() - startTime) / 1000;
-            if(totalUpBytes > 0) {
+            // Handle case where upload was fully blocked by CORS
+            if (totalUpBytes > 0) {
                 const upMbps = ((totalUpBytes * 8) / upTime / 1024 / 1024).toFixed(1);
                 fU = upMbps + " Mbps";
                 ulEl.innerText = fU;
                 updateGauge(upMbps, "Mbps (Up)", true);
             } else {
-                fU = "CORS Error";
-                ulEl.innerText = "CORS/Block";
+                fU = "Failed (CORS)";
+                ulEl.innerText = "Blocked";
             }
 
-            status.innerText="Complete";
-            status.className="text-xs font-bold text-emerald-600";
-            bar.style.width="100%";
-            icon.className="p-2 bg-emerald-50 rounded-lg text-emerald-600";
+            status.innerText = "Complete";
+            status.className = "text-xs font-bold text-emerald-600";
+            bar.style.width = "100%";
+            icon.className = "p-2 bg-emerald-50 rounded-lg text-emerald-600";
             gaugeFill.classList.remove('gauge-pulse');
             gaugeContainer.classList.remove('active-anim');
 
@@ -1228,14 +1248,14 @@
             lastSpeedData = {
                 dl: fD,
                 ul: fU,
-                ping: fP.replace(" ms",""),
+                ping: fP.replace(" ms", ""),
                 jitter: jitterVal,
                 ploss: "0% (Estimated)"
             };
 
             saveResult(fP, fD, fU);
 
-        } catch(e) {
+        } catch (e) {
             if (e.message === 'Aborted' || e.name === 'AbortError') {
                 status.innerText = "Stopped";
                 status.className = "text-xs font-bold text-orange-500";
@@ -1244,7 +1264,7 @@
                 status.innerText = "Network Error";
                 status.className = "text-xs font-bold text-red-600";
             }
-            icon.className="p-2 bg-gray-50 rounded-lg text-gray-400";
+            icon.className = "p-2 bg-gray-50 rounded-lg text-gray-400";
             gaugeFill.classList.remove('gauge-pulse');
             gaugeContainer.classList.remove('active-anim');
         } finally {
