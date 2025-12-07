@@ -1420,9 +1420,8 @@
     }
 
     // --- 3. VPN & SYSTEM UTILS ---
-    // --- UPDATED: Comprehensive VPN/Hosting ASN Database ---
     const KNOWN_VPN_ASNS = new Set([
-        // --- TIER 1: EXCLUSIVE VPN BRANDS ---
+        // --- TIER 1: COMMERCIAL VPN BRANDS ---
         209854, // Surfshark (Cyberzone)
         216025, // Mullvad VPN
         39351,  // Mullvad (31173 Services AB)
@@ -1433,51 +1432,25 @@
         397223, // ExpressVPN (Datacamp)
         60341,  // TunnelBear
 
-        // --- TIER 2: SHARED VPN BACKBONES (The "Big 5") ---
-        // M247 (Nord, Surfshark, Proton, CyberGhost, Windscribe, etc.)
-        9009, 212238, 201814,
-
-        // Datacamp / CDN77 / DataPacket (Surfshark, PIA, Zenmate)
-        60068, 212238, 42473,
-
-        // Leaseweb (Private Internet Access - PIA, PrivateVPN)
-        16265, 28753, 395954, 60626, 57043, 18779,
-
-        // GSL Networks & Tzulo (PureVPN, CyberGhost)
-        54095, 137409, 11878,
-
-        // NetProtect / Stackpath / Highwinds (IPVanish, StrongVPN, Encrypt.me)
-        33438, 12989, 54600, 30635, 6939,
+        // --- TIER 2: SHARED VPN BACKBONES ---
+        9009, 212238, 201814, // M247 Group
+        60068, 212238, 42473, // Datacamp / CDN77 / DataPacket
+        16265, 28753, 395954, 60626, 57043, 18779, // Leaseweb
+        54095, 137409, 11878, // GSL Networks & Tzulo
+        33438, 12989, 54600, 30635, 6939, // NetProtect / Stackpath
 
         // --- TIER 3: CLOUD VPS PROVIDERS (Self-Hosted/Generic) ---
-        // DigitalOcean
-        14061, 202018, 62567, 393406,
+        14061, 202018, 62567, 393406, // DigitalOcean
+        20473, 64515, 206443, // The Constant Company (Vultr)
+        63949, 21844, 17204, // Akamai / Linode
+        16276, 35540, 9989, // OVH SAS
+        24940, 213230, 47232, // Hetzner Online
+        16509, 14618, 7224, 8987, // Amazon AWS
+        15169, 396982, 19527, // Google Cloud
+        8075, 8074, // Microsoft Azure
+        31898, // Oracle Cloud
 
-        // The Constant Company (Vultr) - Heavily used by IPVanish
-        20473, 64515, 206443,
-
-        // Akamai / Linode
-        63949, 21844, 17204,
-
-        // OVH SAS
-        16276, 35540, 9989,
-
-        // Hetzner Online
-        24940, 213230, 47232,
-
-        // Amazon AWS (Common ranges)
-        16509, 14618, 7224, 8987,
-
-        // Google Cloud
-        15169, 396982, 19527,
-
-        // Microsoft Azure
-        8075, 8074,
-
-        // Oracle Cloud
-        31898,
-
-        // --- TIER 4: HIGH-RISK HOSTING & PROXY NETWORKS ---
+        // --- TIER 4: HIGH-RISK HOSTING & PROXY NETWORKS (EXPANDED) ---
         13335,  // Cloudflare (WARP / iCloud Relay)
         53667,  // FranTech (BuyVM)
         202425, // IP Volume
@@ -1495,12 +1468,19 @@
         395092, // Shock Hosting
         19318,  // Intergrid
         29802,  // Hivelocity
-        14618,   // Fastly
-        41281,  // NEW: AS41281 / Keff Networks Ltd / Tor
-        215551, // NEW: AS215551 / Keff Networks Ltd / Tor
+        14618,  // Fastly
+
+        // --- NEW ADDITIONS ---
+        41281,  // AS41281 (Keff Networks infra)
+        215551, // AS215551 (Keff Networks infra)
+        398327, // Telenor Norge AS (High-risk hosting)
+        394353, // Hostwinds (Hosting/Proxy)
+        34988,  // QuadraNet (High-risk colo/Hosting)
+        54314,  // Pexigo (Proxy)
+        398284, // Zomro B.V. (Hosting/Proxy)
     ]);
 
-    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes Keff Networks Ltd) ---
+    // --- UPDATED: Comprehensive VPN Brand Mapping (EXPANDED) ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
@@ -1525,79 +1505,72 @@
         { keys: ['airvpn'], label: 'Likely AirVPN - AirVPN' },
         { keys: ['torguard'], label: 'Likely TorGuard - TorGuard' },
 
-        // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (High Risk) ---
+        // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (Tor/Anonymity) ---
 
         // NEW ENTRY: Keff Networks Ltd
         { keys: ['keff networks ltd', 'keff networks'], label: 'Possibly Tor Network / Datacenter - Keff Networks Ltd' },
 
-        // Foundation for Applied Privacy -> Likely Tor Network
+        // NEW ENTRY: Foundation for Applied Privacy
         { keys: ['foundation for applied privacy', 'applied privacy'], label: 'Likely Tor Network - Foundation for Applied Privacy' },
 
-        // 1337 Services GmbH -> Generic/Datacenter / Possibly Tor Network
+        // NEW ENTRY: 1337 Services GmbH
         { keys: ['1337 services gmbh', '1337 services'], label: 'Possibly Tor Network / Datacenter - 1337 Services GmbH' },
 
-        // FlokiNET ehf -> Generic/Datacenter / Possibly Tor Network
+        // NEW ENTRY: FlokiNET ehf
         { keys: ['flokinet ehf', 'flokinet'], label: 'Possibly Tor Network / Datacenter - FlokiNET ehf' },
 
-        // QuxLabs AB -> Generic/Datacenter / Possibly Tor Network
+        // NEW ENTRY: QuxLabs AB
         { keys: ['quxlabs ab', 'quxlabs'], label: 'Possibly Tor Network / Datacenter - QuxLabs AB' },
 
-        // Dotsrc -> Generic/Datacenter / Possibly Tor Network
+        // NEW ENTRY: Dotsrc
         { keys: ['dotsrc', 'forening for dotsrc'], label: 'Possibly Tor Network / Datacenter - Dotsrc' },
 
-        // Stiftung Erneuerbare Freiheit -> Likely Tor Network
+        // NEW ENTRY: Stiftung Erneuerbare Freiheit
         { keys: ['stiftung erneuerbare freiheit', 'erneur freih'], label: 'Likely Tor Network - Stiftung Erneuerbare Freiheit' },
 
-        // Online.net -> Likely Tor Network
+        // NEW ENTRY: Online.net
         { keys: ['online.net', 'online sas'], label: 'Likely Tor Network - Online.net' },
 
-        // 100UP -> Likely Tor Network
+        // NEW ENTRY: 100UP
         { keys: ['100up'], label: 'Likely Tor Network - 100UP' },
 
-        // IELO LIAZO SERVICES SAS -> Likely Tor Network
+        // NEW ENTRY: IELO LIAZO SERVICES SAS
         { keys: ['ielo liazo', 'lazo services'], label: 'Likely Tor Network - IELO LIAZO' },
 
-        // Host Universal -> Possible Surfshark
+        // NEW ENTRY: Host Universal
         { keys: ['host universal'], label: 'Possible Surfshark - Host Universal' },
 
-        // Datacamp -> Surfshark / PIA / Proton
-        { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA/Proton - Datacamp' },
-
-        // Estnoc -> Datacenter / Possibly Nord/Surfshark/Proton
-        { keys: ['estnoc'], label: 'Datacenter / Possibly Nord/Surfshark/Proton - Estnoc' },
-
-        // Orion -> Datacenter / Possibly Proton
-        { keys: ['orion'], label: 'Datacenter / Possibly Proton - Orion' },
-
-        // xTom -> Datacenter / Possibly Proton
-        { keys: ['xtom'], label: 'Datacenter / Possibly Proton - xTom' },
+        // NEW ENTRIES: High-Risk Hosting/Proxy
+        { keys: ['pexigo', 'zomro', 'dedipath', 'hostwinds'], label: 'Generic Hosting / Proxy Network - High Risk' },
+        { keys: ['telenor'], label: 'Generic Hosting / Anonymity Service - Telenor' },
 
 
         // --- TIER 3: SHARED INFRASTRUCTURE GROUPS ---
+        // Datacamp (Updated)
+        { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA/Proton - Datacamp' },
+        // Estnoc
+        { keys: ['estnoc'], label: 'Datacenter / Possibly Nord/Surfshark/Proton - Estnoc' },
+        // Orion
+        { keys: ['orion'], label: 'Datacenter / Possibly Proton - Orion' },
+        // xTom
+        { keys: ['xtom'], label: 'Datacenter / Possibly Proton - xTom' },
         // NetProtect/Stackpath group
         { keys: ['strong technology', 'strongvpn', 'ipvanish', 'netprotect', 'highwinds', 'stackpath', 'performive'], label: 'Likely StrongVPN/IPVanish - NetProtect' },
-
         // M247 group
         { keys: ['m247', 'm europe', 'ipxo'], label: 'Likely Nord/Surfshark/Proton - M247' },
-
         // GSL group
         { keys: ['tzulo', 'gsl networks'], label: 'Likely PureVPN/CyberGhost - GSL' },
-
         // Clouvider group
         { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
-
         // Leaseweb
         { keys: ['leaseweb'], label: 'Likely PIA/PrivateVPN - Leaseweb' },
 
-        // --- TIER 4: GENERIC CLOUD/VPS (Updated Linode entry) ---
+        // --- TIER 4: GENERIC CLOUD/VPS ---
         { keys: ['cloudflare', 'warp'], label: 'Likely WARP/iCloud Relay - Cloudflare' },
         { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
         { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
         { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
-
-        // Linode entry updated here
         { keys: ['linode', 'akamai'], label: 'Likely Tor Network / Self-Hosted VPN - Linode/Akamai' },
-
         { keys: ['ovh', 'ovh sas'], label: 'Likely Self-Hosted VPN - OVH' },
         { keys: ['hetzner'], label: 'Likely Self-Hosted VPN - Hetzner' },
         { keys: ['amazon', 'aws'], label: 'Likely AWS VPN - AWS' },
