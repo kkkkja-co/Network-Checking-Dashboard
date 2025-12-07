@@ -1495,10 +1495,12 @@
         395092, // Shock Hosting
         19318,  // Intergrid
         29802,  // Hivelocity
-        14618   // Fastly
+        14618,   // Fastly
+        41281,  // NEW: AS41281 / Keff Networks Ltd / Tor
+        215551, // NEW: AS215551 / Keff Networks Ltd / Tor
     ]);
 
-    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes Foundation for Applied Privacy) ---
+    // --- UPDATED: Comprehensive VPN Brand Mapping (Includes Keff Networks Ltd) ---
     // Format: "Likely [VPN Names] - [ASN/Infra]"
     const VPN_BRAND_MAP = [
         // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
@@ -1525,7 +1527,10 @@
 
         // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (High Risk) ---
 
-        // NEW ENTRY: Foundation for Applied Privacy -> Likely Tor Network
+        // NEW ENTRY: Keff Networks Ltd
+        { keys: ['keff networks ltd', 'keff networks'], label: 'Possibly Tor Network / Datacenter - Keff Networks Ltd' },
+
+        // Foundation for Applied Privacy -> Likely Tor Network
         { keys: ['foundation for applied privacy', 'applied privacy'], label: 'Likely Tor Network - Foundation for Applied Privacy' },
 
         // 1337 Services GmbH -> Generic/Datacenter / Possibly Tor Network
