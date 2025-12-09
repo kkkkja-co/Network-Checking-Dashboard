@@ -1478,6 +1478,10 @@
         34988,  // QuadraNet (High-risk colo/Hosting)
         54314,  // Pexigo (Proxy)
         398284, // Zomro B.V. (Hosting/Proxy)
+        // --- CUSTOMER REQUESTED ADDITIONS ---
+        54113, // Fastly, Inc. (CDN/iCloud Private Relay)
+        23959, // Owl Limited (Hosting/Mullvad Infra)
+        43357 // Owl Limited (Hosting/Mullvad Infra)
     ]);
 
     // --- UPDATED: Comprehensive VPN Brand Mapping (EXPANDED) ---
@@ -1544,6 +1548,9 @@
         { keys: ['pexigo', 'zomro', 'dedipath', 'hostwinds'], label: 'Generic Hosting / Proxy Network - High Risk' },
         { keys: ['telenor'], label: 'Generic Hosting / Anonymity Service - Telenor' },
 
+        // --- CUSTOMER REQUESTED ADDITIONS ---
+        { keys: ['owl limited', 'asn23959', 'asn43357'], label: 'Likely Mullvad/Proton - Owl Limited/AS' },
+
 
         // --- TIER 3: SHARED INFRASTRUCTURE GROUPS ---
         // Datacamp (Updated)
@@ -1569,6 +1576,8 @@
 
         // --- TIER 4: GENERIC CLOUD/VPS ---
         { keys: ['cloudflare', 'warp'], label: 'Likely WARP/iCloud Relay - Cloudflare' },
+        // CUSTOMER REQUESTED ADDITION: Fastly for iCloud Relay (Tier 4)
+        { keys: ['fastly', 'asn54113'], label: 'Likely WARP/iCloud Relay - Fastly/CDN' },
         { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
         { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
         { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
@@ -1595,7 +1604,9 @@
         'pia', 'cyberghost', 'strongvpn', 'fastestvpn', 'ivacy', 'veepn', 'torguard',
         'airvpn', 'perfectprivacy', 'cactusvpn', 'ovpn', 'hide.me',
         'privatevpn', 'protonvpn', 'vultr', 'linode', 'choopa', 'performive',
-        'shock hosting', 'teraswitch', 'melbicom', 'packethub', 'datacamp'
+        'shock hosting', 'teraswitch', 'melbicom', 'packethub', 'datacamp',
+        // CUSTOMER REQUESTED ADDITION
+        'fastly', 'owl limited'
     ];
 
     // Compiled Regex for O(1) matching of strings
