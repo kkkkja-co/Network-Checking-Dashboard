@@ -341,13 +341,13 @@
 </div>
 
 <div id="vpn-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300" onclick="closeVpnModal()">
-    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto flex flex-col" onclick="event.stopPropagation()">
         <button onclick="closeVpnModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i class="fas fa-times text-lg"></i></button>
-        <div class="mb-5">
+        <div class="mb-5 flex-shrink-0">
             <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i class="fas fa-shield-alt text-cyan-500"></i> VPN & Privacy Report</h3>
             <p class="text-xs text-gray-500 mt-1">Detailed Analysis of your connection privacy</p>
         </div>
-        <div class="space-y-4">
+        <div class="space-y-4 flex-grow overflow-y-auto custom-scroll pr-1">
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex justify-between items-center">
                 <span class="text-sm font-bold text-slate-600">Privacy Level</span>
                 <span id="vpn-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
@@ -399,6 +399,13 @@
                 <p class="text-[10px] text-gray-500" id="desc-tor">Checking for Tor exit nodes...</p>
             </div>
         </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-100 flex-shrink-0">
+            <button onclick="reportMisdetection()" class="w-full py-2 bg-slate-800 text-white rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center text-sm font-semibold">
+                <i class="fas fa-bug mr-2"></i> Report Mis-detection / False Positive
+            </button>
+        </div>
+
     </div>
 </div>
 
@@ -947,6 +954,36 @@
         setTimeout(() => {
             m.classList.add('hidden');
         }, 300);
+    }
+
+    // --- NEW: REPORT MIS-DETECTION LOGIC ---
+    function reportMisdetection() {
+        const ip = document.getElementById('ipv4-display').innerText || 'N/A';
+        const status = document.getElementById('vpn-status').innerText || 'N/A';
+        const provider = document.getElementById('vpn-provider-name').innerText || 'N/A';
+        const asn = document.getElementById('asn-display').innerText || 'N/A';
+
+        const subject = `VPN Detection Issue Report - ${ip}`;
+        const body = `
+        I believe the VPN detection result is incorrect (False Positive or False Negative).
+
+        --- Detected Information ---
+        Public IP: ${ip}
+        Detected Status: ${status}
+        Detected Provider: ${provider}
+        ASN: ${asn}
+
+        --- My Details (Please fill out) ---
+        I am/am not using a VPN or Proxy:
+        My actual ISP (if known):
+        What should the status be:
+
+        --- Description of Issue ---
+
+        `;
+
+        const mailtoLink = `mailto:contact@bunorden.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.trim())}`;
+        window.open(mailtoLink, '_blank');
     }
 
     // --- NEW: SPEED MODAL LOGIC ---
