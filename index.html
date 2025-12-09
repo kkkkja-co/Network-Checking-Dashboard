@@ -405,7 +405,7 @@
             </div>
 
             <div class="bg-gray-100 p-3 rounded-lg border border-gray-200 mt-4">
-                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Raw Detection String (ISP + Org + ASN)</h4>
+                <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-2">Raw Detection String (ISP + Org + ASN)</h4>
                 <div class="font-mono text-[10px] text-slate-700 break-all leading-relaxed" id="vpn-raw-string-bottom">--</div>
             </div>
 
@@ -964,14 +964,14 @@
 
         reasons.forEach(reason => {
             const div = document.createElement('div');
-            div.className = 'text-[10px] text-gray-500 bg-gray-50 p-2 rounded';
+            div.className = 'text-sm text-gray-500 bg-gray-50 p-2 rounded';
             div.textContent = reason;
             reasonsListEl.appendChild(div);
         });
 
         if (reasons.length === 0) {
             const div = document.createElement('div');
-            div.className = 'text-[10px] text-emerald-600 bg-emerald-50 p-2 rounded';
+            div.className = 'text-sm text-emerald-600 bg-emerald-50 p-2 rounded';
             div.textContent = 'No specific VPN or proxy fingerprints detected in provider details.';
             reasonsListEl.appendChild(div);
         }
