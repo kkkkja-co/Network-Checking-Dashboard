@@ -279,7 +279,7 @@
                 <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Device Identity</h4>
                 <div class="grid grid-cols-2 gap-2 text-xs">
                     <div><span class="text-gray-400 block">Vendor</span><span class="font-mono font-bold text-slate-700" id="os-vendor">--</span></div>
-                    <div><span class="text-gray-400 block">Model</span><span class="font-mono font-bold text-slate-700" id="os-model">--</span></div>
+                    <div><span class="font-mono font-bold text-slate-700" id="os-model">--</span></div>
                 </div>
             </div>
             <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
@@ -288,7 +288,7 @@
                     <div><span class="text-gray-400 block">Resolution</span><span class="font-mono font-bold text-slate-700" id="os-res">--</span></div>
                     <div><span class="text-gray-400 block">Color Depth</span><span class="font-mono font-bold text-slate-700" id="os-cdepth">--</span></div>
                     <div><span class="text-gray-400 block">Pixel Depth</span><span class="font-mono font-bold text-slate-700" id="os-pdepth">--</span></div>
-                    <div><span class="text-gray-400 block">Orientation</span><span class="font-mono font-bold text-slate-700" id="os-orient">--</span></div>
+                    <div><span class="font-mono font-bold text-slate-700" id="os-orient">--</span></div>
                 </div>
             </div>
             <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
@@ -349,11 +349,6 @@
         </div>
         <div class="space-y-4 flex-grow overflow-y-auto custom-scroll pr-1">
 
-            <div class="bg-gray-100 p-3 rounded-lg border border-gray-200">
-                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Raw Detection String (ISP + Org + ASN)</h4>
-                <div class="font-mono text-[10px] text-slate-700 break-all leading-relaxed" id="vpn-raw-string">--</div>
-            </div>
-
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex justify-between items-center">
                 <span class="text-sm font-bold text-slate-600">Privacy Level</span>
                 <span id="vpn-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
@@ -404,6 +399,16 @@
                 <div class="flex justify-between items-center mb-1"><p class="text-xs font-bold text-slate-700">5. Tor / Onion Routing</p><i id="icon-tor" class="fas fa-circle text-[10px] text-gray-300"></i></div>
                 <p class="text-[10px] text-gray-500" id="desc-tor">Checking for Tor exit nodes...</p>
             </div>
+
+            <div id="detection-details-reasons" class="space-y-3 pt-4 border-t border-gray-100">
+                <h4 class="text-xs font-bold text-gray-500 uppercase">Detection Reasons Summary</h4>
+            </div>
+
+            <div class="bg-gray-100 p-3 rounded-lg border border-gray-200 mt-4">
+                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Raw Detection String (ISP + Org + ASN)</h4>
+                <div class="font-mono text-[10px] text-slate-700 break-all leading-relaxed" id="vpn-raw-string-bottom">--</div>
+            </div>
+
         </div>
 
         <div class="mt-4 pt-4 border-t border-gray-100 flex-shrink-0">
@@ -948,7 +953,29 @@
 
         // Populate the raw string immediately before showing the modal
         const info = getCombinedInfo();
-        document.getElementById('vpn-raw-string').innerText = info.combinedName;
+        document.getElementById('vpn-raw-string-bottom').innerText = info.combinedName; // Target the MOVED element
+
+        // Clear and populate the detailed reasons list
+        const reasonsListEl = document.getElementById('detection-details-reasons');
+        reasonsListEl.innerHTML = '';
+
+        // Use the globally stored reasons (set by detectVPN)
+        const reasons = window.vpnDetectionReasons || [];
+
+        reasons.forEach(reason => {
+            const div = document.createElement('div');
+            div.className = 'text-[10px] text-gray-500 bg-gray-50 p-2 rounded';
+            div.textContent = reason;
+            reasonsListEl.appendChild(div);
+        });
+
+        if (reasons.length === 0) {
+            const div = document.createElement('div');
+            div.className = 'text-[10px] text-emerald-600 bg-emerald-50 p-2 rounded';
+            div.textContent = 'No specific VPN or proxy fingerprints detected in provider details.';
+            reasonsListEl.appendChild(div);
+        }
+
 
         m.classList.remove('hidden');
         setTimeout(() => {
@@ -973,7 +1000,8 @@
         const status = document.getElementById('vpn-status').innerText || 'N/A';
         const provider = document.getElementById('vpn-provider-name').innerText || 'N/A';
         const asn = document.getElementById('asn-display').innerText || 'N/A';
-        const rawString = document.getElementById('vpn-raw-string').innerText || 'N/A';
+        // Use the element that holds the raw string in the modal
+        const rawString = document.getElementById('vpn-raw-string-bottom').innerText || 'N/A';
 
         const subject = `VPN Detection Issue Report - ${ip}`;
         const body = `
@@ -985,6 +1013,9 @@
         Detected Provider: ${provider}
         ASN: ${asn}
         Raw String: ${rawString}
+
+        --- Developer Note ---
+        (This data is collected to improve detection logic and will be deleted within 3 days.)
 
         --- My Details (Please fill out) ---
         I am/am not using a VPN or Proxy:
@@ -1484,6 +1515,10 @@
         return { isp, org, asn, combinedName: combinedName.toLowerCase() };
     }
 
+    // Global variable to hold detailed reasons for the modal
+    window.vpnDetectionReasons = [];
+
+
     // --- 3. VPN & SYSTEM UTILS ---
     const KNOWN_VPN_ASNS = new Set([
         // --- TIER 1: COMMERCIAL VPN BRANDS ---
@@ -1639,11 +1674,11 @@
 
         // --- UPDATED CDN/RELAY ENTRIES ---
         // Cloudflare (Updated per request)
-        { keys: ['cloudflare', 'warp', 'asn13335'], label: 'Likely WARP / iCloud Private Relay - Cloudflare Inc.' },
+        { keys: ['cloudflare', 'warp', 'asn13335'], label: 'Usually WARP / iCloud Private Relay - Cloudflare Inc.' },
         // Fastly (Updated per request)
         { keys: ['fastly', 'asn54113'], label: 'Probably WARP / iCloud Private Relay - Fastly Inc.' },
         // Akamai (Updated per request)
-        { keys: ['akamai'], label: 'Probably iCloud Private Relay / Surfshark / Proton - Akamai Technologies' },
+        { keys: ['akamai'], label: 'Maybe iCloud Private Relay / Surfshark / Proton - Akamai Technologies' },
 
 
         // --- TIER 4: GENERIC CLOUD/VPS ---
@@ -1692,6 +1727,9 @@
         const fraudEl = document.getElementById('vpn-fraud-score');
         const providerNameEl = document.getElementById('vpn-provider-name');
 
+        // Reset the detailed reasons list
+        window.vpnDetectionReasons = [];
+
         // System UTC Calculation
         const d = new Date();
         const offset = -d.getTimezoneOffset();
@@ -1701,14 +1739,21 @@
         const ipUtcStr = `UTC${ipUtc}`;
 
         let score = 0;
-        const reasons = [];
+        // Reasons will now be pushed to the global array
+        const reasons = window.vpnDetectionReasons;
 
         // Fast Prep
         const asnNum = parseInt(asn);
         const combinedName = (isp + " " + org + " " + asn).toLowerCase();
 
+        // Use original ISP/Org/ASN for detailed logging
+        const rawIsp = isp || 'N/A';
+        const rawOrg = org || 'N/A';
+        const rawAsn = asn || 'N/A';
+        const rawIp = document.getElementById('ipv4-display').innerText || 'N/A';
+
+
         // Define a set of ASNs that are common cloud platforms (Tier 3/4)
-        // NOTE: Cloudflare ASN 13335 has been removed from this low-confidence set per user request.
         const LOW_CONFIDENCE_ASNS = new Set([
             14061, 202018, 62567, 393406, // DigitalOcean
             20473, 64515, 206443, // The Constant Company (Vultr)
@@ -1729,7 +1774,10 @@
                 matchedBrand = brand.label;
                 score += 50; // High-Confidence Brand Match
                 isHighConfidence = true;
-                reasons.push(`Known Infra/Brand Match`);
+
+                // ADD DETAILED REASON: Use raw ISP/Org/ASN in the explanation
+                reasons.push(`High Confidence Match: Detected pattern for ${brand.label}. (ISP: ${rawIsp}, ASN: ${rawAsn})`);
+
                 document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
                 document.getElementById('desc-isp').innerText = `Infra Matched: ${brand.keys[0]}`;
                 break;
@@ -1744,13 +1792,19 @@
                 // Check if it's a dedicated VPN ASN (High Confidence) vs. a generic Cloud ASN (Low Confidence)
                 if (LOW_CONFIDENCE_ASNS.has(asnNum)) {
                     score += 20; // Low-Confidence Cloud/Hosting ASN
-                    reasons.push(`Cloud/Hosting ASN: ${asnNum}`);
+
+                    // ADD DETAILED REASON
+                    reasons.push(`Low Confidence: IP (${rawIp}) is hosted on major Cloud/Hosting ASN (${rawAsn}).`);
+
                     document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
                     document.getElementById('desc-isp').innerText = `Cloud/Hosting ASN: ${asnNum}`;
                 } else {
                     // This catches dedicated VPN ASNs not covered by the brand map loop above
                     score += 50; // High-Confidence Dedicated VPN ASN (e.g., Mullvad)
-                    reasons.push(`Dedicated VPN ASN: ${asnNum}`);
+
+                    // ADD DETAILED REASON
+                    reasons.push(`High Confidence: IP belongs to dedicated VPN ASN (${rawAsn}) used by anonymous services.`);
+
                     ispFlagged = true;
                     document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
                     document.getElementById('desc-isp').innerText = `Flagged Dedicated ASN: ${asnNum}`;
@@ -1772,7 +1826,9 @@
             const formattedName = match.charAt(0).toUpperCase() + match.slice(1);
             matchedBrand = `${formattedName} Detected`;
 
-            reasons.push(`Generic Provider Match: ${match}`);
+            // ADD DETAILED REASON
+            reasons.push(`Low Confidence: Detected generic VPN provider keyword "${match}" in ISP/Org name (${rawIsp} / ${rawOrg}).`);
+
             document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
             document.getElementById('desc-isp').innerText = `Matched: ${formattedName}`;
         }
@@ -1781,7 +1837,10 @@
         if (score === 0) {
             if (GENERIC_REGEX.test(combinedName)) {
                 score += 20;
-                reasons.push("Generic Hosting Keyword");
+
+                // ADD DETAILED REASON
+                reasons.push(`Low Confidence: Provider name (${rawIsp} / ${rawOrg}) contains general hosting/datacenter keywords.`);
+
                 document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
                 document.getElementById('desc-isp').innerText = "Generic Hosting Keyword";
             } else {
@@ -1794,7 +1853,7 @@
         // 5. Timezone Check
         if (ipUtcStr !== sysUtcStr) {
             score += 20;
-            reasons.push("Timezone Mismatch");
+            reasons.push("Timezone Mismatch: System Timezone does not match Geolocation Timezone.");
             document.getElementById('icon-tz').className = "fas fa-exclamation-circle text-orange-500";
             document.getElementById('desc-tz').innerText = `IP: ${ipUtcStr} vs Sys: ${sysUtcStr}`;
         } else {
@@ -1820,12 +1879,21 @@
             document.getElementById('icon-tor').className = "fas fa-exclamation-circle text-orange-500";
 
             if (matchedBrand.includes("Tor Exit Node")) {
+                // ADD DETAILED REASON
+                reasons.push("CONFIRMED TOR: IP matches a known Tor Exit Node.");
+
                 document.getElementById('desc-tor').innerText = "Confirmed Tor Exit Node";
                 document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             } else {
+                // ADD DETAILED REASON
+                reasons.push("TOR INFRASTRUCTURE: Provider name matches infrastructure commonly used by Tor nodes.");
+
                 document.getElementById('desc-tor').innerText = "Maybe (Infra Match)";
             }
         } else if (/tor exit|tor project|onion/i.test(combinedName)) {
+            // ADD DETAILED REASON
+            reasons.push("CONFIRMED TOR: Raw string contains Tor keywords.");
+
             document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
             document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
         } else {
