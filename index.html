@@ -1134,6 +1134,8 @@
         tb.innerHTML = ht;
     }
 
+    function clearHistory(){ setCookie('speedtest_history',"",-1); renderHistory(); }
+
     // --- 2. MULTI-THREADED SPEEDTEST ENGINE ---
     function updateGauge(v, l, u=false) {
         const gv=document.getElementById('gauge-value'), gl=document.getElementById('gauge-label'), gf=document.getElementById('speed-gauge');
@@ -1590,7 +1592,10 @@
         { keys: ['alibaba'], label: 'Likely Alibaba Cloud VPN - Alibaba' },
 
         // --- TIER 5: ANONYMITY NETWORKS ---
-        { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network - Tor Exit Node' }
+        { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network - Tor Exit Node' },
+        // --- NEW GENERIC HIGH-CONFIDENCE INDICATORS ---
+        { keys: ['vpn service', 'privacy service', 'anonymous vpn'], label: 'Likely Generic VPN Service' },
+        { keys: ['residential proxy', 'anonymous proxy'], label: 'Likely Proxy Network' }
     ];
 
     // Priority 2: Generic list of known providers/terms for regex matching
@@ -1635,45 +1640,78 @@
         const asnNum = parseInt(asn);
         const combinedName = (isp + " " + org + " " + asn).toLowerCase();
 
-        // 1. Check Priority Mappings (VPN_BRAND_MAP)
+        // Define a set of ASNs that are common cloud platforms (Tier 3/4)
+        // NOTE: Cloudflare ASN 13335 has been removed from this low-confidence set per user request.
+        const LOW_CONFIDENCE_ASNS = new Set([
+            14061, 202018, 62567, 393406, // DigitalOcean
+            20473, 64515, 206443, // The Constant Company (Vultr)
+            63949, 21844, 17204, // Akamai / Linode
+            16276, 35540, 9989, // OVH SAS
+            24940, 213230, 47232, // Hetzner Online
+            16509, 14618, 7224, 8987, // Amazon AWS
+            15169, 396982, 19527, // Google Cloud
+            8075, 8074, // Microsoft Azure
+            31898, // Oracle Cloud
+        ]);
+
+        // 1. Check Priority Mappings (VPN_BRAND_MAP) - High Confidence
         let matchedBrand = null;
+        let isHighConfidence = false;
         for (const brand of VPN_BRAND_MAP) {
             if (brand.keys.some(k => combinedName.includes(k))) {
                 matchedBrand = brand.label;
-                score += 50;
-                reasons.push(`Known Infra Match`);
+                score += 50; // High-Confidence Brand Match
+                isHighConfidence = true;
+                reasons.push(`Known Infra/Brand Match`);
                 document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
                 document.getElementById('desc-isp').innerText = `Infra Matched: ${brand.keys[0]}`;
                 break;
             }
         }
 
-        let ispFlagged = !!matchedBrand;
+        let ispFlagged = isHighConfidence; // ISP is definitively flagged only by high-confidence match
 
-        // 2. ASN Check
-        if (!ispFlagged && !isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
-            score += 50;
-            reasons.push(`ASN Match: ${asnNum}`);
-            ispFlagged = true;
-            document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
-            document.getElementById('desc-isp').innerText = `Flagged ASN: ${asnNum}`;
+        // 2. ASN Check (Differentiated Scoring)
+        if (!isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
+            if (!isHighConfidence) {
+                // Check if it's a dedicated VPN ASN (High Confidence) vs. a generic Cloud ASN (Low Confidence)
+                if (LOW_CONFIDENCE_ASNS.has(asnNum)) {
+                    score += 20; // Low-Confidence Cloud/Hosting ASN
+                    reasons.push(`Cloud/Hosting ASN: ${asnNum}`);
+                    document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
+                    document.getElementById('desc-isp').innerText = `Cloud/Hosting ASN: ${asnNum}`;
+                } else {
+                    // This catches dedicated VPN ASNs not covered by the brand map loop above
+                    score += 50; // High-Confidence Dedicated VPN ASN (e.g., Mullvad)
+                    reasons.push(`Dedicated VPN ASN: ${asnNum}`);
+                    ispFlagged = true;
+                    document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
+                    document.getElementById('desc-isp').innerText = `Flagged Dedicated ASN: ${asnNum}`;
+                }
+            }
+        } else if (!ispFlagged) {
+            // If ASN check failed, check if the generic Cloudflare ASN (13335) is the provider.
+            // Since it's not in LOW_CONFIDENCE_ASNS, it gets the neutral check mark unless a keyword is found.
+            if (asnNum === 13335) {
+                document.getElementById('icon-isp').className = "fas fa-check-circle text-emerald-500";
+                document.getElementById('desc-isp').innerText = "Standard CDN/Relay (Cloudflare)";
+            }
         }
 
-        // 3. String Match
+        // 3. String Match (Generic)
         if (!ispFlagged && VPN_REGEX.test(combinedName)) {
-            score += 50;
+            score += 20; // Generic Name Match gets a lower score
             const match = combinedName.match(VPN_REGEX)[0];
             const formattedName = match.charAt(0).toUpperCase() + match.slice(1);
             matchedBrand = `${formattedName} Detected`;
 
-            reasons.push(`Provider Match: ${match}`);
-            ispFlagged = true;
-            document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
+            reasons.push(`Generic Provider Match: ${match}`);
+            document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
             document.getElementById('desc-isp').innerText = `Matched: ${formattedName}`;
         }
 
-        // 4. Generic Heuristics
-        if (!ispFlagged) {
+        // 4. Generic Heuristics (if nothing else hit)
+        if (score === 0) {
             if (GENERIC_REGEX.test(combinedName)) {
                 score += 20;
                 reasons.push("Generic Hosting Keyword");
@@ -1684,6 +1722,7 @@
                 document.getElementById('desc-isp').innerText = "Residential/Standard ISP";
             }
         }
+
 
         // 5. Timezone Check
         if (ipUtcStr !== sysUtcStr) {
@@ -1702,7 +1741,7 @@
         document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
 
         // 7. TOR Check
-        const torKeywords = ['tor network', 'ielo liazo', '100up', 'online.net', 'stiftung erneuerbare freiheit', 'linode', 'dotsrc', 'quxlabs', 'flokinet', '1337 services'];
+        const torKeywords = ['tor exit', 'tor project', 'onion', 'ielo liazo', '100up', 'online.net', 'stiftung erneuerbare freiheit', 'linode', 'dotsrc', 'quxlabs', 'flokinet', '1337 services'];
         let isTorMatch = false;
 
         if (matchedBrand) {
