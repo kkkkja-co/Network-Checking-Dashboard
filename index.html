@@ -1636,13 +1636,17 @@
         { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
         // Leaseweb
         { keys: ['leaseweb'], label: 'Likely PIA/PrivateVPN - Leaseweb' },
-        //Akamai Technologies Inc.
-        { keys: ['akamai'], label: 'Likely Surfshark / Apple iCloud Private Relay / Self-Hosted VPN - Akamai Technologies' },
+
+        // --- UPDATED CDN/RELAY ENTRIES ---
+        // Cloudflare (Updated per request)
+        { keys: ['cloudflare', 'warp', 'asn13335'], label: 'Usually WARP / iCloud Private Relay - Cloudflare Inc.' },
+        // Fastly (Updated per request)
+        { keys: ['fastly', 'asn54113'], label: 'Probably WARP / iCloud Private Relay - Fastly Inc.' },
+        // Akamai (Updated per request)
+        { keys: ['akamai'], label: 'Maybe iCloud Private Relay / Surfshark / Proton - Akamai Technologies' },
+
 
         // --- TIER 4: GENERIC CLOUD/VPS ---
-        { keys: ['cloudflare', 'warp'], label: 'Likely WARP/iCloud Relay - Cloudflare' },
-        // CUSTOMER REQUESTED ADDITION: Fastly for iCloud Relay (Tier 4)
-        { keys: ['fastly', 'asn54113'], label: 'Likely WARP/iCloud Relay - Fastly/CDN' },
         { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
         { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
         { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
@@ -1674,7 +1678,7 @@
         'privatevpn', 'protonvpn', 'vultr', 'linode', 'choopa', 'performive',
         'shock hosting', 'teraswitch', 'melbicom', 'packethub', 'datacamp',
         // CUSTOMER REQUESTED ADDITION
-        'fastly', 'owl limited'
+        'fastly', 'owl limited', 'akamai'
     ];
 
     // Compiled Regex for O(1) matching of strings
