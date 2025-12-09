@@ -348,6 +348,12 @@
             <p class="text-xs text-gray-500 mt-1">Detailed Analysis of your connection privacy</p>
         </div>
         <div class="space-y-4 flex-grow overflow-y-auto custom-scroll pr-1">
+
+            <div class="bg-gray-100 p-3 rounded-lg border border-gray-200">
+                <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">Raw Detection String (ISP + Org + ASN)</h4>
+                <div class="font-mono text-[10px] text-slate-700 break-all leading-relaxed" id="vpn-raw-string">--</div>
+            </div>
+
             <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex justify-between items-center">
                 <span class="text-sm font-bold text-slate-600">Privacy Level</span>
                 <span id="vpn-risk-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
@@ -939,6 +945,11 @@
     function showVpnModal() {
         const m = document.getElementById('vpn-modal');
         const content = m.querySelector('div');
+
+        // Populate the raw string immediately before showing the modal
+        const info = getCombinedInfo();
+        document.getElementById('vpn-raw-string').innerText = info.combinedName;
+
         m.classList.remove('hidden');
         setTimeout(() => {
             m.classList.remove('opacity-0');
@@ -962,6 +973,7 @@
         const status = document.getElementById('vpn-status').innerText || 'N/A';
         const provider = document.getElementById('vpn-provider-name').innerText || 'N/A';
         const asn = document.getElementById('asn-display').innerText || 'N/A';
+        const rawString = document.getElementById('vpn-raw-string').innerText || 'N/A';
 
         const subject = `VPN Detection Issue Report - ${ip}`;
         const body = `
@@ -972,6 +984,7 @@
         Detected Status: ${status}
         Detected Provider: ${provider}
         ASN: ${asn}
+        Raw String: ${rawString}
 
         --- My Details (Please fill out) ---
         I am/am not using a VPN or Proxy:
@@ -1295,8 +1308,8 @@
 
             // PHASE 2: DOWNLOAD
             status.innerText = "Downloading (Warm-up)...";
-            const dlDuration = 10000;
-            const warmUpTime = 2000;
+            const dlDuration = 15000; // Increased duration for accuracy
+            const warmUpTime = 4000;  // Increased warm-up time
             const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000";
             let dlStartTime = performance.now();
             let dlTotalBytes = 0;
@@ -1348,7 +1361,8 @@
             // PHASE 3: UPLOAD
             status.innerText = "Uploading (Warm-up)...";
             updateGauge(0, "Mbps (Up)", true);
-            const ulDuration = 8000;
+            const ulDuration = 12000; // Increased duration for accuracy
+            // warmUpTime remains 4000
             const upChunkSize = 2 * 1024 * 1024;
             const blob = new Blob([new Uint8Array(upChunkSize)]);
             let ulStartTime = performance.now();
@@ -1456,6 +1470,18 @@
             // 5. Stop Animation
             if(icon) icon.classList.remove('fa-spin');
         }
+    }
+
+    // --- NEW HELPER FUNCTION TO GET COMBINED INFO FOR MODAL ---
+    function getCombinedInfo() {
+        const isp = document.getElementById('isp-display').innerText || 'N/A';
+        const org = document.getElementById('org-display').innerText || 'N/A';
+        const asn = document.getElementById('asn-display').innerText || 'N/A';
+
+        // Match the logic in detectVPN for combinedName, but keep original case for display
+        const combinedName = `${isp} ${org} ${asn}`;
+
+        return { isp, org, asn, combinedName: combinedName.toLowerCase() };
     }
 
     // --- 3. VPN & SYSTEM UTILS ---
