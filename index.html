@@ -135,7 +135,7 @@
 
                 <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">1. How This Application Works</h3>
                 <p>
-                    Unlike traditional web services, this dashboard runs locally in your web browser using JavaScript. When you open this page, your browser executes code to analyze your network connection in real-time.
+                    Unlike traditional web services, this dashboard runs locally in your web browser using JavaScript. When you open this page, your browser executes code to analyze your network connection in real-time. The Speed Test uses extended durations (up to 15 seconds for download, 12 seconds for upload) to ensure a more accurate, stable average of your network performance.
                 </p>
                 <ul class="list-disc pl-5 space-y-2 mb-4">
                     <li><strong>No User Accounts:</strong> We do not require login, email, or registration.</li>
@@ -203,9 +203,9 @@
                     This tool uses STUN servers to detect local IP leaks. This process is done client-side. We do not log detected IPs.
                 </p>
 
-                <h4 class="font-bold text-slate-800 mt-4">B. VPN Detection</h4>
+                <h4 class="font-bold text-slate-800 mt-4">B. VPN Detection & Reporting</h4>
                 <p class="text-sm">
-                    We analyze your ISP/ASN against public databases of known VPNs. This logic runs locally; we do not report VPN usage to any third party.
+                    The VPN detection uses heuristics (ISP name, ASN, timezone/language consistency) run locally to assess risk. If you use the **"Report Mis-detection"** button, this action initiates a local `mailto:` link which includes your IP, ISP details, and the detected status in the email body. This information is **not** sent to our backend servers; it is prepared locally for you to send manually to the developer for debugging purposes. **Any report data received by the developer will be deleted within 3 days.**
                 </p>
 
                 <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">5. Disclaimer</h3>
