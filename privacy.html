@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Network Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="min-h-screen p-4 md:p-8 relative">
+
+    <!-- COOKIE MODAL -->
+    <div id="cookie-modal"
+        class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[5000] hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 transform scale-95 transition-transform duration-300"
+            id="cookie-content">
+            <div class="text-center mb-4">
+                <div
+                    class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600">
+                    <i class="fas fa-cookie-bite text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800">Terms of Service & History</h3>
+                <p class="text-sm text-gray-500 mt-2">
+                    To use this dashboard, you must acknowledge and agree to the
+                    <a href="privacy.html" class="text-blue-600 hover:underline font-bold">Privacy Policy</a>
+                    and the <strong>End User License Agreements (EULA)</strong> of our third-party data providers. We
+                    also utilize cookies to store your speed test history locally.
+                    <br><br>
+                    <strong>Please select your preference to accept these terms:</strong>
+                </p>
+            </div>
+            <div class="flex flex-col space-y-3 mt-6">
+                <button onclick="handleConsent(true)"
+                    class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition shadow-lg shadow-emerald-200 text-sm">
+                    Agree to Terms & Enable History
+                </button>
+                <button onclick="handleConsent(false)"
+                    class="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-medium transition text-xs border border-gray-200">
+                    Agree to Terms & Use Necessary Cookies Only
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIMEZONE MODAL -->
+    <div id="tz-modal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
+        onclick="closeTz()">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] flex flex-col"
+            onclick="event.stopPropagation()">
+            <button onclick="closeTz()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
+                    class="fas fa-times text-lg"></i></button>
+            <div class="mb-5 flex-shrink-0">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
+                        class="far fa-clock text-blue-500"></i> Timezone Check</h3>
+                <p class="text-xs text-gray-500 mt-1">Detailed system time configuration</p>
+            </div>
+            <div class="space-y-4 overflow-y-auto custom-scroll pr-1">
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <p class="text-[10px] text-blue-500 uppercase font-bold tracking-wider mb-1">UTC Offset</p>
+                    <p id="modal-utc" class="font-mono text-2xl font-bold text-blue-700 tracking-tight">--</p>
+                </div>
+                <div class="grid grid-cols-1 gap-3">
+                    <div class="border-b border-gray-100 pb-2">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">IANA Region Code
+                        </p>
+                        <p id="modal-region" class="font-mono text-sm font-semibold text-slate-700">--</p>
+                    </div>
+                    <div class="border-b border-gray-100 pb-2">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Local System Time
+                        </p>
+                        <p id="modal-local" class="font-mono text-xs text-slate-600 break-words leading-tight">--</p>
+                    </div>
+                    <div class="border-b border-gray-100 pb-2">
+                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">UTC Time</p>
+                        <p id="modal-global" class="font-mono text-xs text-slate-600 break-words leading-tight">--</p>
+                    </div>
+                    <div>
+                        <p id="modal-regions-title"
+                            class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Regions with same
+                            UTC Offset</p>
+                        <div class="bg-gray-50 rounded border border-gray-200 p-2 h-32 overflow-y-auto custom-scroll">
+                            <ul id="modal-all-regions" class="text-[10px] font-mono text-slate-600 space-y-1">
+                                <li>Loading...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OS MODAL -->
+    <div id="os-modal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
+        onclick="closeOsModal()">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto custom-scroll"
+            onclick="event.stopPropagation()">
+            <button onclick="closeOsModal()"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
+                    class="fas fa-times text-lg"></i></button>
+            <div class="mb-5">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
+                        class="fas fa-microchip text-teal-500"></i> System & Hardware</h3>
+                <p class="text-xs text-gray-500 mt-1">Detailed Operating System & Device Info</p>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">CPU & Architecture</h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><span class="text-gray-400 block">Cores (Logical)</span><span
+                                class="font-mono font-bold text-slate-700" id="os-cores">--</span></div>
+                        <div><span class="text-gray-400 block">Architecture</span><span
+                                class="font-mono font-bold text-slate-700" id="os-arch">--</span></div>
+                        <div><span class="text-gray-400 block">Bitness</span><span
+                                class="font-mono font-bold text-slate-700" id="os-bitness">--</span></div>
+                        <div><span class="text-gray-400 block">Memory (RAM)</span><span
+                                class="font-mono font-bold text-slate-700" id="os-memory">--</span></div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Device Identity</h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><span class="text-gray-400 block">Vendor</span><span
+                                class="font-mono font-bold text-slate-700" id="os-vendor">--</span></div>
+                        <div><span class="font-mono font-bold text-slate-700" id="os-model">--</span></div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Display & Graphics</h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div><span class="text-gray-400 block">Resolution</span><span
+                                class="font-mono font-bold text-slate-700" id="os-res">--</span></div>
+                        <div><span class="text-gray-400 block">Color Depth</span><span
+                                class="font-mono font-bold text-slate-700" id="os-cdepth">--</span></div>
+                        <div><span class="text-gray-400 block">Pixel Depth</span><span
+                                class="font-mono font-bold text-slate-700" id="os-pdepth">--</span></div>
+                        <div><span class="font-mono font-bold text-slate-700" id="os-orient">--</span></div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Capabilities</h4>
+                    <div class="space-y-1 text-xs">
+                        <div class="flex justify-between border-b border-slate-100 pb-1">
+                            <span class="text-gray-500">PDF Viewer</span>
+                            <span class="font-bold text-slate-700" id="os-pdf">--</span>
+                        </div>
+                        <div class="flex justify-between border-b border-slate-100 pb-1 pt-1">
+                            <span class="text-gray-500">Media Codecs</span>
+                            <span class="font-bold text-slate-700" id="os-media">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BROWSER MODAL -->
+    <div id="browser-modal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
+        onclick="closeBrowserModal()">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative"
+            onclick="event.stopPropagation()">
+            <button onclick="closeBrowserModal()"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
+                    class="fas fa-times text-lg"></i></button>
+            <div class="mb-5">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
+                        class="fab fa-chrome text-orange-500"></i> Browser Information</h3>
+                <p class="text-xs text-gray-500 mt-1">Detailed Browser Identity</p>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 font-mono text-xs text-slate-600 break-all leading-relaxed"
+                    id="modal-ua-raw">Loading...</div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Browser Identity</h4>
+                    <div class="grid grid-cols-2 gap-y-2 text-xs">
+                        <div><span class="text-gray-400 block">Name</span><span class="font-bold text-slate-700"
+                                id="br-name">--</span></div>
+                        <div><span class="text-gray-400 block">Version</span><span class="font-bold text-slate-700"
+                                id="br-ver">--</span></div>
+                        <div><span class="text-gray-400 block">Engine</span><span class="font-bold text-slate-700"
+                                id="br-eng">--</span></div>
+                        <div><span class="text-gray-400 block">Eng. Ver</span><span class="font-bold text-slate-700"
+                                id="br-eng-ver">--</span></div>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Settings & Permissions</h4>
+                    <div class="grid grid-cols-2 gap-y-2 text-xs">
+                        <div><span class="text-gray-400 block">Cookies</span><span class="font-bold text-slate-700"
+                                id="br-cookies">--</span></div>
+                        <div><span class="text-gray-400 block">JavaScript</span><span class="font-bold text-slate-700"
+                                id="br-js">--</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="copyUA()"
+                    class="text-xs bg-slate-800 text-white hover:bg-slate-700 px-4 py-2 rounded transition shadow flex items-center"><i
+                        class="far fa-copy mr-2"></i> Copy User Agent</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VPN MODAL -->
+    <div id="vpn-modal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
+        onclick="closeVpnModal()">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto flex flex-col"
+            onclick="event.stopPropagation()">
+            <button onclick="closeVpnModal()"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
+                    class="fas fa-times text-lg"></i></button>
+            <div class="mb-5 flex-shrink-0">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
+                        class="fas fa-shield-alt text-cyan-500"></i> VPN & Privacy Report</h3>
+                <p class="text-xs text-gray-500 mt-1">Detailed Analysis of your connection privacy</p>
+            </div>
+            <div class="space-y-4 flex-grow overflow-y-auto custom-scroll pr-1">
+
+                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex justify-between items-center">
+                    <span class="text-sm font-bold text-slate-600">Privacy Level</span>
+                    <span id="vpn-risk-badge"
+                        class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
+                </div>
+
+                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100 h-auto min-h-[80px]">
+                    <h4 class="text-xs font-bold text-purple-500 uppercase mb-2">Provider & Risk Analysis</h4>
+
+                    <div class="grid grid-cols-2 gap-4 text-xs items-start">
+                        <div class="flex flex-col">
+                            <span class="text-gray-400 mb-0.5">Detected Provider</span>
+                            <span class="font-bold text-slate-700 break-words whitespace-normal leading-snug"
+                                id="vpn-provider-name">--</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-gray-400 mb-0.5">IP Fraud Risk</span>
+                            <span class="font-bold text-slate-700 break-words" id="vpn-fraud-score">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <h4 class="text-xs font-bold text-blue-500 uppercase mb-2">Tracking Protection</h4>
+                    <div class="grid grid-cols-2 gap-y-2 text-xs">
+                        <div>
+                            <span class="text-gray-400 block">Do Not Track</span>
+                            <span class="font-bold text-slate-700" id="priv-dnt">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="detection-details-reasons" class="space-y-3 pt-4 border-t border-gray-100">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase">Detection Reasons Summary</h4>
+                </div>
+
+                <div class="bg-gray-100 p-3 rounded-lg border border-gray-200 mt-4">
+                    <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-2">Raw Detection String (ISP + Org +
+                        ASN)</h4>
+                    <div class="font-mono text-[10px] text-slate-700 break-all leading-relaxed"
+                        id="vpn-raw-string-bottom">--</div>
+                </div>
+
+            </div>
+
+            <div class="mt-4 pt-4 border-t border-gray-100 flex-shrink-0">
+                <button onclick="reportMisdetection()"
+                    class="w-full py-2 bg-slate-800 text-white rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center text-sm font-semibold">
+                    <i class="fas fa-bug mr-2"></i> Report Mis-detection / False Positive
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SPEED MODAL -->
+    <div id="speed-modal"
+        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
+        onclick="closeSpeedModal()">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto"
+            onclick="event.stopPropagation()">
+            <button onclick="closeSpeedModal()"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
+                    class="fas fa-times text-lg"></i></button>
+            <div class="mb-5">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fas fa-tachometer-alt text-emerald-500"></i> Speed Analysis
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">Detailed Network Performance Metrics</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div>
+                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Network Grade</p>
+                        <p class="text-xs text-gray-400 mt-1">Based on Speed/Latency</p>
+                    </div>
+                    <div id="net-grade" class="text-3xl font-black text-slate-300">--</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <p class="text-[10px] font-bold text-blue-500 uppercase mb-1">Download</p>
+                        <p id="modal-dl" class="text-lg font-bold text-slate-800">--</p>
+                    </div>
+                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <p class="text-[10px] font-bold text-purple-500 uppercase mb-1">Upload</p>
+                        <p id="modal-ul" class="text-lg font-bold text-slate-800">--</p>
+                    </div>
+                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <p class="text-[10px] font-bold text-orange-500 uppercase mb-1">Latency (Ping)</p>
+                        <p id="modal-ping" class="text-lg font-bold text-slate-800">--</p>
+                    </div>
+                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <p class="text-[10px] font-bold text-teal-500 uppercase mb-1">Jitter</p>
+                        <p id="modal-jitter" class="text-lg font-bold text-slate-800">--</p>
+                    </div>
+                </div>
+
+                <div class="bg-red-50 p-3 rounded-lg border border-red-100 flex justify-between items-center">
+                    <div>
+                        <p class="text-xs font-bold text-red-500 uppercase">Packet Loss</p>
+                        <p class="text-[10px] text-red-400">Estimated TCP Success Rate</p>
+                    </div>
+                    <p id="modal-ploss" class="text-lg font-bold text-red-600">--</p>
+                </div>
+
+                <div class="border-t border-gray-100 pt-3">
+                    <p class="text-xs font-bold text-slate-500 mb-2 uppercase">Streaming Capability</p>
+                    <div class="flex gap-2">
+                        <span id="badge-4k"
+                            class="opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold">4K
+                            HDR</span>
+                        <span id="badge-1080p"
+                            class="opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold">1080p
+                            HD</span>
+                        <span id="badge-720p"
+                            class="opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold">720p</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="max-w-6xl mx-auto relative z-10">
+        <header
+            class="mb-4 flex flex-col md:flex-row justify-between items-end md:items-center border-b border-gray-200 pb-4">
+            <div>
+                <h1 class="text-3xl font-black text-slate-800 tracking-tight">Network Dashboard</h1>
+                <p class="text-xs font-bold text-blue-600 uppercase tracking-wider mt-1">Privacy Policy & Terms</p>
+                <div class="flex items-center mt-1 space-x-3 text-xs text-gray-500 font-mono">
+                    <span id="last-update">--</span>
+                    <span class="text-gray-300">|</span>
+                    <span id="sys-tz" class="cursor-help hover:text-blue-500 transition"
+                        onclick="showTzModal()">--</span>
+                </div>
+            </div>
+            <div class="flex gap-2 mt-3 md:mt-0 items-center">
+                <a href="index.html"
+                    class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm shadow-sm hover:bg-gray-50 transition flex items-center font-semibold text-blue-600">
+                    <i class="fas fa-arrow-left mr-2"></i> <span class="hidden md:inline">Back to Dashboard</span>
+                </a>
+                <a href="https://github.com/kkkkja-co/Network-Checking-Dashboard" target="_blank"
+                    class="px-3 py-1.5 bg-slate-800 text-white rounded text-sm shadow hover:bg-slate-900 transition flex items-center font-semibold">
+                    <i class="fab fa-github text-sm md:mr-2"></i> <span class="hidden md:inline">GitHub</span>
+                </a>
+                <button onclick="window.location.reload()"
+                    class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm shadow-sm hover:bg-gray-50 transition flex items-center">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
+            <div class="prose prose-slate max-w-none text-slate-700">
+                <p class="text-sm text-gray-400 mb-6 font-mono">Last Updated: <span id="policy-date"></span></p>
+
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-8 rounded-r-lg">
+                    <p class="font-bold text-amber-900 m-0"><i class="fas fa-gavel mr-2"></i>Automatic Acceptance of
+                        Terms
+                    </p>
+                    <p class="text-amber-800 text-sm mt-2 m-0 leading-relaxed">
+                        By accessing, browsing, or using this website, you <strong>automatically acknowledge and
+                            agree</strong> to be bound by:
+                    </p>
+                    <ul class="list-disc pl-5 mt-2 text-amber-900 text-xs font-bold space-y-1">
+                        <li>The Privacy Policy of this Dashboard.</li>
+                        <li>The Privacy Policies of all Third-Party APIs listed below.</li>
+                        <li>The End User License Agreements (EULA) of all Third-Party APIs listed below.</li>
+                    </ul>
+                    <p class="text-amber-800 text-xs mt-2 m-0">
+                        If you do not agree to these terms, you must close this website immediately.
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8 rounded-r-lg">
+                    <p class="font-bold text-blue-900 m-0">The Core Promise: Zero Backend Storage</p>
+                    <p class="text-blue-800 text-sm mt-1 m-0">
+                        This Network Dashboard operates entirely as a <strong>Client-Side Application</strong>. We do
+                        not
+                        own, operate, or rent servers to store your personal data. Your IP address, speed test results,
+                        and
+                        location data <strong>never</strong> leave your browser to reach us.
+                    </p>
+                </div>
+
+                <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">1. How This Application Works</h3>
+                <p>
+                    Unlike traditional web services, this dashboard runs locally in your web browser using JavaScript.
+                    When
+                    you open this page, your browser executes code to analyze your network connection in real-time. The
+                    Speed Test uses extended durations (up to 15 seconds for download, 12 seconds for upload) to ensure
+                    a
+                    more accurate, stable average of your network performance.
+                </p>
+                <ul class="list-disc pl-5 space-y-2 mb-4">
+                    <li><strong>No User Accounts:</strong> We do not require login, email, or registration.</li>
+                    <li><strong>No Tracking Analytics:</strong> We do not use Google Analytics, Facebook Pixels, or
+                        third-party behavior trackers.</li>
+                    <li><strong>Voluntary Execution:</strong> Network tests (like Speed Tests) only run when you
+                        explicitly
+                        initiate them.</li>
+                </ul>
+
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm mb-8">
+                    <strong><i class="fab fa-github mr-1"></i> Open Source Transparency:</strong>
+                    To verify our security and privacy claims, the full source code of this dashboard is publicly
+                    available
+                    for inspection on GitHub:
+                    <a href="https://github.com/kkkkja-co/Network-Checking-Dashboard" target="_blank"
+                        class="block mt-1 text-blue-600 hover:underline font-mono break-all">
+                        https://github.com/kkkkja-co/Network-Checking-Dashboard
+                    </a>
+                </div>
+
+                <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">2. Third-Party Data Processors & EULAs</h3>
+                <p>
+                    To provide functionality, this application instructs your browser to connect directly to the
+                    following
+                    public APIs. <strong>By using this dashboard, you agree to the Terms of Service and EULAs of these
+                        providers:</strong>
+                </p>
+                <div class="overflow-x-auto mt-4 mb-8 border rounded-lg">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-gray-600 font-bold uppercase">
+                            <tr>
+                                <th class="px-4 py-3">Provider</th>
+                                <th class="px-4 py-3">Role</th>
+                                <th class="px-4 py-3">Agreement</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <tr>
+                                <td class="px-4 py-3 font-semibold">Cloudflare</td>
+                                <td class="px-4 py-3">Speed Engine & Trace</td>
+                                <td class="px-4 py-3 text-xs">Subject to Cloudflare Privacy & Terms</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-semibold">ipwho.is</td>
+                                <td class="px-4 py-3">Geolocation & ISP</td>
+                                <td class="px-4 py-3 text-xs">Subject to ipwho.is Terms of Use</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-semibold">ipify / ip-api</td>
+                                <td class="px-4 py-3">Connectivity Checks</td>
+                                <td class="px-4 py-3 text-xs">Subject to provider EULAs</td>
+                            </tr>
+                            <tr>
+                                <td class="px-4 py-3 font-semibold">OpenStreetMap</td>
+                                <td class="px-4 py-3">Map Visualization</td>
+                                <td class="px-4 py-3 text-xs">ODbL License Agreement</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">3. Local Storage & Cookies</h3>
+                <p>We use browser storage technologies solely to improve your user experience. This data resides on your
+                    device and can be cleared at any time.</p>
+                <ul class="list-disc pl-5 space-y-2 text-sm mb-8">
+                    <li><strong>speedtest_history:</strong> Stores your past 50 test results locally.</li>
+                    <li><strong>speedtest_consent:</strong> Remembers your acceptance of these terms.</li>
+                </ul>
+
+                <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">4. Feature-Specific Disclosures</h3>
+
+                <h4 class="font-bold text-slate-800 mt-4">A. WebRTC Leak Detection</h4>
+                <p class="text-sm mb-4">
+                    This tool uses STUN servers to detect local IP leaks. This process is done client-side. We do not
+                    log
+                    detected IPs.
+                </p>
+
+                <h4 class="font-bold text-slate-800 mt-4">B. VPN Detection & Reporting</h4>
+                <p class="text-sm mb-8">
+                    The VPN detection uses heuristics (ISP name, ASN, timezone/language consistency) run locally to
+                    assess
+                    risk. If you use the <strong>"Report Mis-detection"</strong> button, this action initiates a local
+                    `mailto:` link
+                    which includes your IP, ISP details, and the detected status in the email body. This information is
+                    <strong>not</strong> sent to our backend servers; it is prepared locally for you to send manually to
+                    the
+                    developer
+                    for debugging purposes. <strong>Any report data received by the developer will be deleted within 3
+                        days.</strong>
+                </p>
+
+                <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">5. Contact & Email Security</h3>
+                <p class="mb-8">
+                    Our contact email (contact@bunorden.com) uses <strong>Proton Mail</strong>'s zero-access encryption
+                    technology.
+                    This compliance ensures that messages stored on our mailbox servers are encrypted in a way that
+                    prevents
+                    the service provider (Proton AG) from accessing or decrypting your communications.
+                </p>
+
+                <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4">6. Disclaimer</h3>
+                <p class="mb-12">
+                    This software is provided "as is" without warranty of any kind. Speed test results are estimates. By
+                    using this tool, you release the developer from any liability regarding data usage or third-party
+                    connections.
+                </p>
+
+                <hr class="my-8 border-gray-200">
+                <p class="text-xs text-gray-500 text-center">
+                    End of Privacy Policy.
+                </p>
+            </div>
+        </div>
+
+        <footer class="mt-12 mb-6 text-center border-t border-gray-200 pt-6">
+            <p class="text-sm text-gray-400 flex justify-center items-center gap-2">
+                &copy; <span id="year"></span> net.bunorden.com.
+                <a href="mailto:contact@bunorden.com"
+                    class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium">Contact</a>
+                <span class="text-gray-300">|</span>
+                <a href="privacy.html"
+                    class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium underline">Privacy
+                    Policy</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
