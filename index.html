@@ -1948,23 +1948,120 @@
 
         async function fetchIPv4Data() {
             try {
-                const r = await fetch('https://ipwho.is/'); const d = await r.json(); if (d.success) {
-                    document.getElementById('ipv4-display').innerText = d.ip;
-                    document.getElementById('ipv4-loc').innerText = `${d.city}, ${d.region_code}`;
-
-                    // UPDATED: Populate 4 new fields
-                    document.getElementById('isp-display').innerText = d.connection.isp || "Unknown";
-                    document.getElementById('org-display').innerText = d.connection.org || "Unknown";
-                    document.getElementById('as-org-display').innerText = d.connection.org || "Unknown"; // Usually mapped to org in this API
-                    document.getElementById('asn-display').innerText = d.connection.asn || "--";
-
-                    document.getElementById('hostname-display').innerText = d.connection.domain || "No PTR Record";
-                    initMap(d.latitude, d.longitude);
-                    // UPDATED: Pass 'utc' field to detectVPN for offset comparison
-                    // Also passing org and asn now
-                    detectVPN(d.timezone.id, d.timezone.utc, d.connection.isp, d.country_code, d.connection.org, d.connection.asn);
+                let d = null;
+                
+                // Try primary API: ipwho.is
+                try {
+                    const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(5000) }); 
+                    const data = await r.json();
+                    if (data && data.ip) {
+                        d = data;
+                    }
+                } catch (e1) {
+                    console.log('ipwho.is failed, trying fallback');
                 }
-            } catch (e) { document.getElementById('ipv4-display').innerText = "Error"; }
+                
+                // Fallback to ipinfo.io for ISP data
+                if (!d || !d.ip || !d.connection || !d.connection.isp) {
+                    try {
+                        const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(5000) });
+                        const apiData = await r.json();
+                        if (apiData && apiData.ip) {
+                            // Parse org field: "AS15169 Google LLC"
+                            const orgParts = (apiData.org || '').split(' ');
+                            const asn = orgParts[0] || '--';
+                            const isp = orgParts.slice(1).join(' ') || apiData.org || 'Unknown';
+                            
+                            d = d || {};
+                            d.ip = apiData.ip;
+                            d.city = apiData.city || '';
+                            d.region_code = apiData.country || '';
+                            d.country_code = apiData.country || '';
+                            d.latitude = apiData.loc ? parseFloat(apiData.loc.split(',')[0]) : null;
+                            d.longitude = apiData.loc ? parseFloat(apiData.loc.split(',')[1]) : null;
+                            d.timezone = d.timezone || { id: apiData.timezone };
+                            d.connection = d.connection || {};
+                            d.connection.isp = isp;
+                            d.connection.org = apiData.org || isp;
+                            d.connection.asn = asn;
+                        }
+                    } catch (e2) {
+                        console.log('ipinfo.io failed, trying ip-api.com');
+                    }
+                }
+                
+                // Fallback to ip-api.com
+                if (!d || !d.ip || !d.connection || !d.connection.isp) {
+                    try {
+                        const r = await fetch('https://ip-api.com/json/', { signal: AbortSignal.timeout(5000) });
+                        const apiData = await r.json();
+                        if (apiData && apiData.query && apiData.status === 'success') {
+                            d = d || {};
+                            d.ip = apiData.query;
+                            d.city = apiData.city || '';
+                            d.region_code = apiData.countryCode || '';
+                            d.country_code = apiData.countryCode || '';
+                            d.latitude = apiData.lat || null;
+                            d.longitude = apiData.lon || null;
+                            d.timezone = d.timezone || { id: apiData.timezone };
+                            d.connection = d.connection || {};
+                            d.connection.isp = apiData.isp || 'Unknown';
+                            d.connection.org = apiData.org || apiData.isp || 'Unknown';
+                            d.connection.asn = (apiData.as || '--').split(' ')[0];
+                        }
+                    } catch (e3) {
+                        console.log('ip-api.com failed, trying ipify');
+                    }
+                }
+                
+                // Final fallback to ipify for just the IP
+                if (!d || !d.ip) {
+                    try {
+                        const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
+                        const ipData = await r.json();
+                        if (ipData && ipData.ip) {
+                            d = d || {};
+                            d.ip = ipData.ip;
+                        }
+                    } catch (e4) {
+                        console.log('ipify failed');
+                    }
+                }
+                
+                if (d && d.ip) {
+                    document.getElementById('ipv4-display').innerText = d.ip;
+                    document.getElementById('ipv4-loc').innerText = `${d.city || 'Unknown'}, ${d.region_code || 'Unknown'}`;
+
+                    // Populate ISP and network fields
+                    const isp = (d.connection && d.connection.isp) || 'Unknown';
+                    const org = (d.connection && d.connection.org) || 'Unknown';
+                    const asn = (d.connection && d.connection.asn) || '--';
+                    
+                    document.getElementById('isp-display').innerText = isp;
+                    document.getElementById('org-display').innerText = org;
+                    document.getElementById('as-org-display').innerText = org;
+                    document.getElementById('asn-display').innerText = asn;
+
+                    if (d.connection && d.connection.domain) {
+                        document.getElementById('hostname-display').innerText = d.connection.domain;
+                    } else {
+                        document.getElementById('hostname-display').innerText = "No PTR Record";
+                    }
+                    
+                    if (d.latitude && d.longitude) initMap(d.latitude, d.longitude);
+                    if (d.timezone) detectVPN(d.timezone.id, d.timezone.utc, isp, d.country_code || '', org, asn);
+                } else {
+                    document.getElementById('ipv4-display').innerText = "Unavailable";
+                    document.getElementById('ipv4-loc').innerText = "Unable to detect";
+                    document.getElementById('isp-display').innerText = "Unknown";
+                    document.getElementById('org-display').innerText = "Unknown";
+                    document.getElementById('as-org-display').innerText = "Unknown";
+                    document.getElementById('asn-display').innerText = "--";
+                }
+            } catch (e) { 
+                console.log('fetchIPv4Data error:', e);
+                document.getElementById('ipv4-display').innerText = "Error"; 
+            }
         }
 
         // --- UPDATED: IPv6 Detection with Fallback Provider ---
