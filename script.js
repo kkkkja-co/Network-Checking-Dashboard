@@ -403,17 +403,60 @@ function updateTimestamp() {
 setInterval(updateTimestamp, 1000); updateTimestamp();
 
 async function fetchIPv4Data() {
+    const ipEl = document.getElementById('ipv4-display');
+    const locEl = document.getElementById('ipv4-loc');
+    const ispEl = document.getElementById('isp-display');
+    const asnEl = document.getElementById('asn-display');
+    const orgEl = document.getElementById('org-display');
+    
     try {
-        const r = await fetch('https://ipwho.is/');
+        // Try primary API
+        const r = await fetch('https://ipwho.is/', { timeout: 5000 });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const d = await r.json();
+        
         if (d.success) {
-            const ipEl = document.getElementById('ipv4-display'), locEl = document.getElementById('ipv4-loc'), ispEl = document.getElementById('isp-display'), asnEl = document.getElementById('asn-display'), orgEl = document.getElementById('org-display');
-            if (ipEl) ipEl.innerText = d.ip; if (locEl) locEl.innerText = `${d.city}, ${d.country_code}`;
-            if (ispEl) ispEl.innerText = d.connection.isp; if (asnEl) asnEl.innerText = d.connection.asn; if (orgEl) orgEl.innerText = d.connection.org;
+            if (ipEl) ipEl.innerText = d.ip;
+            if (locEl) locEl.innerText = `${d.city}, ${d.country_code}`;
+            if (ispEl) ispEl.innerText = d.connection.isp;
+            if (asnEl) asnEl.innerText = d.connection.asn;
+            if (orgEl) orgEl.innerText = d.connection.org;
             detectVPN(d.connection.isp, d.connection.org, d.connection.asn);
             if (typeof initMap === 'function') initMap(d.latitude, d.longitude);
+            return;
         }
-    } catch (e) { }
+    } catch (primaryError) {
+        console.warn('ipwho.is failed:', primaryError);
+        
+        // Try fallback API
+        try {
+            const fallbackR = await fetch('https://ip-api.com/json/', { timeout: 5000 });
+            if (!fallbackR.ok) throw new Error(`HTTP ${fallbackR.status}`);
+            const fallbackD = await fallbackR.json();
+            
+            if (fallbackD.status === 'success') {
+                if (ipEl) ipEl.innerText = fallbackD.query;
+                if (locEl) locEl.innerText = `${fallbackD.city}, ${fallbackD.countryCode}`;
+                if (ispEl) ispEl.innerText = fallbackD.isp || fallbackD.org || 'Unknown';
+                if (asnEl) asnEl.innerText = fallbackD.as || 'Unknown';
+                if (orgEl) orgEl.innerText = fallbackD.org || 'Unknown';
+                detectVPN(fallbackD.isp || '', fallbackD.org || '', fallbackD.as || '');
+                if (typeof initMap === 'function') initMap(fallbackD.lat, fallbackD.lon);
+                console.log('Using ip-api.com as fallback');
+                return;
+            }
+        } catch (fallbackError) {
+            console.error('All IP APIs failed:', fallbackError);
+        }
+    }
+    
+    // Show error state if both APIs fail
+    if (ipEl) ipEl.innerText = 'Unavailable';
+    if (ispEl) ispEl.innerText = 'API Error - Retrying...';
+    if (locEl) locEl.innerText = 'Connection failed';
+    
+    // Retry after 3 seconds
+    setTimeout(fetchIPv4Data, 3000);
 }
 
 async function detectSystem() {

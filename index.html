@@ -2046,6 +2046,8 @@
                         document.getElementById('hostname-display').innerText = d.connection.domain;
                     } else {
                         document.getElementById('hostname-display').innerText = "No PTR Record";
+                        // Try reverse DNS lookup on the IP
+                        fetchPTRRecord(d.ip);
                     }
                     
                     if (d.latitude && d.longitude) initMap(d.latitude, d.longitude);
@@ -2061,6 +2063,25 @@
             } catch (e) { 
                 console.log('fetchIPv4Data error:', e);
                 document.getElementById('ipv4-display').innerText = "Error"; 
+            }
+        }
+
+        // --- NEW: PTR Record / Reverse DNS Lookup ---
+        async function fetchPTRRecord(ip) {
+            try {
+                // Try reverse DNS via ip-api.com
+                const r = await fetch(`https://ip-api.com/json/${ip}?fields=reverse`, { timeout: 5000 });
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                const data = await r.json();
+                
+                if (data.status === 'success' && data.reverse && data.reverse !== ip) {
+                    document.getElementById('hostname-display').innerText = data.reverse;
+                } else {
+                    document.getElementById('hostname-display').innerText = "No PTR Record";
+                }
+            } catch (e) {
+                console.warn('PTR lookup failed:', e);
+                document.getElementById('hostname-display').innerText = "Unable to verify";
             }
         }
 
