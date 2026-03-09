@@ -1946,87 +1946,87 @@
         let map;
         function initMap(lat, lng) { if (map) return; map = L.map('map', { zoomControl: false }).setView([lat, lng], 13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); L.marker([lat, lng]).addTo(map).bindPopup("<b>IP Location</b>").openPopup(); document.getElementById('map-coords').innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`; }
 
+        // --- WebRTC IP Detection (No CORS needed) ---
+        async function getIPFromWebRTC() {
+            return new Promise((resolve) => {
+                const pc = new RTCPeerConnection({ iceServers: [] });
+                const noop = () => {};
+                pc.createDataChannel('');
+                pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(noop);
+                pc.onicecandidate = (ice) => {
+                    if (!ice || !ice.candidate) return;
+                    const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
+                    const ipAddress = ipRegex.exec(ice.candidate.candidate)[1];
+                    pc.close();
+                    resolve(ipAddress);
+                };
+                setTimeout(() => {
+                    pc.close();
+                    resolve(null);
+                }, 1000);
+            });
+        }
+
         async function fetchIPv4Data() {
             try {
                 let d = null;
+                console.log('Starting IPv4 detection...');
                 
-                // Try primary API: ipwho.is
+                // Try primary API: ipapi.co (CORS-enabled)
                 try {
-                    const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(5000) }); 
+                    console.log('Trying ipapi.co...');
+                    const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) }); 
                     const data = await r.json();
+                    console.log('ipapi.co response:', data);
                     if (data && data.ip) {
-                        d = data;
+                        d = {
+                            ip: data.ip,
+                            city: data.city || '',
+                            region_code: data.region_code || '',
+                            country_code: data.country_code || '',
+                            latitude: data.latitude || null,
+                            longitude: data.longitude || null,
+                            timezone: { id: data.timezone || 'Unknown' },
+                            connection: {
+                                isp: data.org || 'Unknown',
+                                org: data.org || 'Unknown',
+                                asn: (data.asn || '').replace('AS', '') || '--'
+                            }
+                        };
+                        console.log('✓ ipapi.co successful');
                     }
                 } catch (e1) {
-                    console.log('ipwho.is failed, trying fallback');
+                    console.error('✗ ipapi.co failed:', e1.message);
                 }
                 
-                // Fallback to ipinfo.io for ISP data
-                if (!d || !d.ip || !d.connection || !d.connection.isp) {
-                    try {
-                        const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(5000) });
-                        const apiData = await r.json();
-                        if (apiData && apiData.ip) {
-                            // Parse org field: "AS15169 Google LLC"
-                            const orgParts = (apiData.org || '').split(' ');
-                            const asn = orgParts[0] || '--';
-                            const isp = orgParts.slice(1).join(' ') || apiData.org || 'Unknown';
-                            
-                            d = d || {};
-                            d.ip = apiData.ip;
-                            d.city = apiData.city || '';
-                            d.region_code = apiData.country || '';
-                            d.country_code = apiData.country || '';
-                            d.latitude = apiData.loc ? parseFloat(apiData.loc.split(',')[0]) : null;
-                            d.longitude = apiData.loc ? parseFloat(apiData.loc.split(',')[1]) : null;
-                            d.timezone = d.timezone || { id: apiData.timezone };
-                            d.connection = d.connection || {};
-                            d.connection.isp = isp;
-                            d.connection.org = apiData.org || isp;
-                            d.connection.asn = asn;
-                        }
-                    } catch (e2) {
-                        console.log('ipinfo.io failed, trying ip-api.com');
-                    }
-                }
-                
-                // Fallback to ip-api.com
-                if (!d || !d.ip || !d.connection || !d.connection.isp) {
-                    try {
-                        const r = await fetch('https://ip-api.com/json/', { signal: AbortSignal.timeout(5000) });
-                        const apiData = await r.json();
-                        if (apiData && apiData.query && apiData.status === 'success') {
-                            d = d || {};
-                            d.ip = apiData.query;
-                            d.city = apiData.city || '';
-                            d.region_code = apiData.countryCode || '';
-                            d.country_code = apiData.countryCode || '';
-                            d.latitude = apiData.lat || null;
-                            d.longitude = apiData.lon || null;
-                            d.timezone = d.timezone || { id: apiData.timezone };
-                            d.connection = d.connection || {};
-                            d.connection.isp = apiData.isp || 'Unknown';
-                            d.connection.org = apiData.org || apiData.isp || 'Unknown';
-                            d.connection.asn = (apiData.as || '--').split(' ')[0];
-                        }
-                    } catch (e3) {
-                        console.log('ip-api.com failed, trying ipify');
-                    }
-                }
-                
-                // Final fallback to ipify for just the IP
+                // Fallback: Use WebRTC to get IP (CORS-free method)
                 if (!d || !d.ip) {
                     try {
-                        const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
-                        const ipData = await r.json();
-                        if (ipData && ipData.ip) {
-                            d = d || {};
-                            d.ip = ipData.ip;
+                        console.log('Trying WebRTC IP detection...');
+                        const ip = await getIPFromWebRTC();
+                        if (ip) {
+                            d = {
+                                ip: ip,
+                                city: 'Unknown',
+                                region_code: 'Unknown',
+                                country_code: 'Unknown',
+                                latitude: null,
+                                longitude: null,
+                                timezone: { id: 'Unknown' },
+                                connection: {
+                                    isp: 'Unable to detect',
+                                    org: 'Unable to detect',
+                                    asn: '--'
+                                }
+                            };
+                            console.log('✓ WebRTC IP detection successful:', ip);
                         }
-                    } catch (e4) {
-                        console.log('ipify failed');
+                    } catch (e2) {
+                        console.error('✗ WebRTC failed:', e2.message);
                     }
                 }
+                
+                console.log('Final data object:', d);
                 
                 if (d && d.ip) {
                     document.getElementById('ipv4-display').innerText = d.ip;
@@ -2069,66 +2069,63 @@
         // --- NEW: PTR Record / Reverse DNS Lookup ---
         async function fetchPTRRecord(ip) {
             try {
-                // Try reverse DNS via ip-api.com
-                const r = await fetch(`https://ip-api.com/json/${ip}?fields=reverse`, { timeout: 5000 });
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                // Try ipwho.is for hostname/domain info (less blocking)
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 5000);
+                
+                const r = await fetch(`https://ipwho.is/?ip=${ip}`, { signal: controller.signal });
+                clearTimeout(timeout);
+                
                 const data = await r.json();
                 
-                if (data.status === 'success' && data.reverse && data.reverse !== ip) {
-                    document.getElementById('hostname-display').innerText = data.reverse;
+                if (data.success && data.connection && data.connection.domain) {
+                    document.getElementById('hostname-display').innerText = data.connection.domain;
                 } else {
+                    // Most cloud IPs don't have PTR records, which is normal
                     document.getElementById('hostname-display').innerText = "No PTR Record";
                 }
             } catch (e) {
-                console.warn('PTR lookup failed:', e);
-                document.getElementById('hostname-display').innerText = "Unable to verify";
+                console.warn('PTR lookup skipped (normal for cloud IPs):', e.message);
+                document.getElementById('hostname-display').innerText = "No PTR Record";
             }
         }
 
         // --- UPDATED: IPv6 Detection with Fallback Provider ---
         async function fetchIPv6Data() {
             try {
-                // 1. Force IPv6 Connection to get the Address
-                const r = await fetch('https://api6.ipify.org?format=json');
+                // 1. Force IPv6 Connection to get the Address (using ipapi.co for CORS)
+                const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
 
                 if (r.ok) {
                     const d = await r.json();
-                    document.getElementById('ipv6-display').innerText = d.ip;
-                    document.getElementById('ipv6-status').innerText = "Active";
-                    document.getElementById('ipv6-status').className = "text-xs text-emerald-500 font-bold mt-1";
+                    
+                    // Check if response is IPv6
+                    if (d.ip && d.ip.includes(':')) {
+                        document.getElementById('ipv6-display').innerText = d.ip;
+                        document.getElementById('ipv6-status').innerText = "Active";
+                        document.getElementById('ipv6-status').className = "text-xs text-emerald-500 font-bold mt-1";
 
-                    // 2. Get Metadata (ISP Name)
-                    // Strategy: Try ipapi.co first, fall back to ipwho.is
-                    try {
-                        const dr = await fetch(`https://ipapi.co/${d.ip}/json/`);
-                        if (!dr.ok) throw new Error("ipapi failed");
-
-                        const dd = await dr.json();
-                        const provider = dd.org || dd.asn || "Unknown";
+                        // Get provider info from the same response
+                        const provider = d.org || d.asn || "Unknown";
                         document.getElementById('ipv6-provider').innerText = provider;
-
-                    } catch (primaryErr) {
-                        console.log("Primary IPv6 API failed, trying backup...");
-
-                        // Backup: ipwho.is
-                        try {
-                            const dr2 = await fetch(`https://ipwho.is/${d.ip}`);
-                            const dd2 = await dr2.json();
-                            if (dd2.success) {
-                                document.getElementById('ipv6-provider').innerText = dd2.connection.isp || dd2.connection.org || "Unknown";
-                            } else {
-                                document.getElementById('ipv6-provider').innerText = "Unknown (API Limit)";
-                            }
-                        } catch (backupErr) {
-                            document.getElementById('ipv6-provider').innerText = "Unknown";
-                        }
+                    } else {
+                        // IPv6 not available
+                        document.getElementById('ipv6-display').innerText = "Not Available";
+                        document.getElementById('ipv6-status').innerText = "Inactive";
+                        document.getElementById('ipv6-status').className = "text-xs text-slate-500 font-bold mt-1";
+                        document.getElementById('ipv6-provider').innerText = "No IPv6 Connection";
                     }
+                } else {
+                    document.getElementById('ipv6-display').innerText = "Not Detected";
+                    document.getElementById('ipv6-status').innerText = "IPv4 Only";
+                    document.getElementById('ipv6-provider').innerText = "--";
                 }
             } catch (e) {
                 // General Failure (User likely has no IPv6)
                 document.getElementById('ipv6-display').innerText = "Not Detected";
                 document.getElementById('ipv6-status').innerText = "IPv4 Only";
                 document.getElementById('ipv6-provider').innerText = "--";
+                console.log('IPv6 detection error:', e.message);
             }
         }
 
@@ -2149,8 +2146,6 @@
 
             const detected = new Map();
             const BATCH_SIZE = 10;
-
-            // Inside your fetchDNS function, update the runBatch function:
 
             const runBatch = async () => {
                 const promises = Array(BATCH_SIZE).fill(0).map(async () => {
@@ -2176,7 +2171,7 @@
 
                     } catch (e) {
                         // This catches network errors, ad-blocker blocks, and timeouts.
-                        // We simply log and return null so the other 19 attempts continue.
+                        // We simply log and return null so the other probes continue.
                         console.error("DNS Probe attempt failed:", e.message);
                         return null;
                     }
@@ -2230,9 +2225,6 @@
                     else if (lowerIsp.includes("opendns")) providerName = "OpenDNS";
                     else if (lowerIsp.includes("quad9")) providerName = "Quad9";
                     else if (lowerIsp.includes("cisco")) providerName = "Cisco Umbrella";
-
-                    // 3. NO "N/A" FALLBACK
-                    // We show exactly what 'providerName' is, even if it is the raw string.
 
                     const geoInfo = dns.geo || "";
 
