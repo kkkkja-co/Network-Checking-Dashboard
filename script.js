@@ -410,44 +410,23 @@ async function fetchIPv4Data() {
     const orgEl = document.getElementById('org-display');
     
     try {
-        // Try primary API
-        const r = await fetch('https://ipwho.is/', { timeout: 5000 });
+        // Try primary API (ipleak IPv4)
+        const r = await fetch('https://ipv4.ipleak.net/json/', { timeout: 5000 });
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const d = await r.json();
         
-        if (d.success) {
+        if (d.ip) {
             if (ipEl) ipEl.innerText = d.ip;
-            if (locEl) locEl.innerText = `${d.city}, ${d.country_code}`;
-            if (ispEl) ispEl.innerText = d.connection.isp;
-            if (asnEl) asnEl.innerText = d.connection.asn;
-            if (orgEl) orgEl.innerText = d.connection.org;
-            detectVPN(d.connection.isp, d.connection.org, d.connection.asn);
+            if (locEl) locEl.innerText = `${d.city_name || ''}, ${d.country_code || ''}`;
+            if (ispEl) ispEl.innerText = d.isp_name || 'Unknown';
+            if (asnEl) asnEl.innerText = d.as_number || 'Unknown';
+            if (orgEl) orgEl.innerText = d.isp_name || 'Unknown';
+            detectVPN(d.isp_name || '', d.isp_name || '', d.as_number || '');
             if (typeof initMap === 'function') initMap(d.latitude, d.longitude);
             return;
         }
     } catch (primaryError) {
-        console.warn('ipwho.is failed:', primaryError);
-        
-        // Try fallback API
-        try {
-            const fallbackR = await fetch('https://ip-api.com/json/', { timeout: 5000 });
-            if (!fallbackR.ok) throw new Error(`HTTP ${fallbackR.status}`);
-            const fallbackD = await fallbackR.json();
-            
-            if (fallbackD.status === 'success') {
-                if (ipEl) ipEl.innerText = fallbackD.query;
-                if (locEl) locEl.innerText = `${fallbackD.city}, ${fallbackD.countryCode}`;
-                if (ispEl) ispEl.innerText = fallbackD.isp || fallbackD.org || 'Unknown';
-                if (asnEl) asnEl.innerText = fallbackD.as || 'Unknown';
-                if (orgEl) orgEl.innerText = fallbackD.org || 'Unknown';
-                detectVPN(fallbackD.isp || '', fallbackD.org || '', fallbackD.as || '');
-                if (typeof initMap === 'function') initMap(fallbackD.lat, fallbackD.lon);
-                console.log('Using ip-api.com as fallback');
-                return;
-            }
-        } catch (fallbackError) {
-            console.error('All IP APIs failed:', fallbackError);
-        }
+        console.warn('ipleak.net failed:', primaryError);
     }
     
     // Show error state if both APIs fail

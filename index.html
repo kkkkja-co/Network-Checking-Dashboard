@@ -2090,11 +2090,11 @@
             }
         }
 
-        // --- UPDATED: IPv6 Detection with Fallback Provider ---
+        // --- UPDATED: IPv6 Detection with Provider ---
         async function fetchIPv6Data() {
             try {
-                // 1. Force IPv6 Connection to get the Address (using ipapi.co for CORS)
-                const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) });
+                // 1. Force IPv6 Connection using ipleak.net
+                const r = await fetch('https://ipv6.ipleak.net/json/', { signal: AbortSignal.timeout(5000) });
 
                 if (r.ok) {
                     const d = await r.json();
@@ -2106,7 +2106,7 @@
                         document.getElementById('ipv6-status').className = "text-xs text-emerald-500 font-bold mt-1";
 
                         // Get provider info from the same response
-                        const provider = d.org || d.asn || "Unknown";
+                        const provider = d.isp_name || d.as_number || "Unknown";
                         document.getElementById('ipv6-provider').innerText = provider;
                     } else {
                         // IPv6 not available
