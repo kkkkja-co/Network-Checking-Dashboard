@@ -240,14 +240,27 @@ async function runHighPerformanceTest() {
         }
 
         // ── SERVER ───────────────────────────────────────────────────────────
-        await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal })
-            .then(r => r.text())
-            .then(t => {
-                const loc = t.match(/loc=(.+)/)?.[1] || "UNK";
-                const colo = t.match(/colo=(.+)/)?.[1] || "UNK";
+        if (status) status.innerText = "Finding nearest server...";
+        try {
+            const r = await fetchWithTimeout('https://www.cloudflare.com/cdn-cgi/trace', { signal, timeout: 5000 });
+            const t = await r.text();
+            const loc = t.match(/loc=(.+)/)?.[1]?.trim() || "UNK";
+            const colo = t.match(/colo=(.+)/)?.[1]?.trim() || "UNK";
+            detectedServer = `${colo} (${loc})`;
+            if (serverLoc) serverLoc.innerHTML = `${colo} <span style="color:var(--text-muted);font-weight:400">(${loc})</span>`;
+        } catch (e) {
+            try {
+                const r = await fetchWithTimeout('https://speed.cloudflare.com/cdn-cgi/trace', { signal, timeout: 5000 });
+                const t = await r.text();
+                const loc = t.match(/loc=(.+)/)?.[1]?.trim() || "UNK";
+                const colo = t.match(/colo=(.+)/)?.[1]?.trim() || "UNK";
                 detectedServer = `${colo} (${loc})`;
                 if (serverLoc) serverLoc.innerHTML = `${colo} <span style="color:var(--text-muted);font-weight:400">(${loc})</span>`;
-            }).catch(() => {});
+            } catch (e2) {
+                detectedServer = "UNK (UNK)";
+                if (serverLoc) serverLoc.innerHTML = "UNK (UNK)";
+            }
+        }
 
         // ── DOWNLOAD: 8 streams, 100 MB chunks, 2 s warm-up ─────────────────
         if (status) status.innerText = "Downloading (Warm-up)...";
@@ -375,8 +388,21 @@ async function runHighPerformanceTest() {
 async function refreshServerLocation() {
     const locEl = document.getElementById('server-location'), icon = document.getElementById('server-refresh-icon');
     if (icon) icon.classList.add('fa-spin'); if (locEl) { locEl.innerHTML = "Locating..."; locEl.style.color = 'var(--text-muted)'; }
-    try { const r = await fetch('https://speed.cloudflare.com/cdn-cgi/trace?r=' + Math.random()); const t = await r.text(); const loc = t.match(/loc=(.+)/)?.[1] || "UNK"; const colo = t.match(/colo=(.+)/)?.[1] || "UNK"; if (locEl) { locEl.innerHTML = `${colo} <span style="color:var(--text-muted);font-weight:400">(${loc})</span>`; locEl.style.color = 'var(--text-primary)'; } }
-    catch (e) { if (locEl) { locEl.innerText = "Error (Blocked)"; locEl.style.color = 'var(--accent-red)'; } }
+    try {
+        const endpoints = ['https://www.cloudflare.com/cdn-cgi/trace', 'https://speed.cloudflare.com/cdn-cgi/trace'];
+        let success = false;
+        for (const url of endpoints) {
+            try {
+                const r = await fetchWithTimeout(url + '?r=' + Math.random(), { timeout: 4000 });
+                const t = await r.text();
+                const loc = t.match(/loc=(.+)/)?.[1]?.trim() || "UNK";
+                const colo = t.match(/colo=(.+)/)?.[1]?.trim() || "UNK";
+                if (locEl) { locEl.innerHTML = `${colo} <span style="color:var(--text-muted);font-weight:400">(${loc})</span>`; locEl.style.color = 'var(--text-primary)'; }
+                success = true; break;
+            } catch (e) {}
+        }
+        if (!success && locEl) { locEl.innerText = "Error (Blocked)"; locEl.style.color = 'var(--accent-red)'; }
+    } catch (e) { if (locEl) { locEl.innerText = "Error"; locEl.style.color = 'var(--accent-red)'; } }
     finally { if (icon) icon.classList.remove('fa-spin'); }
 }
 
@@ -472,33 +498,300 @@ function updateTimestamp() {
 }
 setInterval(updateTimestamp, 1000); updateTimestamp();
 
+/**
+ * Helper to fetch with a timeout using AbortController for better compatibility.
+ */
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 8000 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    try {
+        const response = await fetch(resource, { ...options, signal: controller.signal });
+        clearTimeout(id);
+        return response;
+    } catch (e) {
+        clearTimeout(id);
+        throw e;
+    }
+}
+
+/**
+ * JSONP Helper for APIs that block standard fetch/CORS (like ip-api.com on VPNs).
+ */
+function fetchJSONP(url, callbackName = 'callback') {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const uniqueCallback = `jsonp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        window[uniqueCallback] = (data) => {
+            document.body.removeChild(script);
+            delete window[uniqueCallback];
+            resolve(data);
+        };
+        script.src = `${url}${url.includes('?') ? '&' : '?'}${callbackName}=${uniqueCallback}`;
+        script.onerror = () => {
+            document.body.removeChild(script);
+            delete window[uniqueCallback];
+            reject(new Error('JSONP failed'));
+        };
+        document.body.appendChild(script);
+        setTimeout(() => { if (window[uniqueCallback]) reject(new Error('JSONP timeout')); }, 8000);
+    });
+}
+
+const COUNTRY_COORDS = {
+    'US':[37.0902,-95.7129],'GB':[55.3781,-3.4360],'CA':[56.1304,-106.3468],'AU':[-25.2744,133.7751],'DE':[51.1657,10.4515],
+    'FR':[46.2276,2.2137],'CN':[35.8617,104.1954],'IN':[20.5937,78.9629],'JP':[36.2048,138.2529],'SG':[1.3521,103.8198],
+    'HK':[22.3193,114.1694],'TW':[23.6978,120.9605],'KR':[35.9078,127.7669],'NL':[52.1326,5.2913],'RU':[61.5240,105.3188],
+    'BR':[-14.2350,-51.9253],'IT':[41.8719,12.5674],'ES':[40.4637,-3.7492],'CH':[46.8182,8.2275],'SE':[60.1282,18.6435],
+    'NO':[60.4720,8.4689],'FI':[61.9241,25.7482],'DK':[56.2639,9.5018],'BE':[50.5039,4.4699],'AT':[47.5162,14.5501],
+    'PL':[51.9194,19.1451],'MY':[4.2105,101.9758],'TH':[15.8700,100.9925],'VN':[14.0583,108.2772],'ID':[-0.7893,113.9213],
+    'PH':[12.8797,121.7740],'TR':[38.9637,34.9248],'SA':[23.8859,45.0792],'AE':[23.4241,53.8478],'IL':[31.0461,34.8516],
+    'ZA':[-30.5595,22.9375],'MX':[23.6345,-102.5528],'AR':[-38.4161,-63.6167],'CL':[-35.6751,-71.5430],'CO':[4.5709,-74.2973]
+};
+
+let dnsCountryFrequency = new Map();
+
+/**
+ * JSONP Helper for APIs that block standard fetch/CORS (like ip-api.com on VPNs).
+ */
+function fetchJSONP(url, callbackName = 'callback') {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const uniqueCallback = `jsonp_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+        window[uniqueCallback] = (data) => {
+            document.body.removeChild(script);
+            delete window[uniqueCallback];
+            resolve(data);
+        };
+        script.src = `${url}${url.includes('?') ? '&' : '?'}${callbackName}=${uniqueCallback}`;
+        script.onerror = () => {
+            document.body.removeChild(script);
+            delete window[uniqueCallback];
+            reject(new Error('JSONP failed'));
+        };
+        document.body.appendChild(script);
+        setTimeout(() => { if (window[uniqueCallback]) reject(new Error('JSONP timeout')); }, 8000);
+    });
+}
+
 let map;
-function initMap(lat, lng) { if (map) return; map = L.map('map', { zoomControl: false }).setView([lat, lng], 13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); L.marker([lat, lng]).addTo(map).bindPopup("<b>IP Location</b>").openPopup(); const el = document.getElementById('map-coords'); if (el) el.innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`; }
+function initMap(lat, lng, zoom = 13) {
+    if (map) { map.setView([lat, lng], zoom); return; }
+    map = L.map('map', { zoomControl: false }).setView([lat, lng], zoom);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    L.marker([lat, lng]).addTo(map).bindPopup("<b>Detected Location</b>").openPopup();
+    const el = document.getElementById('map-coords');
+    if (el) el.innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+}
 
 async function getIPFromWebRTC() { return new Promise(resolve => { const pc = new RTCPeerConnection({ iceServers: [] }); pc.createDataChannel(''); pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => {}); pc.onicecandidate = e => { if (!e?.candidate) return; const m = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(e.candidate.candidate); if (m) { pc.close(); resolve(m[1]); } }; setTimeout(() => { pc.close(); resolve(null); }, 1000); }); }
 
 async function fetchIPv4Data() {
+    const el = (id, v) => { const e = document.getElementById(id); if (e) e.innerText = v; };
+    const setLoader = (msg = 'Detecting...') => { el('ipv4-display', msg); el('ipv4-loc', 'Locating...'); };
+    setLoader();
+
+    let ip = null, city = '', region = '', countryCode = '', lat = null, lng = null;
+    let isp = 'Unknown', org = 'Unknown', asn = '--', as_org = 'Unknown', tzId = '', tzUtc = '+0:00';
+
+    // ── STEP 1: IP Detection (Ghost Waterfall — Harder to block) ──
     try {
-        let d = null;
-        try { const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) }); const data = await r.json(); if (data?.ip) d = { ip: data.ip, city: data.city || '', region_code: data.region_code || '', country_code: data.country_code || '', latitude: data.latitude, longitude: data.longitude, timezone: { id: data.timezone || 'Unknown' }, connection: { isp: data.org || 'Unknown', org: data.org || 'Unknown', asn: (data.asn || '').replace('AS', '') || '--' } }; } catch (e) { console.warn('ipapi.co failed:', e.message); }
-        if (!d?.ip) { try { const ip = await getIPFromWebRTC(); if (ip) d = { ip, city: 'Unknown', region_code: 'Unknown', country_code: 'Unknown', latitude: null, longitude: null, timezone: { id: 'Unknown' }, connection: { isp: 'Unable to detect', org: 'Unable to detect', asn: '--' } }; } catch (e) {} }
-        if (d?.ip) {
-            const el = (id, v) => { const e = document.getElementById(id); if (e) e.innerText = v; };
-            el('ipv4-display', d.ip); el('ipv4-loc', `${d.city || 'Unknown'}, ${d.region_code || 'Unknown'}`);
-            el('isp-display', d.connection?.isp || 'Unknown'); el('org-display', d.connection?.org || 'Unknown');
-            el('as-org-display', d.connection?.org || 'Unknown'); el('asn-display', d.connection?.asn || '--');
-            if (d.connection?.domain) el('hostname-display', d.connection.domain); else { el('hostname-display', 'No PTR Record'); fetchPTRRecord(d.ip); }
-            if (d.latitude && d.longitude) initMap(d.latitude, d.longitude);
-            if (d.timezone) detectVPN(d.timezone.id, d.timezone.utc, d.connection?.isp || '', d.country_code || '', d.connection?.org || '', d.connection?.asn || '');
-        } else { const el = (id, v) => { const e = document.getElementById(id); if (e) e.innerText = v; }; el('ipv4-display', 'Unavailable'); el('ipv4-loc', 'Unable to detect'); el('isp-display', 'Unknown'); }
-    } catch (e) { const el = document.getElementById('ipv4-display'); if (el) el.innerText = "Error"; }
+        const endpoints = [
+            'https://dash.cloudflare.com/cdn-cgi/trace',
+            'https://www.cloudflare.com/cdn-cgi/trace',
+            'https://1.1.1.1/cdn-cgi/trace',
+            'https://1.0.0.1/cdn-cgi/trace',
+            'https://api64.ipify.org?format=json',
+            'https://speed.cloudflare.com/cdn-cgi/trace'
+        ];
+        for (const url of endpoints) {
+            try {
+                const r = await fetchWithTimeout(url, { timeout: 3500 });
+                if (url.includes('ipify')) { const d = await r.json(); if (d.ip) ip = d.ip; }
+                else { 
+                    const t = await r.text(); 
+                    const traceIp = t.match(/ip=(.+)/)?.[1]?.trim(); 
+                    if (traceIp) { 
+                        ip = traceIp; 
+                        countryCode = t.match(/loc=(.+)/)?.[1]?.trim() || countryCode; 
+                    } 
+                }
+                if (ip) break;
+            } catch (e) {}
+        }
+    } catch (e) { console.warn('Core IP fetch failed'); }
+
+    // ── STEP 2: Enrichment Waterfall ──
+    // Provider A: freeipapi.com
+    try {
+        const r = await fetchWithTimeout(`https://freeipapi.com/api/json/${ip || ''}`, { timeout: 4000 });
+        const d = await r.json();
+        if (d.ipAddress) {
+            ip = d.ipAddress; city = d.cityName || city; region = d.regionName || region; countryCode = d.countryCode || countryCode;
+            lat = d.latitude; lng = d.longitude;
+            isp = d.isp || isp; org = d.org || org;
+        }
+    } catch (e) {}
+
+    // Provider B: ipinfo.io
+    try {
+        const r = await fetchWithTimeout(`https://ipinfo.io/${ip || ''}/json`, { timeout: 4000 });
+        const d = await r.json();
+        if (d.ip) {
+            ip = d.ip; city = d.city || city; region = d.region || region; countryCode = d.country || countryCode;
+            isp = d.org || isp; org = d.org || org;
+            if (d.loc) { const parts = d.loc.split(','); lat = parseFloat(parts[0]); lng = parseFloat(parts[1]); }
+        }
+    } catch (e) {}
+
+    // Provider C: ipwho.is
+    if (!lat || as_org === 'Unknown') {
+        try {
+            const r = await fetchWithTimeout(`https://ipwho.is/${ip || ''}`, { timeout: 4000 });
+            const d = await r.json();
+            if (d.success) {
+                ip = d.ip; city = d.city || city; region = d.region || region; countryCode = d.country_code || countryCode;
+                lat = d.latitude || lat; lng = d.longitude || lng;
+                isp = d.connection?.isp || isp; org = d.connection?.org || org;
+                asn = String(d.connection?.asn || asn);
+                as_org = d.connection?.org || as_org;
+                tzId = d.timezone?.id || tzId; tzUtc = d.timezone?.utc || tzUtc;
+            }
+        } catch (e) {}
+    }
+
+    // Provider D: JSONP fallback (Resilient to CORS/Fetch blocks)
+    if (!lat || isp === 'Unknown' || as_org === 'Unknown') {
+        try {
+            const d = await fetchJSONP(`https://ipapi.co/${ip || ''}/jsonp/`, 'callback');
+            if (d && !d.error) {
+                city = d.city || city; region = d.region || region; countryCode = d.country_code || countryCode;
+                lat = d.latitude || lat; lng = d.longitude || lng;
+                isp = d.org || isp; org = d.org || org;
+                asn = (d.asn || '').startsWith('AS') ? d.asn : 'AS' + d.asn;
+                as_org = d.org || as_org;
+            }
+        } catch (e) {
+            try {
+                const d2 = await fetchJSONP(`https://extreme-ip-lookup.com/json/${ip || ''}`);
+                if (d2.status === 'success') {
+                    city = d2.city || city; region = d2.region || region; countryCode = d2.countryCode || countryCode;
+                    lat = parseFloat(d2.lat) || lat; lng = parseFloat(d2.lon) || lng;
+                    isp = d2.isp || isp; org = d2.org || org;
+                }
+            } catch (e2) {}
+        }
+    }
+
+    // ── STEP 3: DNS-Aware Location Correction ──
+    if (countryCode === 'JP' && dnsCountryFrequency.get('KR') > (dnsCountryFrequency.get('JP') || 0)) {
+        console.log('Location mismatch detected: IP=JP, DNS=KR. Correcting...');
+        countryCode = 'KR'; city = 'Seoul'; region = 'South Korea';
+        const badge = document.getElementById('loc-verify-badge'); if (badge) badge.classList.remove('hidden');
+        if (COUNTRY_COORDS['KR']) [lat, lng] = COUNTRY_COORDS['KR'];
+    }
+
+    // Provider E: Emergency DNS-based Geo Fallback (If all APIs blocked)
+    if (!lat && dnsCountryFrequency.size > 0) {
+        const topCC = Array.from(dnsCountryFrequency.entries()).sort((a,b) => b[1] - a[1])[0][0];
+        if (topCC && COUNTRY_COORDS[topCC]) {
+            console.warn('All Geo-IP APIs blocked. Triggering DNS geo fallback...');
+            countryCode = topCC;
+            const names = {'KR':'South Korea','JP':'Japan','HK':'Hong Kong','SG':'Singapore','US':'USA'};
+            region = names[topCC] || topCC;
+            [lat, lng] = COUNTRY_COORDS[topCC];
+            const badge = document.getElementById('loc-verify-badge'); if (badge) { badge.innerText = "DNS Fallback"; badge.classList.remove('hidden'); }
+        }
+    }
+
+    // MAP FALLBACK
+    if (!lat && countryCode && COUNTRY_COORDS[countryCode]) {
+        [lat, lng] = COUNTRY_COORDS[countryCode];
+        initMap(lat, lng, 5); 
+    }
+
+    // ── STEP 4: WebRTC Fallback (Last resort IP) ──
+    if (!ip) {
+        try {
+            const webRtcIp = await getIPFromWebRTC();
+            if (webRtcIp) {
+                const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|169\.254\.)/i.test(webRtcIp);
+                if (!isPrivate) { ip = webRtcIp; isp = "WebRTC (Detected)"; }
+            }
+        } catch (e) {}
+    }
+
+    // ── POPULATE UI ──
+    if (ip) {
+        el('ipv4-display', ip);
+        el('ipv4-loc', [city, region].filter(Boolean).join(', ') || countryCode || 'Unknown');
+        el('isp-display', isp); el('org-display', org); el('as-org-display', as_org || org); el('asn-display', asn);
+        el('hostname-display', 'Resolving...'); fetchPTRRecord(ip);
+        if (lat && lng) initMap(lat, lng, lat && lng && city && city !== 'Seoul' ? 13 : 5);
+        if (isp === 'Unknown' || asn === '--') el('vpn-status', 'Adblock/Filter Detected');
+        detectVPN(tzId, tzUtc, isp, countryCode, org, asn);
+    } else {
+        el('ipv4-display', 'Unavailable'); el('ipv4-loc', 'Privacy Filter Blocking APIs'); el('vpn-status', 'No Data');
+    }
 }
 
-async function fetchPTRRecord(ip) { try { const r = await fetch(`https://ipwho.is/?ip=${ip}`, { signal: AbortSignal.timeout(5000) }); const d = await r.json(); if (d.success && d.connection?.domain) document.getElementById('hostname-display').innerText = d.connection.domain; } catch (e) {} }
+async function fetchPTRRecord(ip) {
+    if (!ip) return;
+    try {
+        const r = await fetchWithTimeout(`https://ipwho.is/${ip}?fields=connection`, { timeout: 4000 });
+        const d = await r.json();
+        if (d.success && d.connection?.domain) {
+            document.getElementById('hostname-display').innerText = d.connection.domain;
+            return;
+        }
+    } catch (e) {}
+    document.getElementById('hostname-display').innerText = 'No PTR Record';
+}
 
 async function fetchIPv6Data() {
-    try { const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) }); if (r.ok) { const d = await r.json(); if (d.ip?.includes(':')) { document.getElementById('ipv6-display').innerText = d.ip; const s = document.getElementById('ipv6-status'); if (s) { s.innerText = "Active"; s.style.color = 'var(--accent-emerald)'; s.style.fontWeight = '700'; } document.getElementById('ipv6-provider').innerText = d.org || d.asn || "Unknown"; } else { document.getElementById('ipv6-display').innerText = "Not Available"; const s = document.getElementById('ipv6-status'); if (s) { s.innerText = "Inactive"; s.style.fontWeight = '700'; } document.getElementById('ipv6-provider').innerText = "No IPv6 Connection"; } } }
-    catch (e) { document.getElementById('ipv6-display').innerText = "Not Detected"; document.getElementById('ipv6-status').innerText = "IPv4 Only"; document.getElementById('ipv6-provider').innerText = "--"; }
+    const setEl = (id, v) => { const e = document.getElementById(id); if (e) e.innerText = v; };
+    let ipv6 = null;
+    try {
+        const endpoints = ['https://api64.ipify.org?format=json', 'https://www.cloudflare.com/cdn-cgi/trace'];
+        for (const url of endpoints) {
+            try {
+                const r = await fetchWithTimeout(url, { timeout: 4500 });
+                if (url.includes('ipify')) {
+                    const d = await r.json(); if (d.ip?.includes(':')) ipv6 = d.ip;
+                } else {
+                    const t = await r.text(); const traceIp = t.match(/ip=(.+)/)?.[1]?.trim();
+                    if (traceIp?.includes(':')) ipv6 = traceIp;
+                }
+                if (ipv6) break;
+            } catch (e) {}
+        }
+
+        if (ipv6) {
+            setEl('ipv6-display', ipv6);
+            const s = document.getElementById('ipv6-status');
+            if (s) { s.innerText = 'Active'; s.style.color = 'var(--accent-emerald)'; s.style.fontWeight = '700'; }
+            try {
+                // Multi-provider fallback for IPv6
+                const ri = await fetchWithTimeout(`https://freeipapi.com/api/json/${ipv6}`, { timeout: 4000 });
+                const di = await ri.json();
+                if (di.cityName) setEl('ipv6-provider', di.connection?.isp || di.connection?.org || 'Active');
+                else {
+                    const ri2 = await fetchWithTimeout(`https://ipwho.is/${ipv6}?fields=connection`, { timeout: 4000 });
+                    const di2 = await ri2.json();
+                    setEl('ipv6-provider', di2.connection?.isp || di2.connection?.org || 'Active');
+                }
+            } catch (e) { setEl('ipv6-provider', 'Active'); }
+        } else {
+            setEl('ipv6-display', 'Not Available');
+            const s = document.getElementById('ipv6-status');
+            if (s) { s.innerText = 'IPv4 Only'; s.style.color = 'var(--text-muted)'; }
+            setEl('ipv6-provider', 'No IPv6 Connectivity');
+        }
+    } catch (e) {
+        setEl('ipv6-display', 'Not Detected');
+        setEl('ipv6-status', 'IPv4 Only');
+        setEl('ipv6-provider', '--');
+    }
 }
 
 async function fetchDNS() {
@@ -507,8 +800,12 @@ async function fetchDNS() {
     const detected = new Map(), BATCH = 10;
     const runBatch = async () => Promise.all(Array(BATCH).fill(0).map(async () => { try { const c = new AbortController(); const t = setTimeout(() => c.abort(), 3000); const r = await fetch(`https://edns.ip-api.com/json?r=${Math.random()}`, { signal: c.signal, cache: 'no-store' }); clearTimeout(t); if (!r.ok) return null; const d = await r.json(); return d.dns?.ip ? d.dns : null; } catch (e) { return null; } }));
     let results = await runBatch(); await new Promise(r => setTimeout(r, 250)); results = results.concat(await runBatch());
-    let total = 0; results.forEach(dns => { if (dns) { total++; if (detected.has(dns.ip)) detected.get(dns.ip).count++; else detected.set(dns.ip, { data: dns, count: 1 }); } });
+    let total = 0; results.forEach(dns => { if (dns) { total++; if (detected.has(dns.ip)) detected.get(dns.ip).count++; else detected.set(dns.ip, { data: dns, count: 1 }); if (dns.geo) { const cc = dns.geo.split(',').pop().trim(); let code = cc; if (cc === 'South Korea') code = 'KR'; else if (cc === 'Japan') code = 'JP'; dnsCountryFrequency.set(code, (dnsCountryFrequency.get(code) || 0) + 1); } } });
     if (list) list.innerHTML = '';
+    
+    // Trigger IP refresh if DNS results might correct location
+    if (dnsCountryFrequency.size > 0) { setTimeout(() => fetchIPv4Data(), 500); }
+    
     if (detected.size > 0) {
         if (badge) { badge.innerText = `${detected.size} SERVER${detected.size > 1 ? 'S' : ''}`; badge.classList.remove('hidden'); }
         Array.from(detected.values()).sort((a, b) => b.count - a.count).forEach(item => {

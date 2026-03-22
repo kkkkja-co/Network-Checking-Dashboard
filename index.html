@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=1.4">
 </head>
 <body>
 
@@ -187,9 +187,9 @@
 
         <!-- IPv4 -->
         <div class="card accent-blue fade-in delay-2">
-            <div class="card-top"><div style="flex:1"><div class="card-label">Public IPv4</div><div class="card-value" id="ipv4-display"><span class="loader"></span></div><p class="card-sub" id="ipv4-loc">Locating...</p><p class="tz-link" id="sys-tz" onclick="showTzModal()" title="Click for extra info">Sys Timezone: <span class="loader" style="width:10px;height:10px;border-width:1.5px"></span></p></div><div class="card-icon icon-blue"><i class="fas fa-globe"></i></div></div>
+            <div class="card-top"><div style="flex:1"><div class="card-label">Public IPv4</div><div class="card-value" id="ipv4-display"><span class="loader"></span></div><p class="card-sub" id="ipv4-loc">Locating... <span id="loc-verify-badge" class="hidden" style="font-size:0.55rem;background:rgba(52,211,153,0.1);color:var(--accent-emerald);padding:0.1rem 0.4rem;border-radius:4px;margin-left:0.4rem;vertical-align:middle;font-weight:700">DNS Verified</span></p><p class="tz-link" id="sys-tz" onclick="showTzModal()" title="Click for extra info">Sys Timezone: <span class="loader" style="width:10px;height:10px;border-width:1.5px"></span></p></div><div class="card-icon icon-blue"><i class="fas fa-globe"></i></div></div>
             <div class="card-footer-line" style="margin-top:0.75rem">
-                <div class="card-detail-row"><div class="card-detail-col"><div class="detail-label">ISP</div><div class="detail-value" id="isp-display">--</div></div><div class="card-detail-col"><div class="detail-label">Organization</div><div class="detail-value" id="org-display">--</div></div></div>
+                <div class="card-detail-row"><div class="card-detail-col"><div class="detail-label">ISP</div><div class="detail-value" id="isp-display">--</div></div><div class="card-detail-col"><div class="detail-label">Organisation</div><div class="detail-value" id="org-display">--</div></div></div>
                 <div class="card-detail-row" style="margin-top:0.5rem"><div class="card-detail-col"><div class="detail-label">AS Organization</div><div class="detail-value" id="as-org-display">--</div></div><div class="card-detail-col"><div class="detail-label">AS Number</div><div class="detail-value" style="font-family:'Inter',monospace" id="asn-display">--</div></div></div>
             </div>
         </div>
@@ -321,7 +321,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script src="vpn-data.js"></script>
-<script src="script.js"></script>
+<script src="vpn-data.js?v=1.4"></script>
+<script src="script.js?v=1.4"></script>
 </body>
 </html>
