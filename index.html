@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Analyzer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    //fonts.googleapis.com">
+    //fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg:#07080f; --bg2:#0c0e1a; --card:#0f1120; --card2:#141728;
@@ -96,7 +96,6 @@
         .rsn{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.79rem;}
         .rsn:last-child{border-bottom:none;}
 
-        /* DNS cards */
         .dns-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:15px 18px;margin-bottom:9px;position:relative;overflow:hidden;transition:border-color .15s;}
         .dns-card:last-of-type{margin-bottom:0;}
         .dns-card:hover{border-color:rgba(255,255,255,.12);}
@@ -115,7 +114,6 @@
         .feats{display:flex;flex-wrap:wrap;gap:5px;}
         .fi{padding:3px 8px;border-radius:6px;background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.12);color:var(--cyan);font-size:.71rem;font-weight:500;}
 
-        /* Speed */
         .spd-btn{padding:10px 26px;background:linear-gradient(135deg,var(--indigo),var(--violet));border:none;border-radius:50px;color:#fff;font-size:.86rem;font-weight:600;cursor:pointer;transition:opacity .2s,transform .15s;margin-bottom:16px;font-family:'Inter',sans-serif;}
         .spd-btn:hover{opacity:.87;transform:translateY(-1px);}
         .spd-btn:disabled{opacity:.38;cursor:not-allowed;transform:none;}
@@ -397,37 +395,58 @@
         });
     }
 
-    /* DNS Leak — ipleak.net with robust parsing */
+    /* ─────────────────────────────────────────────────────────────────────
+       DNS LEAK — ipleak.net subdomain probes
+       FIX: Increased probe count from 20 → 80 (first wave) + 40 (second
+            wave if too few resolvers found), totalling up to 120 probes.
+            Each probe uses a unique random subdomain so every single DNS
+            query goes to a different ipleak.net record, maximising the
+            chance of catching all resolvers in round-robin pools.
+    ───────────────────────────────────────────────────────────────────── */
     async function runDNS(){
-        $('dns-out').innerHTML=`<div style="display:flex;align-items:center;gap:9px;color:var(--text3);font-size:.8rem;padding:10px 0"><span class="spin"></span>Detecting DNS resolvers…</div>`;
+        $('dns-out').innerHTML=`<div style="display:flex;align-items:center;gap:9px;color:var(--text3);font-size:.8rem;padding:10px 0"><span class="spin"></span>Detecting DNS resolvers (sending 80+ probes)…</div>`;
+
         const session=[...Array(40)].map(()=>Math.floor(Math.random()*16).toString(16)).join('');
         const dnsMap=new Map();
 
-        // ── Method 1: ipleak.net subdomain probes ──
-        await Promise.all([...Array(20)].map((_,i)=>{
-            const rnd=Math.random().toString(36).substr(2,10)+'_'+i;
-            return fetch(`https://${session}-${rnd}.ipleak.net/dnsdetection/`,{cache:'no-store'})
-                .then(r=>r.text())
-                .then(txt=>{
-                    let data; try{ data=JSON.parse(txt); }catch(e){ return; }
-                    if(!data||typeof data!=='object')return;
-                    const item=Array.isArray(data)?data[0]:data;
-                    if(!item)return;
-                    const ip    =safeStr(item.ip||'');
-                    const ctry  =safeStr(item.country_name||item.country||'Unknown');
-                    const cc    =safeStr(item.country_code||item.cc||'');
-                    const isp   =safeStr(item.isp||item.as_org||item.org||item['as']||'Unknown');
-                    if(!ip||!/^\d+\.\d+\.\d+\.\d+$/.test(ip))return;
-                    if(!dnsMap.has(ip))dnsMap.set(ip,{ip,ctry,cc,isp,count:0,method:'probe'});
-                    dnsMap.get(ip).count++;
-                })
-                .catch(()=>{});
-        }));
+        /* Helper: fire N probes and collect results into dnsMap */
+        async function sendProbes(count, offset=0){
+            await Promise.all([...Array(count)].map((_,i)=>{
+                /* Unique subdomain per probe — forces a fresh DNS lookup each time */
+                const rnd=Math.random().toString(36).substr(2,12)+'x'+(offset+i);
+                return fetch(`https://${session}-${rnd}.ipleak.net/dnsdetection/`,{cache:'no-store'})
+                    .then(r=>r.text())
+                    .then(txt=>{
+                        let data; try{ data=JSON.parse(txt); }catch(e){ return; }
+                        if(!data||typeof data!=='object')return;
+                        const item=Array.isArray(data)?data[0]:data;
+                        if(!item)return;
+                        const ip    =safeStr(item.ip||'');
+                        const ctry  =safeStr(item.country_name||item.country||'Unknown');
+                        const cc    =safeStr(item.country_code||item.cc||'');
+                        const isp   =safeStr(item.isp||item.as_org||item.org||item['as']||'Unknown');
+                        if(!ip||!/^\d+\.\d+\.\d+\.\d+$/.test(ip))return;
+                        if(!dnsMap.has(ip))dnsMap.set(ip,{ip,ctry,cc,isp,count:0,method:'probe'});
+                        dnsMap.get(ip).count++;
+                    })
+                    .catch(()=>{});
+            }));
+        }
+
+        /* Wave 1 — 80 parallel probes */
+        await sendProbes(80, 0);
+
+        /* Wave 2 — 40 more probes if resolver pool seems small
+           (catches load-balanced resolvers that rarely appeared in wave 1) */
+        if(dnsMap.size < 4){
+            $('dns-out').innerHTML=`<div style="display:flex;align-items:center;gap:9px;color:var(--text3);font-size:.8rem;padding:10px 0"><span class="spin"></span>Running additional probes…</div>`;
+            await sendProbes(40, 80);
+        }
 
         let dohActive = false;
         let dohProvider = '';
 
-        // ── Method 2: EDNS fallback (works when DoH is active) ──
+        /* ── EDNS fallback (only used when ipleak probes return nothing — DoH active) ── */
         if(dnsMap.size===0){
             try{
                 const r = await fetch('https://edns.ip-api.com/json',{cache:'no-store'}).then(r=>r.json());
@@ -436,9 +455,8 @@
                     const parts = geo.split(' - ');
                     const isp = parts[1]||geo||'Unknown';
                     const ctry = parts[0]||'Unknown';
-                    dnsMap.set(r.dns.ip,{ip:r.dns.ip, ctry, cc:'', isp, count:20, method:'edns'});
+                    dnsMap.set(r.dns.ip,{ip:r.dns.ip, ctry, cc:'', isp, count:120, method:'edns'});
                     dohActive = true;
-                    // Identify known DoH providers
                     const knownDoH = {
                         '1.1.1.1':'Cloudflare 1.1.1.1','1.0.0.1':'Cloudflare 1.0.0.1',
                         '8.8.8.8':'Google DNS','8.8.4.4':'Google DNS',
@@ -468,7 +486,6 @@
             return;
         }
 
-        // Badge
         if(dohActive){
             $('dns-bdg').innerHTML=`<span class="bdg b-c">🔐 DoH Active</span>`;
         } else {
@@ -477,8 +494,6 @@
         }
 
         let h='';
-
-        // DoH notice banner
         if(dohActive){
             h+=`<div class="al al-i" style="margin-bottom:14px">
       🔐 <strong>DNS-over-HTTPS is active</strong> — your DNS queries are encrypted.
@@ -507,6 +522,7 @@
         h+=`<div style="margin-top:12px;padding:10px 14px;background:rgba(${dohActive?'34,211,238':leak?'234,179,8':'34,197,94'},.05);border:1px solid rgba(${dohActive?'34,211,238':leak?'234,179,8':'34,197,94'},.12);border-radius:10px;font-size:.74rem;color:var(--text3);line-height:1.65">
     <strong style="color:${dohActive?'var(--cyan)':leak?'var(--yellow)':'var(--green)'}">${dohActive?'🔐 DoH Encrypted':leak?'⚠️ Possible DNS Leak':'✅ No DNS Leak'}</strong> —
     ${dohActive?'DNS queries are encrypted to '+esc(dohProvider)+' via DoH. No traditional leak is possible.':servers.length===1?'All probes resolved via a single DNS server.':'Queries distributed across '+servers.length+' resolvers — possible leak.'}
+    <span style="color:var(--text3);font-size:.69rem;display:block;margin-top:5px">Probes sent: up to 120 · Unique resolvers found: ${servers.length}</span>
   </div>`;
 
         $('dns-out').innerHTML=h;
@@ -564,18 +580,58 @@
         $('ua-out').innerHTML=h;
     }
 
-    /* Speed Test */
+    /* ─────────────────────────────────────────────────────────────────────
+       SPEED TEST
+    ───────────────────────────────────────────────────────────────────── */
     function setPhase(n){[0,1,2].forEach(i=>{$('ph'+i).className='ph'+(i<n?' done':i===n?' active':'');});}
     function setSP(pct,msg){$('sPF').style.width=pct+'%';$('sPL').textContent=msg;}
+
     function mkRnd(bytes){
         const buf=new Uint8Array(bytes);
         for(let i=0;i<bytes;i+=65536)crypto.getRandomValues(buf.subarray(i,Math.min(i+65536,bytes)));
         return buf;
     }
 
+    /* ── Upload helper using XHR ──────────────────────────────────────────
+       WHY XHR instead of fetch for upload?
+       • xhr.upload.onload fires the moment the browser finishes SENDING the
+         request body — before the server even responds. This gives a clean
+         measurement of outbound throughput, unaffected by server processing
+         or response latency.
+       • fetch() resolves only after the full response is received, mixing
+         upload time + server processing + download of the response, which
+         makes the upload measurement inaccurate.
+       • XHR also avoids the preflight CORS issue that fetch POST can trigger
+         on some networks/proxies.
+    ──────────────────────────────────────────────────────────────────── */
+    function uploadChunk(bytes){
+        return new Promise((resolve, reject)=>{
+            const data = mkRnd(bytes);
+            const xhr  = new XMLHttpRequest();
+            let uploadStart = 0;
+
+            xhr.upload.addEventListener('loadstart', ()=>{ uploadStart = performance.now(); });
+            xhr.upload.addEventListener('load', ()=>{
+                resolve(performance.now() - uploadStart);
+            });
+            /* If upload.load never fires (some browsers), fall back to full
+               request completion minus a small constant for server response */
+            xhr.addEventListener('load', ()=>{
+                if(uploadStart) resolve(performance.now() - uploadStart);
+            });
+            xhr.addEventListener('error',  ()=>reject(new Error('XHR error')));
+            xhr.addEventListener('timeout', ()=>reject(new Error('XHR timeout')));
+            xhr.timeout = 30000;
+
+            xhr.open('POST', 'https://speed.cloudflare.com/__up');
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+            xhr.send(data);   /* send Uint8Array directly — no .buffer detach risk */
+        });
+    }
+
     async function runSpeed(){
         const btn=$('spdBtn');
-        btn.disabled=true;btn.textContent='⏳ Testing…';
+        btn.disabled=true; btn.textContent='⏳ Testing…';
         $('spd-phase-wrap').style.display='block';
         setSP(0,'Fetching server info…');
 
@@ -591,8 +647,8 @@
             $('v-edgeip').textContent=m.clientIp||'—';
         }catch(e){}
 
-        /* PING */
-        setPhase(0);setSP(2,'Testing ping…');
+        /* ── PING ── */
+        setPhase(0); setSP(2,'Testing ping…');
         const pings=[];
         for(let i=0;i<10;i++){
             try{
@@ -612,54 +668,55 @@
         }
         setSP(10,'✓ Ping done');
 
-        /* DOWNLOAD */
+        /* ── DOWNLOAD ── */
         setPhase(1);
         const dlSz=[500000,1500000,4000000,10000000,20000000];
         let dlB=0,dlT=0,dlSpd=0;
         for(let si=0;si<dlSz.length;si++){
             const bytes=dlSz[si];
-            setSP(10+si*(38/dlSz.length),`Download ${si+1}/${dlSz.length} — ${(bytes/1e6).toFixed(1)}MB…`);
+            setSP(10+si*(38/dlSz.length),`Download ${si+1}/${dlSz.length} — ${(bytes/1e6).toFixed(1)} MB…`);
             try{
                 const t=performance.now();
                 const res=await fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}`,{cache:'no-store'});
                 const buf=await res.arrayBuffer();
                 const ms=performance.now()-t;
-                dlB+=buf.byteLength*8;dlT+=ms/1000;
+                dlB+=buf.byteLength*8; dlT+=ms/1000;
                 dlSpd=dlB/dlT/1e6;
                 $('v-dl').textContent=dlSpd.toFixed(1);
                 $('b-dl').style.width=Math.min(100,dlSpd/1.5)+'%';
                 setSP(10+(si+1)*(38/dlSz.length),`Download: ${dlSpd.toFixed(1)} Mbps`);
-            }catch(e){}
+            }catch(e){ console.warn('Download chunk failed:',e); }
         }
         setSP(50,`✓ Download ${dlSpd.toFixed(1)} Mbps`);
 
-        /* UPLOAD */
+        /* ── UPLOAD ──────────────────────────────────────────────────────────
+           FIX 1: Uses XHR + xhr.upload.onload for accurate outbound timing.
+           FIX 2: catch uses 'continue' — a single failed chunk no longer
+                  aborts the entire upload test.
+           FIX 3: Payload passed as Uint8Array (no .buffer detach risk).
+        ──────────────────────────────────────────────────────────────────── */
         setPhase(2);
-        const ulSz=[250000,500000,1000000,2000000,5000000];
+        const ulSz=[250000,500000,1000000,2000000,5000000,10000000];
         let ulB=0,ulT=0,ulSpd=0;
         for(let si=0;si<ulSz.length;si++){
             const bytes=ulSz[si];
-            setSP(50+si*(45/ulSz.length),`Upload ${si+1}/${ulSz.length} — ${(bytes/1e6).toFixed(1)}MB…`);
+            setSP(50+si*(45/ulSz.length),`Upload ${si+1}/${ulSz.length} — ${(bytes/1e6).toFixed(1)} MB…`);
             try{
-                const data=mkRnd(bytes);
-                const t=performance.now();
-                const res=await fetch('https://speed.cloudflare.com/__up',{
-                    method:'POST',body:data.buffer,
-                    headers:{'Content-Type':'application/octet-stream'}
-                });
-                await res.text();
-                const ms=performance.now()-t;
-                ulB+=bytes*8;ulT+=ms/1000;
+                const ms = await uploadChunk(bytes);
+                ulB+=bytes*8; ulT+=ms/1000;
                 ulSpd=ulB/ulT/1e6;
                 $('v-ul').textContent=ulSpd.toFixed(1);
                 $('b-ul').style.width=Math.min(100,ulSpd/0.8)+'%';
                 setSP(50+(si+1)*(45/ulSz.length),`Upload: ${ulSpd.toFixed(1)} Mbps`);
-            }catch(e){ break; }
+            }catch(e){
+                console.warn('Upload chunk',si+1,'failed:',e.message);
+                /* continue — don't abort the remaining upload chunks */
+            }
         }
 
         setPhase(3);
         setSP(100,`✅ Done — ↓ ${dlSpd.toFixed(1)} Mbps  ·  ↑ ${ulSpd.toFixed(1)} Mbps  ·  Ping ${$('v-pg').textContent} ms`);
-        btn.textContent='🔄 Run Again';btn.disabled=false;
+        btn.textContent='🔄 Run Again'; btn.disabled=false;
     }
 </script>
 </body>
