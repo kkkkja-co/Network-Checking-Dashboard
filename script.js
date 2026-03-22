@@ -570,6 +570,44 @@ async function fetchIPviaDOH() {
     } catch (e) { return null; }
 }
 
+/**
+ * RDAP (Registration Data Access Protocol) - Core Internet Registry Access.
+ * Highly resilient against adblockers as it's a technical registry service.
+ */
+async function fetchRDAP(ip) {
+    if (!ip) return null;
+    const rdaps = [`https://rdap.arin.net/bootstrap/ip/${ip}`, `https://rdap.db.ripe.net/ip/${ip}`, `https://rdap.apnic.net/ip/${ip}`];
+    for (const url of rdaps) {
+        try {
+            const r = await fetchWithTimeout(url, { timeout: 4000 });
+            if (!r.ok) continue;
+            const d = await r.json();
+            let org = d.name || d.handle || 'Unknown';
+            if (d.entities) {
+                const reg = d.entities.find(e => e.roles?.includes('registrant') || e.roles?.includes('administrative'));
+                if (reg && reg.vcardArray) {
+                    const fn = reg.vcardArray[1].find(p => p[0] === 'fn');
+                    if (fn) org = fn[3];
+                }
+            }
+            return { org, isp: org };
+        } catch (e) {}
+    }
+    return null;
+}
+
+/** 
+ * Same-Origin Fallback: The ultimate "Gold Standard" fix. 
+ * Works if a Cloudflare Worker is deployed on /api/geo.
+ */
+async function fetchSameOriginGeo() {
+    try {
+        const r = await fetchWithTimeout('/api/geo', { timeout: 2500 });
+        if (r.ok) return await r.json();
+    } catch (e) {}
+    return null;
+}
+
 let dnsCountryFrequency = new Map();
 
 /**
@@ -660,27 +698,38 @@ async function fetchIPv4Data() {
     }
 
     // ── STEP 2: Enrichment Waterfall ──
+    // Priority 0: Same-Origin (Worker Fallback)
+    const soData = await fetchSameOriginGeo();
+    if (soData) {
+        ip = soData.ip || ip; city = soData.city || city; region = soData.region || region; countryCode = soData.country || countryCode;
+        isp = soData.isp || isp; org = soData.org || org; asn = soData.asn || asn; as_org = soData.as_org || as_org;
+    }
+
     // Provider A: freeipapi.com
-    try {
-        const r = await fetchWithTimeout(`https://freeipapi.com/api/json/${ip || ''}`, { timeout: 4000 });
-        const d = await r.json();
-        if (d.ipAddress) {
-            ip = d.ipAddress; city = d.cityName || city; region = d.regionName || region; countryCode = d.countryCode || countryCode;
-            lat = d.latitude; lng = d.longitude;
-            isp = d.isp || isp; org = d.org || org;
-        }
-    } catch (e) {}
+    if (isp === 'Unknown' || !lat) {
+        try {
+            const r = await fetchWithTimeout(`https://freeipapi.com/api/json/${ip || ''}`, { timeout: 4000 });
+            const d = await r.json();
+            if (d.ipAddress) {
+                ip = d.ipAddress; city = d.cityName || city; region = d.regionName || region; countryCode = d.countryCode || countryCode;
+                lat = d.latitude; lng = d.longitude;
+                isp = d.isp || isp; org = d.org || org;
+            }
+        } catch (e) {}
+    }
 
     // Provider B: ipinfo.io
-    try {
-        const r = await fetchWithTimeout(`https://ipinfo.io/${ip || ''}/json`, { timeout: 4000 });
-        const d = await r.json();
-        if (d.ip) {
-            ip = d.ip; city = d.city || city; region = d.region || region; countryCode = d.country || countryCode;
-            isp = d.org || isp; org = d.org || org;
-            if (d.loc) { const parts = d.loc.split(','); lat = parseFloat(parts[0]); lng = parseFloat(parts[1]); }
-        }
-    } catch (e) {}
+    if (isp === 'Unknown' || !lat) {
+        try {
+            const r = await fetchWithTimeout(`https://ipinfo.io/${ip || ''}/json`, { timeout: 4000 });
+            const d = await r.json();
+            if (d.ip) {
+                ip = d.ip; city = d.city || city; region = d.region || region; countryCode = d.country || countryCode;
+                isp = d.org || isp; org = d.org || org;
+                if (d.loc) { const parts = d.loc.split(','); lat = parseFloat(parts[0]); lng = parseFloat(parts[1]); }
+            }
+        } catch (e) {}
+    }
 
     // Provider C: ipwho.is
     if (!lat || as_org === 'Unknown') {
@@ -718,6 +767,17 @@ async function fetchIPv4Data() {
                     isp = d2.isp || isp; org = d2.org || org;
                 }
             } catch (e2) {}
+        }
+    }
+
+    // Provider E: RDAP (Registration Data Access Protocol) — The "Nuclear" Logic
+    if (isp === 'Unknown' || as_org === 'Unknown') {
+        const rdap = await fetchRDAP(ip);
+        if (rdap) {
+            isp = rdap.isp || isp;
+            org = rdap.org || org;
+            as_org = rdap.org || as_org;
+            console.warn('Enrichment blocked. Fallback to RDAP success.');
         }
     }
 
