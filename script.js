@@ -615,34 +615,42 @@ async function fetchIPv4Data() {
     let ip = null, city = '', region = '', countryCode = '', lat = null, lng = null, colo = '';
     let isp = 'Unknown', org = 'Unknown', asn = '--', as_org = 'Unknown', tzId = '', tzUtc = '+0:00';
 
-    // ── STEP 1: IP Detection (Ghost Waterfall — Harder to block) ──
+    // ── STEP 1: IP Detection (Ghost Waterfall 2.0 — Nuclear Resilience) ──
     try {
         const endpoints = [
-            'https://dash.cloudflare.com/cdn-cgi/trace',
-            'https://www.cloudflare.com/cdn-cgi/trace',
             'https://1.1.1.1/cdn-cgi/trace',
             'https://1.0.0.1/cdn-cgi/trace',
-            'https://api64.ipify.org?format=json',
-            'https://speed.cloudflare.com/cdn-cgi/trace'
+            'https://checkip.amazonaws.com',
+            'https://ipv4.icanhazip.com',
+            'https://dash.cloudflare.com/cdn-cgi/trace',
+            'https://www.cloudflare.com/cdn-cgi/trace'
         ];
         for (const url of endpoints) {
             try {
                 const r = await fetchWithTimeout(url, { timeout: 3500 });
-                if (url.includes('ipify')) { const d = await r.json(); if (d.ip) ip = d.ip; }
-                else { 
-                    const t = await r.text(); 
-                    const traceIp = t.match(/ip=(.+)/)?.[1]?.trim(); 
-                    if (traceIp) { 
-                        ip = traceIp; 
-                        countryCode = t.match(/loc=(.+)/)?.[1]?.trim() || countryCode; 
+                if (!r.ok) continue;
+                const t = (await r.text()).trim();
+                
+                // Case A: Cloudflare Trace Format (ip=..., loc=..., colo=...)
+                if (t.includes('ip=')) {
+                    const traceIp = t.match(/ip=(.+)/)?.[1]?.trim();
+                    if (traceIp) {
+                        ip = traceIp;
+                        countryCode = t.match(/loc=(.+)/)?.[1]?.trim() || countryCode;
                         colo = t.match(/colo=(.+)/)?.[1]?.trim() || colo;
-                    } 
+                    }
+                } 
+                // Case B: Plain Text Format (Just the IP address)
+                else if (/^([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-fA-F0-9:]+)$/.test(t)) {
+                    ip = t;
                 }
-                if (ip) break;
+                
+                if (ip) {
+                    console.log('Ghost Waterfall success:', url, '->', ip);
+                    break;
+                }
             } catch (e) {}
         }
-        // Nuclear Fallback for IP: DNS-over-HTTPS
-        if (!ip) ip = await fetchIPviaDOH();
     } catch (e) { console.warn('Core IP fetch failed'); }
 
     // Emergency Geolocation via Cloudflare COLO (Zero-Tracker)
