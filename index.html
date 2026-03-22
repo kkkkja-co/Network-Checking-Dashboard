@@ -2090,35 +2090,46 @@
             }
         }
 
-        // --- UPDATED: IPv6 Detection with Provider ---
+        // --- UPDATED: IPv6 Detection with Two-Step API ---
         async function fetchIPv6Data() {
             try {
-                // 1. Force IPv6 Connection using ipleak.net
-                const r = await fetch('https://ipv6.ipleak.net/json/', { signal: AbortSignal.timeout(5000) });
+                // 1. Force IPv6 Connection to get the Address via ipify
+                const r = await fetch('https://api64.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
 
                 if (r.ok) {
-                    const d = await r.json();
+                    const ipData = await r.json();
                     
                     // Check if response is IPv6
-                    if (d.ip && d.ip.includes(':')) {
-                        document.getElementById('ipv6-display').innerText = d.ip;
+                    if (ipData.ip && ipData.ip.includes(':')) {
+                        document.getElementById('ipv6-display').innerText = ipData.ip;
                         document.getElementById('ipv6-status').innerText = "Active";
                         document.getElementById('ipv6-status').className = "text-xs text-emerald-500 font-bold mt-1";
 
-                        // Get provider info from the same response
-                        const provider = d.isp_name || d.as_number || "Unknown";
-                        document.getElementById('ipv6-provider').innerText = provider;
+                        // Get provider info by querying the IP specifically to avoid adblockers
+                        try {
+                            const infoR = await fetch(`https://ipinfo.io/${ipData.ip}/json`, { signal: AbortSignal.timeout(5000) });
+                            if(infoR.ok) {
+                                const d = await infoR.json();
+                                let provider = d.org || "Unknown";
+                                if (provider.startsWith('AS')) {
+                                    provider = provider.split(' ').slice(1).join(' '); // remove AS1234
+                                }
+                                document.getElementById('ipv6-provider').innerText = provider;
+                            } else {
+                                document.getElementById('ipv6-provider').innerText = "Unknown";
+                            }
+                        } catch(e) {
+                            document.getElementById('ipv6-provider').innerText = "Unknown";
+                        }
                     } else {
-                        // IPv6 not available
+                        // IPv6 not available (api64 fell back to ipv4)
                         document.getElementById('ipv6-display').innerText = "Not Available";
                         document.getElementById('ipv6-status').innerText = "Inactive";
                         document.getElementById('ipv6-status').className = "text-xs text-slate-500 font-bold mt-1";
                         document.getElementById('ipv6-provider').innerText = "No IPv6 Connection";
                     }
                 } else {
-                    document.getElementById('ipv6-display').innerText = "Not Detected";
-                    document.getElementById('ipv6-status').innerText = "IPv4 Only";
-                    document.getElementById('ipv6-provider').innerText = "--";
+                    throw new Error("ipify failed");
                 }
             } catch (e) {
                 // General Failure (User likely has no IPv6)

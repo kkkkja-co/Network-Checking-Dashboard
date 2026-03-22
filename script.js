@@ -410,23 +410,38 @@ async function fetchIPv4Data() {
     const orgEl = document.getElementById('org-display');
     
     try {
-        // Try primary API (ipleak IPv4)
-        const r = await fetch('https://ipv4.ipleak.net/json/', { timeout: 5000 });
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const d = await r.json();
+        // Use ipify to force IPv4 connection and get IP, then ipinfo.io to get details bypass CORS/Tracker blockers
+        const r = await fetch('https://api.ipify.org?format=json', { timeout: 5000 });
+        if (!r.ok) throw new Error(`ipify HTTP ${r.status}`);
+        const ipData = await r.json();
         
-        if (d.ip) {
+        if (ipData.ip) {
+            const infoR = await fetch(`https://ipinfo.io/${ipData.ip}/json`, { timeout: 5000 });
+            if (!infoR.ok) throw new Error(`ipinfo HTTP ${infoR.status}`);
+            const d = await infoR.json();
+
+            let asn = 'Unknown', isp = d.org || 'Unknown';
+            if (d.org && d.org.startsWith('AS')) {
+                const parts = d.org.split(' ');
+                asn = parts.shift().replace('AS', '');
+                isp = parts.join(' ');
+            }
+
             if (ipEl) ipEl.innerText = d.ip;
-            if (locEl) locEl.innerText = `${d.city_name || ''}, ${d.country_code || ''}`;
-            if (ispEl) ispEl.innerText = d.isp_name || 'Unknown';
-            if (asnEl) asnEl.innerText = d.as_number || 'Unknown';
-            if (orgEl) orgEl.innerText = d.isp_name || 'Unknown';
-            detectVPN(d.isp_name || '', d.isp_name || '', d.as_number || '');
-            if (typeof initMap === 'function') initMap(d.latitude, d.longitude);
+            if (locEl) locEl.innerText = `${d.city || ''}, ${d.country || ''}`;
+            if (ispEl) ispEl.innerText = isp;
+            if (asnEl) asnEl.innerText = asn;
+            if (orgEl) orgEl.innerText = isp;
+            detectVPN(isp, isp, asn);
+            
+            if (typeof initMap === 'function' && d.loc) {
+                const [lat, lon] = d.loc.split(',');
+                initMap(parseFloat(lat), parseFloat(lon));
+            }
             return;
         }
     } catch (primaryError) {
-        console.warn('ipleak.net failed:', primaryError);
+        console.warn('IPv4 fetch failed:', primaryError);
     }
     
     // Show error state if both APIs fail
