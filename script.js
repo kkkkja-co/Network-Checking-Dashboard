@@ -609,6 +609,8 @@ async function fetchSameOriginGeo() {
 }
 
 let dnsCountryFrequency = new Map();
+let dnsIsps = new Set();
+let dnsOrgs = new Set();
 
 /**
  * JSONP Helper for APIs that block standard fetch/CORS (like ip-api.com on VPNs).
@@ -781,7 +783,13 @@ async function fetchIPv4Data() {
         }
     }
 
-    // ── STEP 3: DNS-Aware Location Correction ──
+    // Provider F: DNS-Mirroring (If DNS probe succeeded but Geo-IP failed)
+    if (isp === 'Unknown' && dnsIsps.size > 0) {
+        isp = Array.from(dnsIsps)[0];
+        org = Array.from(dnsOrgs)[0] || isp;
+        as_org = org;
+        console.warn('Enrichment blocked. Fallback to DNS-Mirroring success.');
+    }
     if (countryCode === 'JP' && dnsCountryFrequency.get('KR') > (dnsCountryFrequency.get('JP') || 0)) {
         console.log('Location mismatch detected: IP=JP, DNS=KR. Correcting...');
         countryCode = 'KR'; city = 'Seoul'; region = 'South Korea';
@@ -898,7 +906,22 @@ async function fetchDNS() {
     const detected = new Map(), BATCH = 10;
     const runBatch = async () => Promise.all(Array(BATCH).fill(0).map(async () => { try { const c = new AbortController(); const t = setTimeout(() => c.abort(), 3000); const r = await fetch(`https://edns.ip-api.com/json?r=${Math.random()}`, { signal: c.signal, cache: 'no-store' }); clearTimeout(t); if (!r.ok) return null; const d = await r.json(); return d.dns?.ip ? d.dns : null; } catch (e) { return null; } }));
     let results = await runBatch(); await new Promise(r => setTimeout(r, 250)); results = results.concat(await runBatch());
-    let total = 0; results.forEach(dns => { if (dns) { total++; if (detected.has(dns.ip)) detected.get(dns.ip).count++; else detected.set(dns.ip, { data: dns, count: 1 }); if (dns.geo) { const cc = dns.geo.split(',').pop().trim(); let code = cc; if (cc === 'South Korea') code = 'KR'; else if (cc === 'Japan') code = 'JP'; dnsCountryFrequency.set(code, (dnsCountryFrequency.get(code) || 0) + 1); } } });
+    let total = 0; results.forEach(dns => { 
+        if (dns) { 
+            total++; 
+            if (detected.has(dns.ip)) detected.get(dns.ip).count++; 
+            else detected.set(dns.ip, { data: dns, count: 1 }); 
+            if (dns.isp) dnsIsps.add(dns.isp);
+            if (dns.org) dnsOrgs.add(dns.org);
+            if (dns.geo) { 
+                const cc = dns.geo.split(',').pop().trim(); 
+                let code = cc; 
+                if (cc === 'South Korea') code = 'KR'; 
+                else if (cc === 'Japan') code = 'JP'; 
+                dnsCountryFrequency.set(code, (dnsCountryFrequency.get(code) || 0) + 1); 
+            } 
+        } 
+    });
     if (list) list.innerHTML = '';
     
     // Trigger IP refresh if DNS results might correct location
