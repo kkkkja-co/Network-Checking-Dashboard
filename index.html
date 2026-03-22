@@ -1,2487 +1,666 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="h_ArC4Ug7_JHS-ak63kluPWSNrGUwBg34NloY-H3U_0" />
-    <title>Network Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Privacy Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#07080f; --bg2:#0c0e1a; --card:#0f1120; --card2:#141728;
+            --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+            --text:#eef0f6; --text2:#9ca3b8; --text3:#5a6280;
+            --indigo:#6366f1; --violet:#8b5cf6; --cyan:#22d3ee;
+            --green:#22c55e; --yellow:#eab308; --red:#ef4444;
+            --mono:'JetBrains Mono','Consolas',monospace;
+        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:32px 20px 80px;-webkit-font-smoothing:antialiased;}
+        ::-webkit-scrollbar{width:5px;height:5px;}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px;}
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+        .hdr{max-width:1200px;margin:0 auto 38px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+        .logo{display:flex;align-items:center;gap:12px;}
+        .logo-ic{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--indigo),var(--violet));display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 24px rgba(99,102,241,.35);}
+        .logo-t{font-size:1.12rem;font-weight:750;letter-spacing:-.3px;}
+        .logo-s{font-size:.72rem;color:var(--text3);margin-top:1px;}
+        .hdr-st{display:flex;align-items:center;gap:7px;font-size:.76rem;color:var(--text3);}
+        .pdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pdot 2s infinite;box-shadow:0 0 0 0 rgba(34,197,94,.4);}
+        @keyframes pdot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 
-    <link rel="stylesheet" href="styles.css">
+        .prg-w{max-width:1200px;margin:0 auto 26px;}
+        .prg-b{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+        .prg-f{height:100%;width:0%;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--cyan));transition:width .5s cubic-bezier(.4,0,.2,1);}
+        .prg-l{font-size:.7rem;color:var(--text3);margin-top:6px;text-align:right;}
+
+        .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;max-width:1200px;margin:0 auto;}
+        .c6{grid-column:span 6;} .c12{grid-column:span 12;}
+        @media(max-width:960px){.c6{grid-column:span 12;}}
+
+        .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;overflow:hidden;transition:border-color .2s;}
+        .card:hover{border-color:var(--border2);}
+        .ct{position:absolute;top:0;left:0;right:0;height:2px;opacity:.75;}
+        .ct-i{background:linear-gradient(90deg,var(--indigo),var(--violet));}
+        .ct-g{background:linear-gradient(90deg,#16a34a,var(--green));}
+        .ct-c{background:linear-gradient(90deg,#0891b2,var(--cyan));}
+        .ct-o{background:linear-gradient(90deg,#d97706,var(--yellow));}
+        .ct-r{background:linear-gradient(90deg,#dc2626,var(--red));}
+        .ct-v{background:linear-gradient(90deg,#7c3aed,#a78bfa);}
+
+        .ch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
+        .chl{display:flex;align-items:center;gap:10px;}
+        .cion{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+        .ci-i{background:rgba(99,102,241,.15);} .ci-g{background:rgba(34,197,94,.15);}
+        .ci-c{background:rgba(34,211,238,.15);} .ci-o{background:rgba(234,179,8,.15);}
+        .ci-r{background:rgba(239,68,68,.15);}  .ci-v{background:rgba(139,92,246,.15);}
+        .ct2{font-size:.9rem;font-weight:650;letter-spacing:-.2px;}
+        .cs{font-size:.7rem;color:var(--text3);margin-top:2px;}
+
+        .bdg{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:.69rem;font-weight:600;white-space:nowrap;}
+        .b-g{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+        .b-r{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);}
+        .b-y{background:rgba(234,179,8,.1);color:var(--yellow);border:1px solid rgba(234,179,8,.2);}
+        .b-i{background:rgba(99,102,241,.1);color:var(--indigo);border:1px solid rgba(99,102,241,.2);}
+        .b-m{background:rgba(255,255,255,.05);color:var(--text3);border:1px solid rgba(255,255,255,.08);}
+        .b-c{background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.2);}
+
+        .rows{display:flex;flex-direction:column;}
+        .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;}
+        .row:last-child{border-bottom:none;padding-bottom:0;}
+        .rl{color:var(--text3);flex-shrink:0;font-size:.78rem;}
+        .rv{color:var(--text2);text-align:right;word-break:break-all;font-family:var(--mono);font-size:.77rem;}
+        .rv.hi{color:var(--text);font-weight:600;}
+
+        .skel{height:13px;border-radius:6px;background:linear-gradient(90deg,var(--card2) 25%,rgba(255,255,255,.04) 50%,var(--card2) 75%);background-size:200%;animation:shim 1.4s infinite;margin:6px 0;}
+        @keyframes shim{to{background-position:-200% 0}}
+        .sk-sm{width:55%;} .sk-lg{width:100%;}
+        .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.08);border-top-color:var(--indigo);border-radius:50%;animation:sp .65s linear infinite;vertical-align:middle;}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        .al{padding:10px 14px;border-radius:10px;font-size:.79rem;line-height:1.55;margin-bottom:12px;}
+        .al-g{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac;}
+        .al-r{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#fca5a5;}
+        .al-y{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2);color:#fde047;}
+        .al-i{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);color:#a5b4fc;}
+
+        .chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0;}
+        .chip{display:inline-block;padding:3px 10px;border-radius:7px;font-family:var(--mono);font-size:.77rem;border:1px solid var(--border);background:var(--card2);}
+        .chip.lk{border-color:rgba(239,68,68,.35);color:var(--red);background:rgba(239,68,68,.05);}
+        .chip.lc{border-color:rgba(34,197,94,.35);color:var(--green);background:rgba(34,197,94,.05);}
+        .chip.v6{border-color:rgba(139,92,246,.35);color:var(--violet);background:rgba(139,92,246,.05);}
+
+        .mlink{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:var(--card2);border:1px solid var(--border);border-radius:10px;text-decoration:none;font-size:.78rem;color:var(--indigo);margin-top:13px;transition:background .15s,border-color .15s;font-weight:500;}
+        .mlink:hover{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.25);}
+
+        .rsn{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.79rem;}
+        .rsn:last-child{border-bottom:none;}
+
+        /* DNS cards */
+        .dns-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:15px 18px;margin-bottom:9px;position:relative;overflow:hidden;transition:border-color .15s;}
+        .dns-card:last-of-type{margin-bottom:0;}
+        .dns-card:hover{border-color:rgba(255,255,255,.12);}
+        .dns-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--indigo),var(--violet));border-radius:3px 0 0 3px;}
+        .dns-r1{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+        .dns-ip{font-family:var(--mono);font-size:1.05rem;font-weight:600;color:var(--text);letter-spacing:-.3px;}
+        .dns-traf{font-size:.72rem;font-weight:600;color:var(--cyan);background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.15);padding:2px 8px;border-radius:20px;}
+        .dns-r2{display:flex;align-items:center;gap:6px;font-size:.77rem;}
+        .dns-ctry{color:var(--text2);font-weight:500;}
+        .dns-isp{color:var(--text3);}
+
+        .ua-raw{font-family:var(--mono);font-size:.7rem;color:var(--violet);background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;word-break:break-all;line-height:1.65;margin-bottom:13px;}
+        .env-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px;}
+        .ep{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:8px;background:var(--card2);border:1px solid var(--border);font-size:.77rem;}
+        .feat-l{font-size:.67rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 7px;}
+        .feats{display:flex;flex-wrap:wrap;gap:5px;}
+        .fi{padding:3px 8px;border-radius:6px;background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.12);color:var(--cyan);font-size:.71rem;font-weight:500;}
+
+        /* Speed */
+        .spd-btn{padding:10px 26px;background:linear-gradient(135deg,var(--indigo),var(--violet));border:none;border-radius:50px;color:#fff;font-size:.86rem;font-weight:600;cursor:pointer;transition:opacity .2s,transform .15s;margin-bottom:16px;font-family:'Inter',sans-serif;}
+        .spd-btn:hover{opacity:.87;transform:translateY(-1px);}
+        .spd-btn:disabled{opacity:.38;cursor:not-allowed;transform:none;}
+
+        .spd-phases{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+        .ph{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:.73rem;font-weight:500;background:var(--card2);border:1px solid var(--border);color:var(--text3);transition:all .3s;}
+        .ph.active{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.3);color:var(--indigo);}
+        .ph.done{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:var(--green);}
+        .ph-sep{color:var(--text3);font-size:.8rem;opacity:.4;}
+
+        .spd-prog-wrap{margin-bottom:4px;}
+        .spd-prog-track{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+        .spd-prog-fill{height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--cyan));transition:width .4s cubic-bezier(.4,0,.2,1);}
+        .spd-prog-label{font-size:.71rem;color:var(--text3);margin-top:5px;min-height:16px;}
+
+        .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;}
+        .met{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:15px 12px;text-align:center;transition:border-color .2s;}
+        .met-icon{font-size:1.15rem;margin-bottom:7px;}
+        .met-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:5px;}
+        .met-val{font-family:var(--mono);font-size:1.65rem;font-weight:700;color:var(--text);line-height:1;}
+        .met-unit{font-size:.66rem;color:var(--text3);margin-top:3px;}
+        .met-bw{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:9px;overflow:hidden;}
+        .met-b{height:100%;width:0;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+        .b-dl{background:linear-gradient(90deg,var(--indigo),var(--cyan));}
+        .b-ul{background:linear-gradient(90deg,var(--violet),#f472b6);}
+        .b-pg{background:linear-gradient(90deg,var(--green),var(--yellow));}
+
+        .srv-box{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;font-size:.8rem;transition:border-color .2s;}
+        .srv-box.loaded{border-color:rgba(34,211,238,.2);}
+        .srv-icon{font-size:1.1rem;flex-shrink:0;}
+        .srv-name{font-weight:600;color:var(--text);font-size:.83rem;}
+        .srv-sub{color:var(--text3);font-size:.72rem;margin-top:1px;}
+
+        @media(max-width:520px){.metrics{grid-template-columns:1fr;}}
+    </style>
 </head>
+<body>
 
-<body class="min-h-screen p-4 md:p-8 relative">
+<header class="hdr">
+    <div class="logo">
+        <div class="logo-ic">🛡️</div>
+        <div><div class="logo-t">Privacy Analyzer</div><div class="logo-s">Real-time network &amp; privacy diagnostics</div></div>
+    </div>
+    <div class="hdr-st" id="hSt"><div class="pdot"></div> Running tests…</div>
+</header>
 
-    <div id="cookie-modal"
-        class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[5000] hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-4 transform scale-95 transition-transform duration-300"
-            id="cookie-content">
-            <div class="text-center mb-4">
-                <div
-                    class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600">
-                    <i class="fas fa-cookie-bite text-xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-gray-800">Terms of Service & History</h3>
-                <p class="text-sm text-gray-500 mt-2">
-                    To use this dashboard, you must acknowledge and agree to the
-                    <a href="privacy.html" class="text-blue-600 hover:underline font-bold">Privacy Policy</a>
-                    and the <strong>End User License Agreements (EULA)</strong> of our third-party data providers. We
-                    also utilize cookies to store your speed test history locally.
-                    <br><br>
-                    <strong>Please select your preference to accept these terms:</strong>
-                </p>
-            </div>
-            <div class="flex flex-col space-y-3 mt-6">
-                <button onclick="handleConsent(true)"
-                    class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition shadow-lg shadow-emerald-200 text-sm">
-                    Agree to Terms & Enable History
-                </button>
-                <button onclick="handleConsent(false)"
-                    class="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg font-medium transition text-xs border border-gray-200">
-                    Agree to Terms & Use Necessary Cookies Only
-                </button>
-            </div>
+<div class="prg-w">
+    <div class="prg-b"><div class="prg-f" id="pF"></div></div>
+    <div class="prg-l" id="pL">Initializing…</div>
+</div>
+
+<div class="grid">
+
+    <div class="card c6">
+        <div class="ct ct-i"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-i">🌐</div><div><div class="ct2">Your IP Address</div><div class="cs">IPv4 · IPv6 · Geolocation · ASN</div></div></div></div>
+        <div id="ip-out"><div class="skel sk-lg"></div><div class="skel sk-sm"></div><div class="skel sk-lg"></div><div class="skel sk-sm"></div></div>
+    </div>
+
+    <div class="card c6">
+        <div class="ct ct-o"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-o">🔒</div><div><div class="ct2">VPN &amp; Proxy Detection</div><div class="cs">VPN · Proxy · Tor · Datacenter signals</div></div></div><div id="vpn-bdg"></div></div>
+        <div id="vpn-out"><div class="skel sk-sm"></div><div class="skel sk-lg"></div><div class="skel sk-sm"></div></div>
+    </div>
+
+    <div class="card c6">
+        <div class="ct ct-r"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-r">⚡</div><div><div class="ct2">WebRTC Leak Test</div><div class="cs">STUN · Local IPs · IPv6 exposure</div></div></div><div id="rtc-bdg"></div></div>
+        <div id="rtc-out"><div class="skel sk-lg"></div><div class="skel sk-sm"></div></div>
+    </div>
+
+    <div class="card c6">
+        <div class="ct ct-v"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-v">💻</div><div><div class="ct2">Browser &amp; System</div><div class="cs">User-Agent · OS · Features</div></div></div></div>
+        <div id="ua-out"><div class="skel sk-lg"></div><div class="skel sk-sm"></div><div class="skel sk-lg"></div></div>
+    </div>
+
+    <div class="card c12">
+        <div class="ct ct-g"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-g">🔍</div><div><div class="ct2">Your DNS Resolvers</div><div class="cs">Actual DNS servers your device uses — detected via leak probes</div></div></div><div id="dns-bdg"></div></div>
+        <div id="dns-out">
+            <div class="skel sk-lg" style="height:66px;border-radius:12px;margin-bottom:9px;"></div>
+            <div class="skel sk-lg" style="height:66px;border-radius:12px;"></div>
         </div>
     </div>
 
+    <div class="card c12">
+        <div class="ct ct-c"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-c">🚀</div><div><div class="ct2">Speed Test</div><div class="cs">Download · Upload · Ping · Jitter via Cloudflare Edge</div></div></div></div>
 
+        <div class="srv-box" id="srv-box">
+            <span class="srv-icon">🖧</span>
+            <div><div class="srv-name" id="srv-name">Test server will appear here</div><div class="srv-sub" id="srv-sub">Click Start to begin</div></div>
+        </div>
 
-    <div id="tz-modal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
-        onclick="closeTz()">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] flex flex-col"
-            onclick="event.stopPropagation()">
-            <button onclick="closeTz()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
-                    class="fas fa-times text-lg"></i></button>
-            <div class="mb-5 flex-shrink-0">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
-                        class="far fa-clock text-blue-500"></i> Timezone Check</h3>
-                <p class="text-xs text-gray-500 mt-1">Detailed system time configuration</p>
+        <button class="spd-btn" id="spdBtn" onclick="runSpeed()">▶ Start Speed Test</button>
+
+        <div id="spd-phase-wrap" style="display:none">
+            <div class="spd-phases">
+                <span class="ph" id="ph0">📡 Ping</span>
+                <span class="ph-sep">›</span>
+                <span class="ph" id="ph1">⬇️ Download</span>
+                <span class="ph-sep">›</span>
+                <span class="ph" id="ph2">⬆️ Upload</span>
             </div>
-            <div class="space-y-4 overflow-y-auto custom-scroll pr-1">
-                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                    <p class="text-[10px] text-blue-500 uppercase font-bold tracking-wider mb-1">UTC Offset</p>
-                    <p id="modal-utc" class="font-mono text-2xl font-bold text-blue-700 tracking-tight">--</p>
-                </div>
-                <div class="grid grid-cols-1 gap-3">
-                    <div class="border-b border-gray-100 pb-2">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">IANA Region Code
-                        </p>
-                        <p id="modal-region" class="font-mono text-sm font-semibold text-slate-700">--</p>
-                    </div>
-                    <div class="border-b border-gray-100 pb-2">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Local System Time
-                        </p>
-                        <p id="modal-local" class="font-mono text-xs text-slate-600 break-words leading-tight">--</p>
-                    </div>
-                    <div class="border-b border-gray-100 pb-2">
-                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">UTC Time</p>
-                        <p id="modal-global" class="font-mono text-xs text-slate-600 break-words leading-tight">--</p>
-                    </div>
-                    <div>
-                        <p id="modal-regions-title"
-                            class="text-[10px] text-gray-400 uppercase font-bold tracking-wider mb-1">Regions with same
-                            UTC Offset</p>
-                        <div class="bg-gray-50 rounded border border-gray-200 p-2 h-32 overflow-y-auto custom-scroll">
-                            <ul id="modal-all-regions" class="text-[10px] font-mono text-slate-600 space-y-1">
-                                <li>Loading...</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+            <div class="spd-prog-wrap">
+                <div class="spd-prog-track"><div class="spd-prog-fill" id="sPF"></div></div>
+                <div class="spd-prog-label" id="sPL">Preparing…</div>
             </div>
+        </div>
+
+        <div class="metrics">
+            <div class="met">
+                <div class="met-icon">⬇️</div><div class="met-lbl">Download</div>
+                <div class="met-val" id="v-dl">—</div><div class="met-unit">Mbps</div>
+                <div class="met-bw"><div class="met-b b-dl" id="b-dl"></div></div>
+            </div>
+            <div class="met">
+                <div class="met-icon">⬆️</div><div class="met-lbl">Upload</div>
+                <div class="met-val" id="v-ul">—</div><div class="met-unit">Mbps</div>
+                <div class="met-bw"><div class="met-b b-ul" id="b-ul"></div></div>
+            </div>
+            <div class="met">
+                <div class="met-icon">📡</div><div class="met-lbl">Ping</div>
+                <div class="met-val" id="v-pg">—</div><div class="met-unit">ms</div>
+                <div class="met-bw"><div class="met-b b-pg" id="b-pg"></div></div>
+            </div>
+        </div>
+
+        <div class="rows" style="border-top:1px solid rgba(255,255,255,.05);padding-top:11px">
+            <div class="row"><span class="rl">Jitter</span><span class="rv" id="v-jit">—</span></div>
+            <div class="row"><span class="rl">Avg Latency</span><span class="rv" id="v-lat">—</span></div>
+            <div class="row"><span class="rl">Test Server</span><span class="rv" id="v-srv">—</span></div>
+            <div class="row"><span class="rl">Protocol</span><span class="rv" id="v-proto">—</span></div>
+            <div class="row"><span class="rl">Your IP at Edge</span><span class="rv" id="v-edgeip">—</span></div>
         </div>
     </div>
 
-    <div id="os-modal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
-        onclick="closeOsModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto custom-scroll"
-            onclick="event.stopPropagation()">
-            <button onclick="closeOsModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
-                    class="fas fa-times text-lg"></i></button>
-            <div class="mb-5">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
-                        class="fas fa-microchip text-teal-500"></i> System & Hardware</h3>
-                <p class="text-xs text-gray-500 mt-1">Detailed Operating System & Device Info</p>
-            </div>
-            <div class="space-y-4">
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">CPU & Architecture</h4>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div><span class="text-gray-400 block">Cores (Logical)</span><span
-                                class="font-mono font-bold text-slate-700" id="os-cores">--</span></div>
-                        <div><span class="text-gray-400 block">Architecture</span><span
-                                class="font-mono font-bold text-slate-700" id="os-arch">--</span></div>
-                        <div><span class="text-gray-400 block">Bitness</span><span
-                                class="font-mono font-bold text-slate-700" id="os-bitness">--</span></div>
-                        <div><span class="text-gray-400 block">Memory (RAM)</span><span
-                                class="font-mono font-bold text-slate-700" id="os-memory">--</span></div>
-                    </div>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Device Identity</h4>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div><span class="text-gray-400 block">Vendor</span><span
-                                class="font-mono font-bold text-slate-700" id="os-vendor">--</span></div>
-                        <div><span class="font-mono font-bold text-slate-700" id="os-model">--</span></div>
-                    </div>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Display & Graphics</h4>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <div><span class="text-gray-400 block">Resolution</span><span
-                                class="font-mono font-bold text-slate-700" id="os-res">--</span></div>
-                        <div><span class="text-gray-400 block">Color Depth</span><span
-                                class="font-mono font-bold text-slate-700" id="os-cdepth">--</span></div>
-                        <div><span class="text-gray-400 block">Pixel Depth</span><span
-                                class="font-mono font-bold text-slate-700" id="os-pdepth">--</span></div>
-                        <div><span class="font-mono font-bold text-slate-700" id="os-orient">--</span></div>
-                    </div>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Capabilities</h4>
-                    <div class="space-y-1 text-xs">
-                        <div class="flex justify-between border-b border-slate-100 pb-1">
-                            <span class="text-gray-500">PDF Viewer</span>
-                            <span class="font-bold text-slate-700" id="os-pdf">--</span>
-                        </div>
-                        <div class="flex justify-between border-b border-slate-100 pb-1 pt-1">
-                            <span class="text-gray-500">Media Codecs</span>
-                            <span class="font-bold text-slate-700" id="os-media">--</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+</div>
 
-    <div id="browser-modal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
-        onclick="closeBrowserModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-lg w-full mx-4 transform scale-95 transition-transform duration-300 relative"
-            onclick="event.stopPropagation()">
-            <button onclick="closeBrowserModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
-                    class="fas fa-times text-lg"></i></button>
-            <div class="mb-5">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
-                        class="fab fa-chrome text-orange-500"></i> Browser Information</h3>
-                <p class="text-xs text-gray-500 mt-1">Detailed Browser Identity</p>
-            </div>
-            <div class="space-y-4">
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 font-mono text-xs text-slate-600 break-all leading-relaxed"
-                    id="modal-ua-raw">Loading...</div>
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Browser Identity</h4>
-                    <div class="grid grid-cols-2 gap-y-2 text-xs">
-                        <div><span class="text-gray-400 block">Name</span><span class="font-bold text-slate-700"
-                                id="br-name">--</span></div>
-                        <div><span class="text-gray-400 block">Version</span><span class="font-bold text-slate-700"
-                                id="br-ver">--</span></div>
-                        <div><span class="text-gray-400 block">Engine</span><span class="font-bold text-slate-700"
-                                id="br-eng">--</span></div>
-                        <div><span class="text-gray-400 block">Eng. Ver</span><span class="font-bold text-slate-700"
-                                id="br-eng-ver">--</span></div>
-                    </div>
-                </div>
-                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Settings & Permissions</h4>
-                    <div class="grid grid-cols-2 gap-y-2 text-xs">
-                        <div><span class="text-gray-400 block">Cookies</span><span class="font-bold text-slate-700"
-                                id="br-cookies">--</span></div>
-                        <div><span class="text-gray-400 block">JavaScript</span><span class="font-bold text-slate-700"
-                                id="br-js">--</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-4 flex justify-end">
-                <button onclick="copyUA()"
-                    class="text-xs bg-slate-800 text-white hover:bg-slate-700 px-4 py-2 rounded transition shadow flex items-center"><i
-                        class="far fa-copy mr-2"></i> Copy User Agent</button>
-            </div>
-        </div>
-    </div>
+<script>
+    const $=id=>document.getElementById(id);
+    const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const flag=c=>{if(!c||c.length!==2)return '';return c.toUpperCase().replace(/./g,x=>String.fromCodePoint(x.charCodeAt(0)+127397));};
+    const row=(l,v,hi=false)=>`<div class="row"><span class="rl">${l}</span><span class="rv${hi?' hi':''}">${v}</span></div>`;
+    const safeStr=v=>{
+        if(v===null||v===undefined)return '';
+        if(typeof v==='string')return v;
+        if(typeof v==='number')return String(v);
+        if(Array.isArray(v))return v.map(safeStr).filter(Boolean).join(', ');
+        if(typeof v==='object')return v.name||v.description||v.org||v.isp||'';
+        return String(v);
+    };
 
-    <div id="vpn-modal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
-        onclick="closeVpnModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto flex flex-col"
-            onclick="event.stopPropagation()">
-            <button onclick="closeVpnModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
-                    class="fas fa-times text-lg"></i></button>
-            <div class="mb-5 flex-shrink-0">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i
-                        class="fas fa-shield-alt text-cyan-500"></i> VPN & Privacy Report</h3>
-                <p class="text-xs text-gray-500 mt-1">Detailed Analysis of your connection privacy</p>
-            </div>
-            <div class="space-y-4 flex-grow overflow-y-auto custom-scroll pr-1">
+    const STEPS=4;
+    function prog(n,msg){
+        $('pF').style.width=Math.round(n/STEPS*100)+'%';
+        $('pL').textContent=msg;
+        if(n>=STEPS)$('hSt').innerHTML='<span style="color:var(--green)">✓</span> All tests complete';
+    }
 
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 flex justify-between items-center">
-                    <span class="text-sm font-bold text-slate-600">Privacy Level</span>
-                    <span id="vpn-risk-badge"
-                        class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-gray-200 text-gray-600">Calculating...</span>
-                </div>
+    window.addEventListener('DOMContentLoaded',async()=>{
+        renderUA();
+        prog(0,'Fetching IP data…');
+        try{
+            const ip=await fetchIP();
+            renderIP(ip); renderVPN(ip);
+            prog(1,'Detecting WebRTC IPs…');
+            await runWebRTC(ip);
+            prog(2,'Detecting DNS resolvers…');
+            await runDNS();
+            prog(STEPS,'All tests complete — start speed test when ready');
+        }catch(e){ prog(0,'Error: '+e.message); }
+    });
 
-                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100 h-auto min-h-[80px]">
-                    <h4 class="text-xs font-bold text-purple-500 uppercase mb-2">Provider & Risk Analysis</h4>
+    async function fetchIP(){
+        const [v4,v6]=await Promise.allSettled([
+            fetch('https://api.ipapi.is/').then(r=>r.json()),
+            fetch('https://api64.ipify.org/?format=json').then(r=>r.json())
+        ]);
+        const d=v4.status==='fulfilled'?v4.value:{};
+        const v6ip=v6.status==='fulfilled'?v6.value.ip:null;
+        if(v6ip&&v6ip!==d.ip&&v6ip.includes(':'))d.ipv6=v6ip;
+        return d;
+    }
+    function renderIP(d){
+        const loc=d.location||{},asn=d.asn||{},co=d.company||{};
+        const f=flag(loc.country_code);
+        let h='<div class="rows">';
+        h+=row('IPv4',`<span style="color:var(--cyan);font-weight:600">${esc(d.ip||'—')}</span>`,true);
+        h+=row('IPv6',d.ipv6?`<span style="color:var(--violet)">${esc(d.ipv6)}</span>`:'<span style="color:var(--text3)">Not detected</span>');
+        h+=row('Country',f+' '+esc(loc.country||'—')+(loc.country_code?' <span style="color:var(--text3)">('+loc.country_code+')</span>':''));
+        h+=row('City / Region',esc([loc.city,loc.state].filter(Boolean).join(', ')||'—'));
+        h+=row('Timezone',esc(loc.timezone||'—'));
+        h+=row('Local Time',esc(loc.local_time||'—'));
+        h+=row('Coordinates',loc.latitude?loc.latitude+', '+loc.longitude:'—');
+        h+=row('AS Number',asn.asn?`<span style="color:var(--indigo);font-weight:600">AS${asn.asn}</span>`:'—',true);
+        h+=row('AS Org',esc(asn.org||co.name||'—'));
+        h+=row('Network',esc(asn.route||'—'));
+        h+=row('RIR',esc(d.rir||'—'));
+        h+='</div>';
+        if(loc.latitude){
+            h+=`<a class="mlink" href="https://www.openstreetmap.org/?mlat=${loc.latitude}&mlon=${loc.longitude}&zoom=11" target="_blank"><span>🗺️</span> Open on Map — ${esc(loc.city||'')}, ${esc(loc.country||'')}</a>`;
+        }
+        $('ip-out').innerHTML=h;
+    }
 
-                    <div class="grid grid-cols-2 gap-4 text-xs items-start">
-                        <div class="flex flex-col">
-                            <span class="text-gray-400 mb-0.5">Detected Provider</span>
-                            <span class="font-bold text-slate-700 break-words whitespace-normal leading-snug"
-                                id="vpn-provider-name">--</span>
-                        </div>
-                        <div class="flex flex-col">
-                            <span class="text-gray-400 mb-0.5">IP Fraud Risk</span>
-                            <span class="font-bold text-slate-700 break-words" id="vpn-fraud-score">--</span>
-                        </div>
-                    </div>
-                </div>
+    function renderVPN(d){
+        const co=d.company||{},loc=d.location||{},vp=d.vpn||{};
+        const isVPN=d.is_vpn===true,isTor=d.is_tor===true,isProxy=d.is_proxy===true,isDC=d.is_datacenter===true,isAbuser=d.is_abuser===true;
+        const rs=[];
+        if(isVPN)    rs.push({i:'🔐',t:'IP flagged as VPN exit node',c:'var(--red)'});
+        if(isTor)    rs.push({i:'🧅',t:'Tor exit node detected',c:'var(--red)'});
+        if(isProxy)  rs.push({i:'🔄',t:'Proxy server detected',c:'var(--yellow)'});
+        if(isDC)     rs.push({i:'🏢',t:'Datacenter / hosting provider IP',c:'var(--yellow)'});
+        if(isAbuser) rs.push({i:'⚠️',t:'IP linked to abuse',c:'var(--yellow)'});
+        if(loc.timezone){const btz=Intl.DateTimeFormat().resolvedOptions().timeZone;if(btz&&btz!==loc.timezone)rs.push({i:'🕐',t:`TZ mismatch — Browser: "${btz}" vs IP: "${loc.timezone}"`,c:'var(--yellow)'});}
+        const clean=!isVPN&&!isTor&&!isProxy;
+        $('vpn-bdg').innerHTML=`<span class="bdg ${(isTor||isVPN)?'b-r':!clean?'b-y':'b-g'}">${isTor?'🧅 Tor':isVPN?'🔐 VPN':isProxy?'🔄 Proxy':isDC?'🏢 Datacenter':'✅ Clean'}</span>`;
+        let h='';
+        if(isVPN){const nm=safeStr(vp.name||vp.service||co.name);if(nm)h+=`<div class="al al-r"><strong>VPN:</strong> ${esc(nm)}</div>`;}
+        if(isTor)h+=`<div class="al al-r">🧅 <strong>Tor Network</strong> — traffic routed via Tor.</div>`;
+        if(clean)h+=`<div class="al al-g">No VPN, proxy, or anonymizing indicators detected.</div>`;
+        if(rs.length){h+='<div>';rs.forEach(r=>{h+=`<div class="rsn"><span>${r.i}</span><span style="color:${r.c};line-height:1.5">${esc(r.t)}</span></div>`;});h+='</div>';}
+        h+='<div class="rows" style="margin-top:10px">';
+        if(co.type)  h+=row('Company Type',esc(safeStr(co.type)));
+        if(co.domain)h+=row('Domain',esc(safeStr(co.domain)));
+        if(d.rir)    h+=row('RIR',esc(safeStr(d.rir)));
+        h+='</div>';
+        $('vpn-out').innerHTML=h;
+    }
 
-                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                    <h4 class="text-xs font-bold text-blue-500 uppercase mb-2">Tracking Protection</h4>
-                    <div class="grid grid-cols-2 gap-y-2 text-xs">
-                        <div>
-                            <span class="text-gray-400 block">Do Not Track</span>
-                            <span class="font-bold text-slate-700" id="priv-dnt">--</span>
-                        </div>
-                    </div>
-                </div>
+    async function runWebRTC(ipData){
+        const ips=await getWebRTCIPs(),pub=ipData.ip;
+        const lk=[],pr=[],v6=[];
+        ips.forEach(ip=>{
+            if(ip.includes('.local')||ip==='0.0.0.0')return;
+            if(ip.includes(':'))v6.push(ip);
+            else if(/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.)/.test(ip))pr.push(ip);
+            else lk.push(ip);
+        });
+        const hasLk=lk.some(ip=>ip!==pub);
+        $('rtc-bdg').innerHTML=`<span class="bdg ${hasLk?'b-r':lk.length?'b-y':'b-g'}">${hasLk?'🚨 Leak':lk.length?'⚠️ Exposed':'✅ No Leak'}</span>`;
+        let h='';
+        if(!lk.length&&!v6.length)h+=`<div class="al al-g">✅ No WebRTC leak — no public IPs exposed.</div>`;
+        else if(hasLk)h+=`<div class="al al-r">🚨 <strong>WebRTC Leak!</strong> Real IP exposed even behind VPN.</div>`;
+        else h+=`<div class="al al-i">ℹ️ WebRTC active. IP matches known IP — no unexpected leak.</div>`;
+        if(ips.length){
+            h+='<div class="chips">';
+            lk.forEach(ip=>{h+=`<span class="chip lk">${esc(ip)} ${ip!==pub?'⚠️':'✓'}</span>`;});
+            pr.forEach(ip=>{h+=`<span class="chip lc">🏠 ${esc(ip)}</span>`;});
+            v6.forEach(ip=>{h+=`<span class="chip v6">${esc(ip.length>28?ip.slice(0,26)+'…':ip)}</span>`;});
+            h+='</div>';
+        }
+        h+='<div class="rows" style="margin-top:10px">';
+        h+=row('Total IPs',ips.length);
+        h+=row('Public',`<span style="color:${lk.length?'var(--red)':'var(--green)'}">${lk.length}</span>`);
+        h+=row('Private / LAN',pr.length);
+        h+=row('IPv6',v6.length);
+        h+='</div>';
+        $('rtc-out').innerHTML=h;
+    }
+    function getWebRTCIPs(){
+        return new Promise(resolve=>{
+            const ips=new Set();let pc;
+            try{pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]});}
+            catch(e){resolve([]);return;}
+            pc.createDataChannel('');
+            pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>resolve([]));
+            pc.onicecandidate=e=>{
+                if(!e.candidate)return;
+                const c=e.candidate.candidate;
+                const v4=c.match(/([0-9]{1,3}\.){3}[0-9]{1,3}/);
+                const v6=c.match(/([a-f0-9:]+:+)+[a-f0-9]+/i);
+                if(v4)ips.add(v4[0]);
+                if(v6&&v6[0].includes(':'))ips.add(v6[0]);
+            };
+            setTimeout(()=>{try{pc.close();}catch(e){}resolve(Array.from(ips));},5500);
+        });
+    }
 
-                <div class="border-b border-gray-100 pb-3">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="text-xs font-bold text-slate-700">1. ISP / ASN Check</p><i id="icon-isp"
-                            class="fas fa-circle text-[10px] text-gray-300"></i>
-                    </div>
-                    <p class="text-[10px] text-gray-500" id="desc-isp">Analyzing provider name...</p>
-                </div>
-                <div class="border-b border-gray-100 pb-3">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="text-xs font-bold text-slate-700">2. Timezone Consistency</p><i id="icon-tz"
-                            class="fas fa-circle text-[10px] text-gray-300"></i>
-                    </div>
-                    <p class="text-[10px] text-gray-500" id="desc-tz">Comparing System vs IP Time...</p>
-                </div>
-                <div class="border-b border-gray-100 pb-3">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="text-xs font-bold text-slate-700">3. Language / Locale</p><i id="icon-lang"
-                            class="fas fa-circle text-[10px] text-gray-300"></i>
-                    </div>
-                    <p class="text-[10px] text-gray-500" id="desc-lang">Checking browser language vs IP country...</p>
-                </div>
-                <div class="border-b border-gray-100 pb-3">
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="text-xs font-bold text-slate-700">4. WebRTC Leak</p><i id="icon-webrtc"
-                            class="fas fa-circle text-[10px] text-gray-300"></i>
-                    </div>
-                    <p class="text-[10px] text-gray-500" id="desc-webrtc">Checking for leaked IPs...</p>
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-1">
-                        <p class="text-xs font-bold text-slate-700">5. Tor / Onion Routing</p><i id="icon-tor"
-                            class="fas fa-circle text-[10px] text-gray-300"></i>
-                    </div>
-                    <p class="text-[10px] text-gray-500" id="desc-tor">Checking for Tor exit nodes...</p>
-                </div>
+    /* DNS Leak — ipleak.net with robust parsing */
+    async function runDNS(){
+        $('dns-out').innerHTML=`<div style="display:flex;align-items:center;gap:9px;color:var(--text3);font-size:.8rem;padding:10px 0"><span class="spin"></span>Detecting DNS resolvers…</div>`;
+        const session=[...Array(40)].map(()=>Math.floor(Math.random()*16).toString(16)).join('');
+        const dnsMap=new Map();
 
-                <div id="detection-details-reasons" class="space-y-3 pt-4 border-t border-gray-100">
-                    <h4 class="text-xs font-bold text-gray-500 uppercase">Detection Reasons Summary</h4>
-                </div>
+        // ── Method 1: ipleak.net subdomain probes ──
+        await Promise.all([...Array(20)].map((_,i)=>{
+            const rnd=Math.random().toString(36).substr(2,10)+'_'+i;
+            return fetch(`https://${session}-${rnd}.ipleak.net/dnsdetection/`,{cache:'no-store'})
+                .then(r=>r.text())
+                .then(txt=>{
+                    let data; try{ data=JSON.parse(txt); }catch(e){ return; }
+                    if(!data||typeof data!=='object')return;
+                    const item=Array.isArray(data)?data[0]:data;
+                    if(!item)return;
+                    const ip    =safeStr(item.ip||'');
+                    const ctry  =safeStr(item.country_name||item.country||'Unknown');
+                    const cc    =safeStr(item.country_code||item.cc||'');
+                    const isp   =safeStr(item.isp||item.as_org||item.org||item['as']||'Unknown');
+                    if(!ip||!/^\d+\.\d+\.\d+\.\d+$/.test(ip))return;
+                    if(!dnsMap.has(ip))dnsMap.set(ip,{ip,ctry,cc,isp,count:0,method:'probe'});
+                    dnsMap.get(ip).count++;
+                })
+                .catch(()=>{});
+        }));
 
-                <div class="bg-gray-100 p-3 rounded-lg border border-gray-200 mt-4">
-                    <h4 class="text-[10px] font-bold text-gray-500 uppercase mb-2">Raw Detection String (ISP + Org +
-                        ASN)</h4>
-                    <div class="font-mono text-[10px] text-slate-700 break-all leading-relaxed"
-                        id="vpn-raw-string-bottom">--</div>
-                </div>
+        let dohActive = false;
+        let dohProvider = '';
 
-            </div>
-
-            <div class="mt-4 pt-4 border-t border-gray-100 flex-shrink-0">
-                <button onclick="reportMisdetection()"
-                    class="w-full py-2 bg-slate-800 text-white rounded-lg shadow hover:bg-slate-700 transition flex items-center justify-center text-sm font-semibold">
-                    <i class="fas fa-bug mr-2"></i> Report Mis-detection / False Positive
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="speed-modal"
-        class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[7000] hidden opacity-0 transition-opacity duration-300"
-        onclick="closeSpeedModal()">
-        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300 relative max-h-[90vh] overflow-y-auto"
-            onclick="event.stopPropagation()">
-            <button onclick="closeSpeedModal()"
-                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"><i
-                    class="fas fa-times text-lg"></i></button>
-            <div class="mb-5">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fas fa-tachometer-alt text-emerald-500"></i> Speed Analysis
-                </h3>
-                <p class="text-xs text-gray-500 mt-1">Detailed Network Performance Metrics</p>
-            </div>
-
-            <div class="space-y-4">
-                <div class="flex items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200">
-                    <div>
-                        <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Network Grade</p>
-                        <p class="text-xs text-gray-400 mt-1">Based on Speed/Latency</p>
-                    </div>
-                    <div id="net-grade" class="text-3xl font-black text-slate-300">--</div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
-                        <p class="text-[10px] font-bold text-blue-500 uppercase mb-1">Download</p>
-                        <p id="modal-dl" class="text-lg font-bold text-slate-800">--</p>
-                    </div>
-                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
-                        <p class="text-[10px] font-bold text-purple-500 uppercase mb-1">Upload</p>
-                        <p id="modal-ul" class="text-lg font-bold text-slate-800">--</p>
-                    </div>
-                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
-                        <p class="text-[10px] font-bold text-orange-500 uppercase mb-1">Latency (Ping)</p>
-                        <p id="modal-ping" class="text-lg font-bold text-slate-800">--</p>
-                    </div>
-                    <div class="p-3 bg-white border border-gray-100 rounded-lg shadow-sm">
-                        <p class="text-[10px] font-bold text-teal-500 uppercase mb-1">Jitter</p>
-                        <p id="modal-jitter" class="text-lg font-bold text-slate-800">--</p>
-                    </div>
-                </div>
-
-                <div class="bg-red-50 p-3 rounded-lg border border-red-100 flex justify-between items-center">
-                    <div>
-                        <p class="text-xs font-bold text-red-500 uppercase">Packet Loss</p>
-                        <p class="text-[10px] text-red-400">Estimated TCP Success Rate</p>
-                    </div>
-                    <p id="modal-ploss" class="text-lg font-bold text-red-600">--</p>
-                </div>
-
-                <div class="border-t border-gray-100 pt-3">
-                    <p class="text-xs font-bold text-slate-500 mb-2 uppercase">Streaming Capability</p>
-                    <div class="flex gap-2">
-                        <span id="badge-4k"
-                            class="opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold">4K
-                            HDR</span>
-                        <span id="badge-1080p"
-                            class="opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold">1080p
-                            HD</span>
-                        <span id="badge-720p"
-                            class="opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold">720p</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="max-w-7xl mx-auto">
-
-        <header
-            class="mb-4 flex flex-col md:flex-row justify-between items-end md:items-center border-b border-gray-200 pb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Network Dashboard</h1>
-                <div class="flex items-center mt-1 space-x-3 text-xs text-gray-500 font-mono">
-                    <span id="last-update">--</span>
-                </div>
-            </div>
-            <div class="flex gap-2 mt-3 md:mt-0 items-center">
-                <a href="https://github.com/kkkkja-co/Network-Checking-Dashboard" target="_blank"
-                    class="px-3 py-1.5 bg-slate-800 text-white rounded text-sm shadow hover:bg-slate-900 transition flex items-center font-semibold">
-                    <i class="fab fa-github text-sm md:mr-2"></i> <span class="hidden md:inline">GitHub</span>
-                </a>
-
-                <button onclick="window.location.reload()"
-                    class="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 rounded text-sm shadow-sm hover:bg-gray-50 transition flex items-center">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
-        </header>
-
-        <div class="flex justify-center mb-6">
-            <span
-                class="text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-full flex items-center shadow-sm">
-                <i class="fas fa-arrow-down mr-2 animate-bounce text-slate-500"></i> Scroll down for more
-            </span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-            <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-blue-500 relative">
-                <div class="flex justify-between items-start">
-                    <div class="w-full">
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Public IPv4</p>
-                        <h2 class="text-xl font-bold text-slate-800 mt-1 font-mono" id="ipv4-display"><span
-                                class="loader"></span></h2>
-                        <p class="text-xs text-gray-500 mt-1" id="ipv4-loc">Locating...</p>
-                        <p class="text-xs text-gray-400 font-mono mt-0.5 mb-2 cursor-pointer hover:text-blue-600 transition decoration-dotted underline underline-offset-4"
-                            id="sys-tz" onclick="showTzModal()" title="Click for extra info">
-                            Sys Timezone: <span class="loader w-3 h-3 border-2"></span>
-                        </p>
-                    </div>
-                    <div class="p-2 bg-blue-50 rounded-lg text-blue-600 ml-2 absolute top-5 right-5"><i
-                            class="fas fa-globe"></i></div>
-                </div>
-                <div class="pt-3 border-t border-gray-100 mt-2">
-                    <div class="flex flex-row">
-                        <div class="flex-1 pr-3 border-r border-gray-200">
-                            <div class="mb-3">
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">ISP</p>
-                                <p class="text-xs font-bold text-slate-700 leading-tight break-words" id="isp-display">
-                                    --</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                                    Organization</p>
-                                <p class="text-xs font-medium text-slate-600 leading-tight break-words"
-                                    id="org-display">--</p>
-                            </div>
-                        </div>
-                        <div class="flex-1 pl-3">
-                            <div class="mb-3">
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">AS
-                                    Organization</p>
-                                <p class="text-xs font-bold text-slate-700 leading-tight break-words"
-                                    id="as-org-display">--</p>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">AS Number
-                                </p>
-                                <p class="text-xs font-mono font-medium text-slate-600 leading-tight" id="asn-display">
-                                    --</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-purple-500 relative">
-                <div class="flex justify-between items-start">
-                    <div class="w-full overflow-hidden">
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Public IPv6</p>
-                        <h2 class="text-xl font-bold text-slate-800 mt-1 font-mono break-all leading-tight"
-                            id="ipv6-display"><span class="loader"></span></h2>
-                        <p class="text-xs text-gray-500 mt-1 mb-2" id="ipv6-status">Checking...</p>
-                    </div>
-                    <div class="p-2 bg-purple-50 rounded-lg text-purple-600 ml-2 absolute top-5 right-5"><i
-                            class="fas fa-project-diagram"></i></div>
-                </div>
-                <div class="pt-2 border-t border-gray-100 mt-auto">
-                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Provider (v6)</p>
-                    <p class="text-sm font-bold text-slate-700 leading-tight" id="ipv6-provider">--</p>
-                </div>
-            </div>
-
-            <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-red-500 relative">
-                <div class="flex justify-between items-start mb-2">
-                    <div class="w-full">
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">WebRTC / LAN IP</p>
-                        <ul id="webrtc-list" class="mt-2 space-y-1">
-                            <li class="flex items-center text-sm"><span class="loader mr-2"></span> Scanning...</li>
-                        </ul>
-                    </div>
-                    <div class="p-2 bg-red-50 rounded-lg text-red-600 ml-2 absolute top-5 right-5"><i
-                            class="fas fa-network-wired"></i></div>
-                </div>
-                <div class="pt-2 border-t border-gray-100 mt-auto">
-                    <p class="text-xs text-gray-400">Local Network Leaks</p>
-                </div>
-            </div>
-
-            <div
-                class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-pink-500 relative h-full flex flex-col justify-between">
-                <div class="flex justify-between items-start mb-2 shrink-0">
-                    <div class="w-full">
-                        <div class="flex items-center justify-between pr-10">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">DNS Servers</p>
-                            <span id="dns-count-badge"
-                                class="hidden text-[10px] bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">0
-                                Found</span>
-                        </div>
-                    </div>
-                    <div class="p-2 bg-pink-50 rounded-lg text-pink-600 ml-2 absolute top-5 right-5"><i
-                            class="fas fa-server"></i></div>
-                </div>
-                <div class="h-40 overflow-y-auto custom-scroll relative mt-2 w-full">
-                    <ul id="dns-list" class="space-y-2 h-full break-all">
-                        <li class="text-sm text-gray-600 flex items-center h-full"><span class="loader mr-2"></span>
-                            Probing...</li>
-                    </ul>
-                </div>
-                <div class="pt-2 border-t border-gray-100 mt-auto shrink-0">
-                    <p class="text-xs text-gray-400">Detected Resolvers</p>
-                </div>
-            </div>
-
-            <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-indigo-500 relative min-h-[11rem]">
-                <div class="flex justify-between items-start">
-                    <div class="w-full">
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Hostname</p>
-                        <h2 class="text-lg font-bold text-slate-800 mt-1 font-mono break-all leading-snug"
-                            id="hostname-display"><span class="loader"></span></h2>
-                    </div>
-                    <div class="p-2 bg-indigo-50 rounded-lg text-indigo-600 ml-2 absolute top-5 right-5"><i
-                            class="fas fa-tag"></i></div>
-                </div>
-                <div class="pt-2 border-t border-gray-100 mt-auto">
-                    <p class="text-xs text-gray-400">Reverse DNS / PTR</p>
-                </div>
-            </div>
-
-            <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-teal-500 relative min-h-[11rem]">
-                <div class="flex justify-between items-start">
-                    <div class="w-full">
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Operating System</p>
-                        <h2 class="text-lg font-bold text-slate-800 mt-1" id="os-name">--</h2>
-                        <p class="text-xs text-gray-500" id="os-detail">--</p>
-                        <button onclick="showOsModal()"
-                            class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center mt-1">
-                            <span class="decoration-dotted underline underline-offset-4">More Info</span> <i
-                                class="fas fa-info-circle ml-1"></i>
-                        </button>
-                    </div>
-                    <div class="p-2 bg-teal-50 rounded-lg text-teal-600 ml-2 absolute top-5 right-5"><i
-                            class="fas fa-microchip"></i></div>
-                </div>
-                <div class="pt-2 border-t border-gray-100 mt-auto">
-                    <p class="text-xs text-gray-400">Platform Details</p>
-                </div>
-            </div>
-
-            <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-orange-500 relative">
-                <div class="flex justify-between items-start">
-                    <div class="w-full">
-                        <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Browser</p>
-                        <h2 class="text-lg font-bold text-slate-800 mt-1" id="browser-name">--</h2>
-                        <p class="text-xs text-gray-500 mb-1" id="browser-ver">--</p>
-                        <button onclick="showBrowserModal()"
-                            class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center">
-                            <span class="decoration-dotted underline underline-offset-4">More Info</span> <i
-                                class="fas fa-info-circle ml-1"></i>
-                        </button>
-                    </div>
-                    <div class="p-2 bg-orange-50 rounded-lg text-orange-600 ml-2 absolute top-5 right-5"><i
-                            class="fab fa-chrome"></i></div>
-                </div>
-                <div class="pt-2 border-t border-gray-100 mt-auto">
-                    <p class="text-xs text-gray-400">Browser Details</p>
-                </div>
-            </div>
-
-            <div class="card bg-white rounded-xl shadow-sm p-5 border-t-4 border-cyan-500 relative">
-                <div class="flex justify-between items-start">
-                    <div class="w-full">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">VPN / Privacy Check
-                                </p>
-                                <h2 class="text-lg font-bold mt-1" id="vpn-status"><span class="loader"></span></h2>
-                            </div>
-                        </div>
-                        <button onclick="showVpnModal()"
-                            class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center mt-1 mb-2">
-                            <span class="decoration-dotted underline underline-offset-4">More Info</span> <i
-                                class="fas fa-info-circle ml-1"></i>
-                        </button>
-                        <div id="vpn-details" class="text-xs text-gray-500 leading-tight">Analyzing...</div>
-                    </div>
-                    <div class="p-2 bg-cyan-50 rounded-lg text-cyan-600 ml-2 absolute top-5 right-5"><i
-                            class="fas fa-user-secret"></i></div>
-                </div>
-                <div class="pt-2 border-t border-gray-100 mt-auto">
-                    <p class="text-xs text-gray-400">Proxy & ISP Analysis</p>
-                </div>
-            </div>
-
-            <div
-                class="card bg-white rounded-xl shadow-sm p-1 border border-gray-100 md:col-span-2 md:row-span-2 h-full min-h-[24rem] relative z-0">
-                <div id="map"></div>
-                <div
-                    class="absolute bottom-4 left-4 bg-white/90 backdrop-blur px-3 py-2 rounded shadow text-xs z-[999] border border-gray-200">
-                    <strong>Coordinates</strong><br>
-                    <span id="map-coords" class="text-gray-500 font-mono">--</span>
-                </div>
-            </div>
-
-            <div
-                class="card bg-white rounded-xl shadow-sm p-6 border-t-4 border-emerald-500 md:col-span-2 md:row-span-2">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider">Speed Test (Multi-Stream)
-                        </h3>
-                        <p class="text-xs text-gray-400 mt-1 mb-1">4 Concurrent Connections</p>
-                        <button onclick="showSpeedModal()"
-                            class="text-xs text-gray-400 font-mono hover:text-blue-600 transition flex items-center">
-                            <span class="decoration-dotted underline underline-offset-4">More Info</span> <i
-                                class="fas fa-info-circle ml-1"></i>
-                        </button>
-                    </div>
-                    <div id="speed-status-icon" class="p-2 bg-gray-50 rounded-lg text-gray-400"><i
-                            class="fas fa-wifi"></i></div>
-                </div>
-
-                <div
-                    class="mb-6 bg-slate-50 p-2 rounded-lg border border-slate-100 flex justify-between items-center text-xs">
-                    <div class="flex items-center space-x-2">
-                        <i class="fas fa-server text-gray-400"></i>
-                        <span class="text-gray-500 font-medium">Server:</span>
-                        <span id="server-location" class="font-bold text-slate-700">Detecting...</span>
-                        <button onclick="refreshServerLocation()" title="Refresh/Relocate Server"
-                            class="ml-1 text-slate-400 hover:text-blue-600 transition p-1 rounded-full hover:bg-white">
-                            <i class="fas fa-sync-alt" id="server-refresh-icon"></i>
-                        </button>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-gray-500 font-medium hidden sm:inline">Provider:</span>
-                        <span class="font-bold text-slate-700">Cloudflare</span>
-                    </div>
-                </div>
-
-                <div
-                    class="flex flex-col md:flex-row items-center md:space-x-8 space-y-6 md:space-y-0 h-full justify-center pb-2">
-                    <div class="relative w-44 h-44 flex-shrink-0" id="gauge-container">
-                        <svg class="w-full h-full transform -rotate-90 gauge-svg" viewBox="0 0 36 36">
-                            <path class="gauge-bg"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke-width="2.5" />
-                            <path id="speed-gauge" class="gauge-fill"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke-width="2.5" stroke-dasharray="0, 100" />
-                        </svg>
-                        <div class="absolute inset-0 flex items-center justify-center flex-col">
-                            <span class="text-4xl font-bold text-slate-800" id="gauge-value">0</span>
-                            <span class="text-xs text-gray-400 uppercase mt-1 font-semibold"
-                                id="gauge-label">Start</span>
-                        </div>
-                    </div>
-
-                    <div class="flex-1 w-full space-y-4">
-                        <div class="flex justify-between items-center bg-gray-50 px-3 py-2 rounded">
-                            <span class="text-xs text-gray-500 font-semibold uppercase">Status</span>
-                            <span class="text-xs font-bold text-emerald-600" id="test-state">Idle</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-1">
-                            <span class="text-sm text-gray-500"><i
-                                    class="fas fa-exchange-alt text-xs mr-2"></i>Latency</span>
-                            <span class="font-mono font-bold text-slate-700" id="ping-value">-- ms</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-1">
-                            <span class="text-sm text-gray-500"><i
-                                    class="fas fa-arrow-down text-xs mr-2 text-blue-500"></i>Download</span>
-                            <span class="font-mono font-bold text-blue-600" id="dl-final">-- Mbps</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-1">
-                            <span class="text-sm text-gray-500"><i
-                                    class="fas fa-arrow-up text-xs mr-2 text-purple-500"></i>Upload</span>
-                            <span class="font-mono font-bold text-purple-600" id="ul-final">-- Mbps</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden mt-2">
-                            <div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200"
-                                id="speed-progress" style="width: 0%"></div>
-                        </div>
-
-                        <div class="mt-4 flex space-x-2">
-                            <button id="btn-card-speed" onclick="runHighPerformanceTest()"
-                                class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg shadow hover:bg-emerald-700 transition flex items-center justify-center font-bold disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="fas fa-play mr-2"></i> Start Speedtest
-                            </button>
-                            <button id="btn-stop-speed" onclick="stopSpeedTest()"
-                                class="hidden w-full px-4 py-2 bg-red-50 text-red-600 rounded-lg shadow-sm border border-red-100 hover:bg-red-100 transition flex items-center justify-center font-bold">
-                                <i class="fas fa-stop mr-2"></i> Stop
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card bg-white rounded-xl shadow-sm p-6 border-t-4 border-gray-500 md:col-span-4">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Previous Tests</h3>
-                        <p class="text-xs text-gray-400 mt-1">Saved locally via Cookies</p>
-                    </div>
-                    <div class="flex space-x-2 text-xs items-center">
-                        <div class="relative group mr-2">
-                            <select id="history-limit-select" onchange="updateHistoryLimit()"
-                                class="bg-gray-50 border border-gray-200 text-gray-600 text-[10px] font-semibold uppercase tracking-wide rounded px-2 py-1.5 focus:outline-none focus:border-blue-300 cursor-pointer">
-                                <option value="5">Keep 5</option>
-                                <option value="10">Keep 10</option>
-                                <option value="25">Keep 25</option>
-                                <option value="50" selected>All (Max 50)</option>
-                            </select>
-                        </div>
-
-                        <span id="consent-status"
-                            class="px-2 py-1.5 rounded bg-gray-100 text-gray-500 font-semibold">Checking...</span>
-                        <button id="btn-enable-history" onclick="showConsentModal()"
-                            class="hidden px-3 py-1.5 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100 font-semibold transition"><i
-                                class="fas fa-check-circle mr-1"></i> Enable</button>
-                        <button id="btn-disable-history" onclick="disableHistory()"
-                            class="hidden px-3 py-1.5 bg-gray-100 text-gray-600 rounded border border-gray-300 hover:bg-gray-200 font-semibold transition"><i
-                                class="fas fa-ban mr-1"></i> Disable</button>
-                        <button id="btn-clear-history" onclick="clearHistory()"
-                            class="hidden text-red-500 hover:text-red-700 hover:underline px-2"><i
-                                class="fas fa-trash-alt mr-1"></i> Clear</button>
-                    </div>
-                </div>
-                <div class="overflow-x-auto overflow-y-auto max-h-80 custom-scroll border border-gray-50 rounded-lg">
-                    <table class="min-w-full text-sm text-left relative">
-                        <thead class="bg-gray-50 text-gray-500 font-medium sticky top-0 z-10 shadow-sm">
-                            <tr>
-                                <th class="px-4 py-2">Time</th>
-                                <th class="px-4 py-2">IP Address</th>
-                                <th class="px-4 py-2">ISP</th>
-                                <th class="px-4 py-2">Server</th>
-                                <th class="px-4 py-2">Latency</th>
-                                <th class="px-4 py-2">Download</th>
-                                <th class="px-4 py-2">Upload</th>
-                            </tr>
-                        </thead>
-                        <tbody id="history-table-body" class="divide-y divide-gray-100 text-slate-700 bg-white"></tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-
-        <footer class="mt-12 mb-6 text-center border-t border-gray-200 pt-6">
-            <p class="text-sm text-gray-400 flex justify-center items-center gap-2">
-                &copy; <span id="year"></span> net.bunorden.com.
-                <a href="mailto:contact@bunorden.com"
-                    class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium">Contact</a>
-                <span class="text-gray-300">|</span>
-                <a href="privacy.html"
-                    class="text-slate-500 hover:text-slate-800 hover:underline transition font-medium">Privacy
-                    Policy</a>
-            </p>
-        </footer>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-    <script>
-
-
-        // --- 0. UI LOGIC ---
-        document.getElementById('year').innerText = new Date().getFullYear();
-
-        // --- NEW: TIMEZONE MODAL LOGIC ---
-        function showTzModal() {
-            const m = document.getElementById('tz-modal');
-            const content = m.querySelector('div'); // inner container
-
-            // Calculate Data
-            const d = new Date();
-            const sysRegion = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const offset = -d.getTimezoneOffset();
-            const sign = offset >= 0 ? '+' : '-';
-            const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-            const utcStr = `UTC${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
-
-            // Populate
-            document.getElementById('modal-utc').innerText = utcStr;
-            document.getElementById('modal-region').innerText = sysRegion;
-            document.getElementById('modal-local').innerText = d.toString();
-            document.getElementById('modal-global').innerText = d.toUTCString();
-
-            // --- FILTER & DISPLAY REGIONS WITH SAME OFFSET ---
-            const listEl = document.getElementById('modal-all-regions');
-            const listTitle = document.getElementById('modal-regions-title');
-            listEl.innerHTML = '';
-
-            if (typeof Intl.supportedValuesOf !== 'undefined') {
-                try {
-                    // Helper to get consistent offset string (e.g. "GMT+09:00")
-                    const getOffsetStr = (z) => {
-                        try {
-                            return new Intl.DateTimeFormat('en-US', { timeZone: z, timeZoneName: 'longOffset' })
-                                .formatToParts(d)
-                                .find(p => p.type === 'timeZoneName').value;
-                        } catch (e) { return ''; }
+        // ── Method 2: EDNS fallback (works when DoH is active) ──
+        if(dnsMap.size===0){
+            try{
+                const r = await fetch('https://edns.ip-api.com/json',{cache:'no-store'}).then(r=>r.json());
+                if(r&&r.dns&&r.dns.ip){
+                    const geo = String(r.dns.geo||'');
+                    const parts = geo.split(' - ');
+                    const isp = parts[1]||geo||'Unknown';
+                    const ctry = parts[0]||'Unknown';
+                    dnsMap.set(r.dns.ip,{ip:r.dns.ip, ctry, cc:'', isp, count:20, method:'edns'});
+                    dohActive = true;
+                    // Identify known DoH providers
+                    const knownDoH = {
+                        '1.1.1.1':'Cloudflare 1.1.1.1','1.0.0.1':'Cloudflare 1.0.0.1',
+                        '8.8.8.8':'Google DNS','8.8.4.4':'Google DNS',
+                        '9.9.9.9':'Quad9','94.140.14.14':'AdGuard DNS',
+                        '45.90.28.0':'NextDNS'
                     };
-
-                    const targetOffsetStr = getOffsetStr(sysRegion);
-                    const allTz = Intl.supportedValuesOf('timeZone');
-
-                    // Filter
-                    const matching = allTz.filter(tz => getOffsetStr(tz) === targetOffsetStr);
-
-                    // Update Title
-                    if (listTitle) listTitle.innerText = `Regions matching ${utcStr} (${matching.length})`;
-
-                    const frag = document.createDocumentFragment();
-                    matching.forEach(tz => {
-                        const li = document.createElement('li');
-                        li.textContent = tz;
-                        // Highlight the current one
-                        if (tz === sysRegion) {
-                            li.className = "font-bold text-blue-600 bg-blue-50 px-1 rounded -ml-1";
-                        }
-                        frag.appendChild(li);
-                    });
-                    listEl.appendChild(frag);
-                } catch (e) {
-                    listEl.innerHTML = '<li>Error calculating offsets.</li>';
-                    console.error(e);
+                    dohProvider = knownDoH[r.dns.ip]||isp||r.dns.ip;
                 }
-            } else {
-                listEl.innerHTML = '<li>Not supported in this browser.</li>';
-            }
-
-            // Animate
-            m.classList.remove('hidden');
-            setTimeout(() => {
-                m.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
+            }catch(e){}
         }
 
-        function closeTz() {
-            const m = document.getElementById('tz-modal');
-            const content = m.querySelector('div');
-            m.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                m.classList.add('hidden');
-            }, 300);
+        const servers=Array.from(dnsMap.values());
+        const total=servers.reduce((s,v)=>s+v.count,0)||1;
+        servers.forEach(s=>{s.pct=Math.round(s.count/total*100);});
+        servers.sort((a,b)=>b.count-a.count);
+
+        if(!servers.length){
+            $('dns-bdg').innerHTML=`<span class="bdg b-y">⚠️ Blocked</span>`;
+            $('dns-out').innerHTML=`
+      <div class="al al-i">
+        <strong>DNS detection inconclusive.</strong> Your browser's DoH or local network policy
+        blocked both detection methods. This usually means DNS queries are encrypted and private — which is good!
+        <br><br>
+        <strong>Tip:</strong> If you want to verify your specific resolver,
+        check your browser's Security settings (chrome://settings/security or about:preferences#privacy).
+      </div>`;
+            return;
         }
 
-        // --- NEW: USER AGENT MODAL LOGIC (Renamed to OS Modal) ---
-        function showOsModal() {
-            const m = document.getElementById('os-modal');
-            const content = m.querySelector('div');
-            m.classList.remove('hidden');
-            setTimeout(() => {
-                m.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
+        // Badge
+        if(dohActive){
+            $('dns-bdg').innerHTML=`<span class="bdg b-c">🔐 DoH Active</span>`;
+        } else {
+            const leak=servers.length>1;
+            $('dns-bdg').innerHTML=`<span class="bdg ${leak?'b-y':'b-g'}">${leak?'⚠️ '+servers.length+' Servers':'✅ 1 Server'} Detected</span>`;
         }
 
-        function closeOsModal() {
-            const m = document.getElementById('os-modal');
-            const content = m.querySelector('div');
-            m.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                m.classList.add('hidden');
-            }, 300);
+        let h='';
+
+        // DoH notice banner
+        if(dohActive){
+            h+=`<div class="al al-i" style="margin-bottom:14px">
+      🔐 <strong>DNS-over-HTTPS is active</strong> — your DNS queries are encrypted.
+      Resolver identified via EDNS client subnet: <strong>${esc(dohProvider)}</strong>.
+      The ipleak.net subdomain method cannot detect DoH resolvers (this is expected and correct behaviour).
+    </div>`;
         }
 
-        // --- NEW: BROWSER MODAL LOGIC ---
-        function showBrowserModal() {
-            const m = document.getElementById('browser-modal');
-            const content = m.querySelector('div');
-            m.classList.remove('hidden');
-            setTimeout(() => {
-                m.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeBrowserModal() {
-            const m = document.getElementById('browser-modal');
-            const content = m.querySelector('div');
-            m.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                m.classList.add('hidden');
-            }, 300);
-        }
-
-        // --- NEW: VPN MODAL LOGIC ---
-        function showVpnModal() {
-            const m = document.getElementById('vpn-modal');
-            const content = m.querySelector('div');
-
-            // Populate the raw string immediately before showing the modal
-            const info = getCombinedInfo();
-            document.getElementById('vpn-raw-string-bottom').innerText = info.combinedName; // Target the MOVED element
-
-            // Clear and populate the detailed reasons list
-            const reasonsListEl = document.getElementById('detection-details-reasons');
-            reasonsListEl.innerHTML = '';
-
-            // Use the globally stored reasons (set by detectVPN)
-            const reasons = window.vpnDetectionReasons || [];
-
-            reasons.forEach(reason => {
-                const div = document.createElement('div');
-                div.className = 'text-sm text-gray-500 bg-gray-50 p-2 rounded';
-                div.textContent = reason;
-                reasonsListEl.appendChild(div);
-            });
-
-            if (reasons.length === 0) {
-                const div = document.createElement('div');
-                div.className = 'text-sm text-emerald-600 bg-emerald-50 p-2 rounded';
-                div.textContent = 'No specific VPN or proxy fingerprints detected in provider details.';
-                reasonsListEl.appendChild(div);
-            }
-
-
-            m.classList.remove('hidden');
-            setTimeout(() => {
-                m.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeVpnModal() {
-            const m = document.getElementById('vpn-modal');
-            const content = m.querySelector('div');
-            m.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                m.classList.add('hidden');
-            }, 300);
-        }
-
-        // --- NEW: REPORT MIS-DETECTION LOGIC ---
-        function reportMisdetection() {
-            const ip = document.getElementById('ipv4-display').innerText || 'N/A';
-            const status = document.getElementById('vpn-status').innerText || 'N/A';
-            const provider = document.getElementById('vpn-provider-name').innerText || 'N/A';
-            const asn = document.getElementById('asn-display').innerText || 'N/A';
-            // Use the element that holds the raw string in the modal
-            const rawString = document.getElementById('vpn-raw-string-bottom').innerText || 'N/A';
-
-            const subject = `VPN Detection Issue Report - ${ip}`;
-            const body = `
-        I believe the VPN detection result is incorrect (False Positive or False Negative).
-
-        --- Detected Information ---
-        Public IP: ${ip}
-        Detected Status: ${status}
-        Detected Provider: ${provider}
-        ASN: ${asn}
-        Raw String: ${rawString}
-
-        --- Developer Note ---
-        (This data is collected to improve detection logic and will be deleted within 3 days.)
-
-        --- My Details (Please fill out) ---
-        I am/am not using a VPN or Proxy:
-        My actual ISP (if known):
-        What should the status be:
-
-        --- Description of Issue ---
-
-        `;
-
-            const mailtoLink = `mailto:contact@bunorden.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.trim())}`;
-            window.open(mailtoLink, '_blank');
-        }
-
-        // --- NEW: SPEED MODAL LOGIC ---
-        let lastSpeedData = null; // Store results
-
-        function showSpeedModal() {
-            const m = document.getElementById('speed-modal');
-            const content = m.querySelector('div');
-
-            // Populate if data exists, otherwise show defaults
-            if (lastSpeedData) {
-                document.getElementById('modal-dl').innerText = lastSpeedData.dl;
-                document.getElementById('modal-ul').innerText = lastSpeedData.ul;
-                document.getElementById('modal-ping').innerText = lastSpeedData.ping + " ms";
-                document.getElementById('modal-jitter').innerText = lastSpeedData.jitter + " ms";
-
-                // Calculate Grade
-                const dlVal = parseFloat(lastSpeedData.dl);
-                const pingVal = parseInt(lastSpeedData.ping);
-                let grade = "F";
-                let color = "text-red-500";
-
-                if (dlVal > 500 && pingVal < 20) { grade = "A+"; color = "text-emerald-500"; }
-                else if (dlVal > 100 && pingVal < 50) { grade = "A"; color = "text-emerald-500"; }
-                else if (dlVal > 50 && pingVal < 100) { grade = "B"; color = "text-blue-500"; }
-                else if (dlVal > 10 && pingVal < 150) { grade = "C"; color = "text-orange-500"; }
-                else if (dlVal > 1) { grade = "D"; color = "text-orange-600"; }
-
-                const gradeEl = document.getElementById('net-grade');
-                gradeEl.innerText = grade;
-                gradeEl.className = `text-3xl font-black ${color}`;
-
-                // Capabilities
-                document.getElementById('badge-4k').className = (dlVal > 25) ? "px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold" : "opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold";
-                document.getElementById('badge-1080p').className = (dlVal > 5) ? "px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-bold" : "opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold";
-                document.getElementById('badge-720p').className = (dlVal > 2) ? "px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-[10px] font-bold" : "opacity-30 px-2 py-1 bg-slate-200 text-slate-500 rounded text-[10px] font-bold";
-
-                document.getElementById('modal-ploss').innerText = lastSpeedData.ploss;
-            }
-
-            m.classList.remove('hidden');
-            setTimeout(() => {
-                m.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
-        }
-
-        function closeSpeedModal() {
-            const m = document.getElementById('speed-modal');
-            const content = m.querySelector('div');
-            m.classList.add('opacity-0');
-            content.classList.add('scale-95');
-            setTimeout(() => {
-                m.classList.add('hidden');
-            }, 300);
-        }
-
-        // --- 1. COOKIE LOGIC ---
-        function setCookie(n, v, d) { let e = ""; if (d) { const dt = new Date(); dt.setTime(dt.getTime() + (d * 24 * 60 * 60 * 1000)); e = "; expires=" + dt.toUTCString(); } document.cookie = n + "=" + (v || "") + e + "; path=/"; }
-        function getCookie(n) { const ne = n + "="; const ca = document.cookie.split(';'); for (let i = 0; i < ca.length; i++) { let c = ca[i]; while (c.charAt(0) == ' ') c = c.substring(1, c.length); if (c.indexOf(ne) == 0) return c.substring(ne.length, c.length); } return null; }
-
-        function showConsentModal() { const m = document.getElementById('cookie-modal'); const c = document.getElementById('cookie-content'); m.classList.remove('hidden'); setTimeout(() => { m.classList.remove('opacity-0'); c.classList.remove('scale-95'); }, 50); }
-        function hideConsentModal() { const m = document.getElementById('cookie-modal'); m.classList.add('opacity-0'); setTimeout(() => { m.classList.add('hidden'); }, 300); }
-        function handleConsent(a) { const v = a ? 'accepted' : 'declined'; setCookie('speedtest_consent', v, 365); hideConsentModal(); if (!a) { setCookie('speedtest_history', "", -1); } updateConsentStatus(v); renderHistory(); }
-        function disableHistory() { setCookie('speedtest_consent', 'declined', 365); setCookie('speedtest_history', "", -1); updateConsentStatus('declined'); renderHistory(); }
-
-        function updateConsentStatus(s) {
-            const l = document.getElementById('consent-status'), be = document.getElementById('btn-enable-history'), bd = document.getElementById('btn-disable-history'), bc = document.getElementById('btn-clear-history');
-            if (s === 'accepted') { l.innerText = "Active"; l.className = "px-2 py-1.5 rounded bg-emerald-100 text-emerald-600 font-bold"; be.classList.add('hidden'); bd.classList.remove('hidden'); bc.classList.remove('hidden'); }
-            else { l.innerText = "Disabled"; l.className = "px-2 py-1.5 rounded bg-gray-100 text-gray-500 font-bold"; be.classList.remove('hidden'); bd.classList.add('hidden'); bc.classList.add('hidden'); }
-        }
-
-        // --- NEW: HISTORY LIMIT LOGIC ---
-        function getHistoryLimit() {
-            const el = document.getElementById('history-limit-select');
-            if (el) return parseInt(el.value);
-            const c = getCookie('history_limit_val');
-            return c ? parseInt(c) : 50; // Default to Max/All
-        }
-
-        function updateHistoryLimit() {
-            const val = document.getElementById('history-limit-select').value;
-            setCookie('history_limit_val', val, 365);
-            trimHistory(parseInt(val));
-        }
-
-        function trimHistory(limit) {
-            let h = getCookie('speedtest_history');
-            try { h = h ? JSON.parse(h) : []; } catch (e) { h = []; }
-            if (h.length > limit) {
-                h = h.slice(0, limit);
-                setCookie('speedtest_history', JSON.stringify(h), 30);
-                renderHistory();
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const c = getCookie('speedtest_consent');
-            if (!c) { showConsentModal(); updateConsentStatus(null); } else { updateConsentStatus(c); }
-
-            // Initialize Dropdown
-            const lim = getCookie('history_limit_val');
-            if (lim) document.getElementById('history-limit-select').value = lim;
-
-            renderHistory();
+        servers.forEach(s=>{
+            const f=flag(s.cc);
+            h+=`<div class="dns-card">
+      <div class="dns-r1">
+        <span class="dns-ip">${esc(s.ip)}</span>
+        <span class="dns-traf">${s.pct}% Traffic</span>
+      </div>
+      <div class="dns-r2">
+        <span>${f||'🌐'}</span>
+        <span class="dns-ctry">${esc(s.ctry)}</span>
+        <span style="opacity:.35">·</span>
+        <span class="dns-isp">${esc(s.isp)}</span>
+      </div>
+    </div>`;
         });
 
-        // UPDATED SAVE RESULT FUNCTION
-        function saveResult(p, d, u, s, prov) { // Added 'prov' (Provider) parameter
-            if (getCookie('speedtest_consent') !== 'accepted') return;
-            let h = getCookie('speedtest_history');
-            try { h = h ? JSON.parse(h) : []; } catch (e) { h = []; }
-
-            const ip = document.getElementById('ipv4-display').innerText || '--';
-            const isp = document.getElementById('isp-display').innerText || '--';
-
-            const dateObj = new Date();
-            const f = (x) => String(x).padStart(2, '0');
-            const timeStr = `${f(dateObj.getHours())}:${f(dateObj.getMinutes())}`;
-            const dateStr = `${f(dateObj.getDate())}/${f(dateObj.getMonth() + 1)}/${dateObj.getFullYear()}`;
-
-            const offset = -dateObj.getTimezoneOffset();
-            const sign = offset >= 0 ? '+' : '-';
-            const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-            const utcStr = `UTC${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
-
-            const fullDate = `${timeStr} ${dateStr} (${utcStr})`;
-
-            // Store Provider AND Server
-            h.unshift({
-                date: fullDate,
-                ping: p,
-                dl: d,
-                ul: u,
-                ip: ip,
-                isp: isp,
-                server: s || 'Unknown',
-                provider: prov || 'Unknown' // New Field
-            });
-
-            const limit = getHistoryLimit();
-            while (h.length > limit) h.pop();
-
-            setCookie('speedtest_history', JSON.stringify(h), 30);
-            renderHistory();
-        }
-
-        function clearHistory() { setCookie('speedtest_history', "", -1); renderHistory(); }
-
-        // UPDATED RENDER HISTORY FUNCTION
-        function renderHistory() {
-            const tb = document.getElementById('history-table-body'), c = getCookie('speedtest_consent');
-            if (c !== 'accepted') {
-                tb.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400"><p class="italic mb-2">History disabled.</p><button onclick="showConsentModal()" class="text-blue-500 underline font-medium">Enable</button></td></tr>`;
-                return;
-            }
-            let h = getCookie('speedtest_history');
-            try { h = h ? JSON.parse(h) : []; } catch (e) { h = []; }
-
-            if (h.length === 0) {
-                tb.innerHTML = `<tr><td colspan="7" class="px-4 py-4 text-center text-gray-400 italic">No history found.</td></tr>`;
-                return;
-            }
-
-            let ht = '';
-            h.forEach(i => {
-                // Fallback for old records that didn't have a provider saved
-                const providerDisplay = i.provider ? i.provider : 'Cloudflare';
-
-                ht += `<tr class="hover:bg-gray-50 transition">
-                <td class="px-4 py-2 font-mono text-gray-500 text-xs">${i.date}</td>
-                <td class="px-4 py-2 font-mono text-xs text-slate-600">${i.ip || '-'}</td>
-                <td class="px-4 py-2 text-xs text-slate-600 max-w-[120px] truncate" title="${i.isp || ''}">${i.isp || '-'}</td>
-
-                <td class="px-4 py-2 text-xs">
-                    <div class="font-bold text-slate-700">${providerDisplay}</div>
-                    <div class="text-[10px] text-gray-400 font-mono">${i.server || '-'}</div>
-                </td>
-
-                <td class="px-4 py-2 font-bold">${i.ping}</td>
-                <td class="px-4 py-2 font-bold text-blue-600">${i.dl}</td>
-                <td class="px-4 py-2 font-bold text-purple-600">${i.ul}</td>
-            </tr>`;
-            });
-            tb.innerHTML = ht;
-        }
-
-        function clearHistory() { setCookie('speedtest_history', "", -1); renderHistory(); }
-
-        // --- 2. MULTI-THREADED SPEEDTEST ENGINE ---
-        function updateGauge(v, l, u = false) {
-            const gv = document.getElementById('gauge-value'), gl = document.getElementById('gauge-label'), gf = document.getElementById('speed-gauge');
-            gv.innerText = v; gl.innerText = l; gf.style.stroke = u ? "#9333ea" : "#10b981";
-            let p = (v / 100) * 100; if (p > 100) p = 100; gf.style.strokeDasharray = `${p}, 100`;
-        }
-
-        // --- ANIMATION TOGGLE LOGIC ---
-        let animationEnabled = true;
-        // Note: Toggle functionality removed from UI, defaulting to true.
-
-        // --- STOP SPEEDTEST LOGIC ---
-        let speedTestAbortController = null;
-
-        async function fetchStream(url, duration, updateCallback, signal) {
-            const start = performance.now();
-            let loaded = 0;
-            try {
-                const response = await fetch(url, { signal });
-                const reader = response.body.getReader();
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    loaded += value.length;
-                    if (performance.now() - start > duration) { reader.cancel(); break; }
-                    updateCallback(loaded);
-                }
-            } catch (e) {
-                if (e.name !== 'AbortError') throw e;
-            }
-            return loaded;
-        }
-
-        function stopSpeedTest() {
-            if (speedTestAbortController) {
-                speedTestAbortController.abort();
-                speedTestAbortController = null;
-                document.getElementById('test-state').innerText = "Stopped";
-                document.getElementById('test-state').className = "text-xs font-bold text-red-500";
-                document.getElementById('speed-status-icon').className = "p-2 bg-gray-50 rounded-lg text-gray-400";
-                document.getElementById('speed-gauge').classList.remove('gauge-pulse');
-                document.getElementById('gauge-container').classList.remove('active-anim');
-            }
-        }
-
-        async function runHighPerformanceTest() {
-            // --- SETUP ---
-            const btnStart = document.getElementById('btn-card-speed');
-            const btnStop = document.getElementById('btn-stop-speed');
-            btnStart.classList.add('hidden');
-            btnStop.classList.remove('hidden');
-
-            speedTestAbortController = new AbortController();
-            const signal = speedTestAbortController.signal;
-
-            const status = document.getElementById('test-state');
-            const bar = document.getElementById('speed-progress');
-            const icon = document.getElementById('speed-status-icon');
-            const dlEl = document.getElementById('dl-final');
-            const ulEl = document.getElementById('ul-final');
-            const pgEl = document.getElementById('ping-value');
-            const serverLoc = document.getElementById('server-location');
-            const gaugeFill = document.getElementById('speed-gauge');
-            const gaugeContainer = document.getElementById('gauge-container');
-
-            // Reset
-            dlEl.innerText = "-- Mbps"; ulEl.innerText = "-- Mbps"; bar.style.width = "0%";
-            updateGauge(0, "Ready");
-
-            if (animationEnabled) {
-                icon.className = "p-2 bg-emerald-50 rounded-lg text-emerald-600 blink";
-                gaugeFill.classList.add('gauge-pulse');
-                gaugeContainer.classList.add('active-anim');
-            }
-
-            function calculateSpeed(currentBytes, startBytes, currentTime, startTime) {
-                const bytesDiff = currentBytes - startBytes;
-                const timeDiff = (currentTime - startTime) / 1000;
-                if (timeDiff <= 0) return 0;
-                return ((bytesDiff * 8) / timeDiff / 1024 / 1024).toFixed(1);
-            }
-
-            let fP = "--", fD = "--", fU = "--";
-            let jitterVal = "0";
-            let detectedServer = "Unknown";
-            const detectedProvider = "Cloudflare"; // Hardcoded Provider Name
-
-            try {
-                // PHASE 1: LATENCY
-                status.innerText = "Measuring Latency...";
-                const pings = [];
-                for (let i = 0; i < 10; i++) {
-                    try {
-                        const pS = performance.now();
-                        await fetch('https://speed.cloudflare.com/cdn-cgi/trace?r=' + Math.random(), { signal });
-                        const pE = performance.now();
-                        pings.push(pE - pS);
-                    } catch (e) { if (signal.aborted) throw e; }
-                }
-
-                if (pings.length > 0) {
-                    pings.sort((a, b) => a - b);
-                    if (pings.length > 4) { pings.pop(); pings.shift(); }
-                    const avgPing = pings.reduce((a, b) => a + b, 0) / pings.length;
-                    const variance = pings.reduce((a, b) => a + Math.pow(b - avgPing, 2), 0) / pings.length;
-                    jitterVal = Math.sqrt(variance).toFixed(1);
-                    fP = Math.round(avgPing);
-                    pgEl.innerText = fP + " ms";
-                }
-
-                // GET SERVER LOCATION
-                await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal })
-                    .then(r => r.text())
-                    .then(t => {
-                        const loc = t.match(/loc=(.+)/)?.[1] || "UNK";
-                        const colo = t.match(/colo=(.+)/)?.[1] || "UNK";
-                        detectedServer = `${colo} (${loc})`;
-                        serverLoc.innerHTML = `${colo} <span class="text-gray-400 font-normal">(${loc})</span>`;
-                    }).catch(() => { });
-
-                // PHASE 2: DOWNLOAD
-                status.innerText = "Downloading (Warm-up)...";
-                const dlDuration = 15000; // Increased duration for accuracy
-                const warmUpTime = 4000;  // Increased warm-up time
-                const dlUrl = "https://speed.cloudflare.com/__down?bytes=50000000";
-                let dlStartTime = performance.now();
-                let dlTotalBytes = 0;
-                let dlWarmUpDone = false;
-                let dlBytesAtWarmUp = 0;
-                let dlTimeAtWarmUp = 0;
-
-                const dlPromises = Array(6).fill(0).map(async () => {
-                    while ((performance.now() - dlStartTime) < dlDuration) {
-                        try {
-                            const response = await fetch(dlUrl + "&r=" + Math.random(), { signal });
-                            const reader = response.body.getReader();
-                            while (true) {
-                                const { done, value } = await reader.read();
-                                if (done) break;
-                                dlTotalBytes += value.length;
-                                if ((performance.now() - dlStartTime) > dlDuration) { reader.cancel(); return; }
-                            }
-                        } catch (e) { return; }
-                    }
-                });
-
-                const dlTimer = setInterval(() => {
-                    if (signal.aborted) { clearInterval(dlTimer); return; }
-                    const now = performance.now();
-                    const elapsed = now - dlStartTime;
-                    if (!dlWarmUpDone && elapsed > warmUpTime) {
-                        dlWarmUpDone = true;
-                        dlBytesAtWarmUp = dlTotalBytes;
-                        dlTimeAtWarmUp = now;
-                        status.innerText = "Downloading (Measuring)...";
-                    }
-                    if (elapsed > 500) {
-                        let currentSpeed = 0;
-                        if (dlWarmUpDone) currentSpeed = calculateSpeed(dlTotalBytes, dlBytesAtWarmUp, now, dlTimeAtWarmUp);
-                        else currentSpeed = calculateSpeed(dlTotalBytes, 0, now, dlStartTime);
-                        updateGauge(currentSpeed, "Mbps (Down)");
-                        bar.style.width = Math.min((elapsed / dlDuration) * 50, 50) + "%";
-                    }
-                }, 100);
-
-                await Promise.all(dlPromises);
-                clearInterval(dlTimer);
-                if (signal.aborted) throw new Error('Aborted');
-
-                fD = calculateSpeed(dlTotalBytes, dlBytesAtWarmUp, performance.now(), dlTimeAtWarmUp) + " Mbps";
-                dlEl.innerText = fD;
-
-                // PHASE 3: UPLOAD
-                status.innerText = "Uploading (Warm-up)...";
-                updateGauge(0, "Mbps (Up)", true);
-                const ulDuration = 12000; // Increased duration for accuracy
-                // warmUpTime remains 4000
-                const upChunkSize = 2 * 1024 * 1024;
-                const blob = new Blob([new Uint8Array(upChunkSize)]);
-                let ulStartTime = performance.now();
-                let ulTotalBytes = 0;
-                let ulWarmUpDone = false;
-                let ulBytesAtWarmUp = 0;
-                let ulTimeAtWarmUp = 0;
-
-                const ulPromises = Array(4).fill(0).map(async () => {
-                    while ((performance.now() - ulStartTime) < ulDuration) {
-                        try {
-                            await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob, signal });
-                            ulTotalBytes += upChunkSize;
-                        } catch (e) { return; }
-                    }
-                });
-
-                const ulTimer = setInterval(() => {
-                    if (signal.aborted) { clearInterval(ulTimer); return; }
-                    const now = performance.now();
-                    const elapsed = now - ulStartTime;
-                    if (!ulWarmUpDone && elapsed > warmUpTime) {
-                        ulWarmUpDone = true;
-                        ulBytesAtWarmUp = ulTotalBytes;
-                        ulTimeAtWarmUp = now;
-                        status.innerText = "Uploading (Measuring)...";
-                    }
-                    if (elapsed > 500) {
-                        let currentSpeed = 0;
-                        if (ulWarmUpDone) currentSpeed = calculateSpeed(ulTotalBytes, ulBytesAtWarmUp, now, ulTimeAtWarmUp);
-                        else currentSpeed = calculateSpeed(ulTotalBytes, 0, now, ulStartTime);
-                        updateGauge(currentSpeed, "Mbps (Up)", true);
-                        bar.style.width = 50 + Math.min((elapsed / ulDuration) * 50, 50) + "%";
-                    }
-                }, 100);
-
-                await Promise.all(ulPromises);
-                clearInterval(ulTimer);
-                if (signal.aborted) throw new Error('Aborted');
-
-                if (ulTotalBytes > 0) {
-                    fU = calculateSpeed(ulTotalBytes, ulBytesAtWarmUp, performance.now(), ulTimeAtWarmUp) + " Mbps";
-                    ulEl.innerText = fU;
-                } else {
-                    fU = "Failed (CORS)";
-                    ulEl.innerText = "Blocked";
-                }
-
-                status.innerText = "Complete";
-                status.className = "text-xs font-bold text-emerald-600";
-                bar.style.width = "100%";
-                icon.className = "p-2 bg-emerald-50 rounded-lg text-emerald-600";
-                gaugeFill.classList.remove('gauge-pulse');
-                gaugeContainer.classList.remove('active-anim');
-
-                lastSpeedData = { dl: fD, ul: fU, ping: fP, jitter: jitterVal, ploss: "0% (Estimated)" };
-
-                // PASS DETECTED PROVIDER TO SAVE FUNCTION
-                saveResult(fP + " ms", fD, fU, detectedServer, detectedProvider);
-
-            } catch (e) {
-                if (e.message === 'Aborted' || e.name === 'AbortError') {
-                    status.innerText = "Stopped";
-                    status.className = "text-xs font-bold text-orange-500";
-                } else {
-                    console.error(e);
-                    status.innerText = "Error";
-                    status.className = "text-xs font-bold text-red-600";
-                }
-                icon.className = "p-2 bg-gray-50 rounded-lg text-gray-400";
-                gaugeFill.classList.remove('gauge-pulse');
-                gaugeContainer.classList.remove('active-anim');
-            } finally {
-                btnStart.classList.remove('hidden');
-                btnStop.classList.add('hidden');
-            }
-        }
-        // --- NEW: Refresh/Relocate Server Function ---
-        async function refreshServerLocation() {
-            const locEl = document.getElementById('server-location');
-            const icon = document.getElementById('server-refresh-icon');
-
-            // 1. Visual Loading State
-            if (icon) icon.classList.add('fa-spin');
-            locEl.innerHTML = "Locating...";
-            locEl.className = "font-bold text-gray-400 italic";
-
-            try {
-                // 2. Force fresh fetch (bypass cache with Math.random)
-                const r = await fetch('https://speed.cloudflare.com/cdn-cgi/trace?r=' + Math.random());
-                const t = await r.text();
-
-                // 3. Parse Data
-                const loc = t.match(/loc=(.+)/)?.[1] || "UNK";
-                const colo = t.match(/colo=(.+)/)?.[1] || "UNK";
-
-                // 4. Update UI
-                locEl.innerHTML = `${colo} <span class="text-gray-400 font-normal">(${loc})</span>`;
-                locEl.className = "font-bold text-slate-700";
-
-            } catch (e) {
-                locEl.innerText = "Error (Blocked)";
-                locEl.className = "font-bold text-red-500";
-            } finally {
-                // 5. Stop Animation
-                if (icon) icon.classList.remove('fa-spin');
-            }
-        }
-
-        // --- NEW HELPER FUNCTION TO GET COMBINED INFO FOR MODAL ---
-        function getCombinedInfo() {
-            const isp = document.getElementById('isp-display').innerText || 'N/A';
-            const org = document.getElementById('org-display').innerText || 'N/A';
-            const asn = document.getElementById('asn-display').innerText || 'N/A';
-
-            // Match the logic in detectVPN for combinedName, but keep original case for display
-            const combinedName = `${isp} ${org} ${asn}`;
-
-            return { isp, org, asn, combinedName: combinedName.toLowerCase() };
-        }
-
-        // Global variable to hold detailed reasons for the modal
-        window.vpnDetectionReasons = [];
-
-
-        // --- 3. VPN & SYSTEM UTILS ---
-        const KNOWN_VPN_ASNS = new Set([
-            // --- TIER 1: COMMERCIAL VPN BRANDS ---
-            209854, // Surfshark (Cyberzone)
-            216025, // Mullvad VPN
-            39351,  // Mullvad (31173 Services AB)
-            209103, 62371, 199218, 57169, // ProtonVPN (Proton AG)
-            136787, 147049, 141039, 207137, 211366, // NordVPN (Packethub S.A.)
-            137409, // ExpressVPN (LogicWeb/GSL)
-            47583,  // ExpressVPN (HostRoyale)
-            397223, // ExpressVPN (Datacamp)
-            60341,  // TunnelBear
-
-            // --- TIER 2: SHARED VPN BACKBONES ---
-            9009, 212238, 201814, // M247 Group
-            60068, 212238, 42473, // Datacamp / CDN77 / DataPacket
-            16265, 28753, 395954, 60626, 57043, 18779, // Leaseweb
-            54095, 137409, 11878, // GSL Networks & Tzulo
-            33438, 12989, 54600, 30635, 6939, // NetProtect / Stackpath
-
-            // --- TIER 3: CLOUD VPS PROVIDERS (Self-Hosted/Generic) ---
-            14061, 202018, 62567, 393406, // DigitalOcean
-            20473, 64515, 206443, // The Constant Company (Vultr)
-            63949, 21844, 17204, // Akamai / Linode
-            16276, 35540, 9989, // OVH SAS
-            24940, 213230, 47232, // Hetzner Online
-            16509, 14618, 7224, 8987, // Amazon AWS
-            15169, 396982, 19527, // Google Cloud
-            8075, 8074, // Microsoft Azure
-            31898, // Oracle Cloud
-
-            // --- TIER 4: HIGH-RISK HOSTING & PROXY NETWORKS (EXPANDED) ---
-            13335,  // Cloudflare (WARP / iCloud Relay)
-            53667,  // FranTech (BuyVM)
-            202425, // IP Volume
-            132203, // Tencent Cloud
-            49335,  // Rayo Byte (Residential Proxies)
-            40021,  // Contabo
-            262287, // Latitude.sh
-            396356, // Latitude.sh
-            21859,  // Zenlayer
-            203020, // HostRoyale
-            22363,  // Powerhouse Management
-            136557, // Host Universal
-            8100,   // QuadraNet
-            40676,  // Psychz Networks
-            395092, // Shock Hosting
-            19318,  // Intergrid
-            29802,  // Hivelocity
-            14618,  // Fastly
-
-            // --- NEW ADDITIONS ---
-            41281,  // AS41281 (Keff Networks infra)
-            215551, // AS215551 (Keff Networks infra)
-            398327, // Telenor Norge AS (High-risk hosting)
-            394353, // Hostwinds (Hosting/Proxy)
-            34988,  // QuadraNet (High-risk colo/Hosting)
-            54314,  // Pexigo (Proxy)
-            398284, // Zomro B.V. (Hosting/Proxy)
-            // --- CUSTOMER REQUESTED ADDITIONS ---
-            54113, // Fastly, Inc. (CDN/iCloud Private Relay)
-            23959, // Owl Limited (Hosting/Mullvad Infra)
-            43357 // Owl Limited (Hosting/Mullvad Infra)
-        ]);
-
-        // --- UPDATED: Comprehensive VPN Brand Mapping (EXPANDED) ---
-        // Format: "Likely [VPN Names] - [ASN/Infra]"
-        const VPN_BRAND_MAP = [
-            // --- TIER 1: SPECIFIC COMMERCIAL BRANDS (Highest Accuracy) ---
-            { keys: ['london trust media', 'private internet access'], label: 'Likely PIA - London Trust Media' },
-            { keys: ['proton ag', 'protonvpn'], label: 'Likely ProtonVPN - Proton AG' },
-            { keys: ['mullvad', '31173 services', 'amnezia'], label: 'Likely Mullvad - 31173 Services' },
-            { keys: ['cyberzone', 'surfshark'], label: 'Likely Surfshark - Cyberzone' },
-            { keys: ['packethub', 'nordvpn'], label: 'Likely NordVPN - Packethub' },
-            { keys: ['expressvpn', 'expressnetw'], label: 'Likely ExpressVPN - ExpressNetw' },
-            { keys: ['logicweb'], label: 'Likely ExpressVPN - LogicWeb' },
-            { keys: ['aura', 'anchorfree', 'pango', 'hotspot shield'], label: 'Likely Hotspot Shield - Aura/Pango' },
-            { keys: ['golden frog', 'vyprvpn'], label: 'Likely VyprVPN - Golden Frog' },
-            { keys: ['zenmate', 'zenguard'], label: 'Likely ZenMate - Zenguard' },
-            { keys: ['windscribe'], label: 'Likely Windscribe - Windscribe' },
-            { keys: ['tunnelbear'], 'label': 'Likely TunnelBear - TunnelBear' },
-            { keys: ['hide.me', 'hide me'], label: 'Likely Hide.me - Hide-me' },
-            { keys: ['privax', 'hidemyass', 'hma'], label: 'Likely HMA (HideMyAss) - Privax' },
-            { keys: ['gz systems', 'gaditek', 'purevpn', 'secure internet'], label: 'Likely PureVPN - GZ Systems' },
-            { keys: ['peakstar', 'atlas'], label: 'Likely Atlas VPN - Peakstar' },
-            { keys: ['ivpn'], label: 'Likely IVPN - IVPN' },
-            { keys: ['ovpn'], label: 'Likely OVPN - OVPN' },
-            { keys: ['airvpn'], label: 'Likely AirVPN - AirVPN' },
-            { keys: ['torguard'], label: 'Likely TorGuard - TorGuard' },
-
-            // --- TIER 2: SPECIFIC INFRASTRUCTURE REQUESTS (Tor/Anonymity) ---
-
-            // NEW ENTRY: Keff Networks Ltd
-            { keys: ['keff networks ltd', 'keff networks'], label: 'Possibly Tor Network / Datacenter - Keff Networks Ltd' },
-
-            // NEW ENTRY: Foundation for Applied Privacy
-            { keys: ['foundation for applied privacy', 'applied privacy'], label: 'Likely Tor Network - Foundation for Applied Privacy' },
-
-            // NEW ENTRY: 1337 Services GmbH
-            { keys: ['1337 services gmbh', '1337 services'], label: 'Possibly Tor Network / Datacenter - 1337 Services GmbH' },
-
-            // NEW ENTRY: FlokiNET ehf
-            { keys: ['flokinet ehf', 'flokinet'], label: 'Possibly Tor Network / Datacenter - FlokiNET ehf' },
-
-            // NEW ENTRY: QuxLabs AB
-            { keys: ['quxlabs ab', 'quxlabs'], label: 'Possibly Tor Network / Datacenter - QuxLabs AB' },
-
-            // NEW ENTRY: Dotsrc
-            { keys: ['dotsrc', 'forening for dotsrc'], label: 'Possibly Tor Network / Datacenter - Dotsrc' },
-
-            // NEW ENTRY: Stiftung Erneuerbare Freiheit
-            { keys: ['stiftung erneuerbare freiheit', 'erneur freih'], label: 'Likely Tor Network - Stiftung Erneuerbare Freiheit' },
-
-            // NEW ENTRY: Online.net
-            { keys: ['online.net', 'online sas'], label: 'Likely Tor Network - Online.net' },
-
-            // NEW ENTRY: 100UP
-            { keys: ['100up'], label: 'Likely Tor Network - 100UP' },
-
-            // NEW ENTRY: IELO LIAZO SERVICES SAS
-            { keys: ['ielo liazo', 'lazo services'], label: 'Likely Tor Network - IELO LIAZO' },
-
-            // NEW ENTRY: Host Universal
-            { keys: ['host universal'], label: 'Possible Surfshark - Host Universal' },
-
-            // NEW ENTRIES: High-Risk Hosting/Proxy
-            { keys: ['pexigo', 'zomro', 'dedipath', 'hostwinds'], label: 'Generic Hosting / Proxy Network - High Risk' },
-            { keys: ['telenor'], label: 'Generic Hosting / Anonymity Service - Telenor' },
-
-            // --- CUSTOMER REQUESTED ADDITIONS ---
-            { keys: ['owl limited', 'asn23959', 'asn43357'], label: 'Likely Mullvad/Proton - Owl Limited/AS' },
-
-
-            // --- TIER 3: SHARED INFRASTRUCTURE GROUPS ---
-            // Datacamp (Updated)
-            { keys: ['datacamp', 'cdn77', 'datapacket'], label: 'Likely Surfshark/PIA/Proton - Datacamp' },
-            // Estnoc
-            { keys: ['estnoc'], label: 'Datacenter / Possibly Nord/Surfshark/Proton - Estnoc' },
-            // Orion
-            { keys: ['orion'], label: 'Datacenter / Possibly Proton - Orion' },
-            // xTom
-            { keys: ['xtom'], label: 'Datacenter / Possibly Proton - xTom' },
-            // NetProtect/Stackpath group
-            { keys: ['strong technology', 'strongvpn', 'ipvanish', 'netprotect', 'highwinds', 'stackpath', 'performive'], label: 'Likely StrongVPN/IPVanish - NetProtect' },
-            // M247 group
-            { keys: ['m247', 'm europe', 'ipxo'], label: 'Likely Nord/Surfshark/Proton - M247' },
-            // GSL group
-            { keys: ['tzulo', 'gsl networks'], label: 'Likely PureVPN/CyberGhost - GSL' },
-            // Clouvider group
-            { keys: ['clouvider'], label: 'Likely ExpressVPN/FastestVPN - Clouvider' },
-            // Leaseweb
-            { keys: ['leaseweb'], label: 'Likely PIA/PrivateVPN - Leaseweb' },
-
-            // --- UPDATED CDN/RELAY ENTRIES ---
-            // Cloudflare (Updated per request)
-            { keys: ['cloudflare', 'warp', 'asn13335'], label: 'Usually WARP / iCloud Private Relay - Cloudflare Inc.' },
-            // Fastly (Updated per request)
-            { keys: ['fastly', 'asn54113'], label: 'Probably WARP / iCloud Private Relay - Fastly Inc.' },
-            // Akamai (Updated per request)
-            { keys: ['akamai'], label: 'Maybe iCloud Private Relay / Surfshark / Proton - Akamai Technologies' },
-
-
-            // --- TIER 4: GENERIC CLOUD/VPS ---
-            { keys: ['google', 'google llc'], label: 'Likely Google One VPN - Google Cloud' },
-            { keys: ['constant', 'vultr', 'choopa'], label: 'Likely IPVanish/Self-Hosted - Vultr' },
-            { keys: ['digitalocean'], label: 'Likely Self-Hosted VPN - DigitalOcean' },
-            { keys: ['linode'], label: 'Likely Tor Network / Self-Hosted VPN - Linode' },
-            { keys: ['ovh', 'ovh sas'], label: 'Likely Self-Hosted VPN - OVH' },
-            { keys: ['hetzner'], label: 'Likely Self-Hosted VPN - Hetzner' },
-            { keys: ['amazon', 'aws'], label: 'Likely AWS VPN - AWS' },
-            { keys: ['microsoft', 'azure'], label: 'Likely Azure VPN - Azure' },
-            { keys: ['oracle', 'oracle cloud'], label: 'Likely Oracle Cloud VPN - Oracle' },
-            { keys: ['alibaba'], label: 'Likely Alibaba Cloud VPN - Alibaba' },
-
-            // --- TIER 5: ANONYMITY NETWORKS ---
-            { keys: ['tor exit', 'tor project', 'onion'], label: 'Tor Network - Tor Exit Node' },
-            // --- NEW GENERIC HIGH-CONFIDENCE INDICATORS ---
-            { keys: ['vpn service', 'privacy service', 'anonymous vpn'], label: 'Likely Generic VPN Service' },
-            { keys: ['residential proxy', 'anonymous proxy'], label: 'Likely Proxy Network' }
+        const leak=!dohActive&&servers.length>1;
+        h+=`<div style="margin-top:12px;padding:10px 14px;background:rgba(${dohActive?'34,211,238':leak?'234,179,8':'34,197,94'},.05);border:1px solid rgba(${dohActive?'34,211,238':leak?'234,179,8':'34,197,94'},.12);border-radius:10px;font-size:.74rem;color:var(--text3);line-height:1.65">
+    <strong style="color:${dohActive?'var(--cyan)':leak?'var(--yellow)':'var(--green)'}">${dohActive?'🔐 DoH Encrypted':leak?'⚠️ Possible DNS Leak':'✅ No DNS Leak'}</strong> —
+    ${dohActive?'DNS queries are encrypted to '+esc(dohProvider)+' via DoH. No traditional leak is possible.':servers.length===1?'All probes resolved via a single DNS server.':'Queries distributed across '+servers.length+' resolvers — possible leak.'}
+  </div>`;
+
+        $('dns-out').innerHTML=h;
+    }
+
+
+    function renderUA(){
+        const ua=navigator.userAgent;
+        let br='Unknown',bv='',os='Unknown',ov='',eng='Unknown',dev='Desktop';
+        if(/Edg\/([\d.]+)/.test(ua)){br='Microsoft Edge';bv=RegExp.$1;}
+        else if(/Firefox\/([\d.]+)/.test(ua)){br='Mozilla Firefox';bv=RegExp.$1;}
+        else if(/OPR\/([\d.]+)/.test(ua)){br='Opera';bv=RegExp.$1;}
+        else if(/Chrome\/([\d.]+)/.test(ua)&&!/Chromium/.test(ua)){br='Google Chrome';bv=RegExp.$1;}
+        else if(/Chromium\/([\d.]+)/.test(ua)){br='Chromium';bv=RegExp.$1;}
+        else if(/Safari\//.test(ua)&&/Version\/([\d.]+)/.test(ua)){br='Apple Safari';bv=RegExp.$1;}
+        if(/Windows NT 10/.test(ua)){os='Windows';ov='10/11';}
+        else if(/Mac OS X ([\d_]+)/.test(ua)){os='macOS';ov=RegExp.$1.replace(/_/g,'.');}
+        else if(/Android ([\d.]+)/.test(ua)){os='Android';ov=RegExp.$1;}
+        else if(/iPhone OS ([\d_]+)/.test(ua)){os='iOS';ov=RegExp.$1.replace(/_/g,'.');}
+        else if(/iPad.*OS ([\d_]+)/.test(ua)){os='iPadOS';ov=RegExp.$1.replace(/_/g,'.');}
+        else if(/Linux/.test(ua)){os='Linux';}
+        if(/Gecko\//.test(ua)&&/Firefox/.test(ua))eng='Gecko';
+        else if(/WebKit\//.test(ua))eng='WebKit / Blink';
+        const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+        const feat=[];
+        if('serviceWorker' in navigator)feat.push('Service Worker');
+        if(window.WebAssembly)feat.push('WebAssembly');
+        if(window.crypto?.subtle)feat.push('Web Crypto');
+        if('bluetooth' in navigator)feat.push('Bluetooth API');
+        if('gpu' in navigator)feat.push('WebGPU');
+        if('xr' in navigator)feat.push('WebXR');
+        if(navigator.doNotTrack==='1')feat.push('Do Not Track ON');
+        if(/Mobile/.test(ua))dev='Mobile';else if(/Tablet|iPad/.test(ua))dev='Tablet';
+        let h=`<div class="ua-raw">${esc(ua)}</div>`;
+        h+=`<div class="env-pills">
+    <span class="ep"><span>🌐</span><span style="color:#a5b4fc">${br} ${bv}</span></span>
+    <span class="ep"><span>💻</span><span style="color:#86efac">${os} ${ov}</span></span>
+    <span class="ep"><span>⚙️</span><span style="color:#d8b4fe">${eng}</span></span>
+    <span class="ep"><span>📱</span><span style="color:#fde047">${dev}</span></span>
+  </div>`;
+        const dr=[['Platform',navigator.platform||'—'],['Language',navigator.language||'—'],
+            ['Screen',screen.width+'×'+screen.height+' / '+screen.colorDepth+'bit'],
+            ['Viewport',window.innerWidth+'×'+window.innerHeight],
+            ['Pixel Ratio',(window.devicePixelRatio||1)+'x'],
+            ['CPU Cores',navigator.hardwareConcurrency||'—'],
+            ['RAM',navigator.deviceMemory?navigator.deviceMemory+' GB':'—'],
+            ['Touch Points',navigator.maxTouchPoints||'0'],
+            ['Network Type',conn?(conn.effectiveType||'—'):'—'],
+            ['RTT',conn&&conn.rtt!=null?conn.rtt+'ms':'—'],
+            ['Cookies',navigator.cookieEnabled?'Enabled':'Disabled'],
+            ['Do Not Track',navigator.doNotTrack==='1'?'Enabled':'Disabled'],
         ];
+        h+='<div class="rows">';dr.forEach(([l,v])=>{h+=row(l,esc(String(v)));});h+='</div>';
+        if(feat.length){h+=`<div class="feat-l">Supported APIs</div><div class="feats">`;feat.forEach(f=>{h+=`<span class="fi">✓ ${f}</span>`;});h+='</div>';}
+        $('ua-out').innerHTML=h;
+    }
 
-        // Priority 2: Generic list of known providers/terms for regex matching
-        const PROVIDER_NAMES = [
-            'cloudflare', 'google', 'amazon', 'aws', 'microsoft', 'azure',
-            'digitalocean', 'hetzner', 'ovh', 'expressvpn',
-            'nordvpn', 'proton', 'surfshark', 'mullvad',
-            'zenlayer', 'leaseweb', 'hostinger',
-            'windscribe', 'tunnelbear', 'vyprvpn', 'purevpn', 'ipvanish',
-            'hotspot shield', 'zenmate', 'hidemyass', 'hma', 'private internet access',
-            'pia', 'cyberghost', 'strongvpn', 'fastestvpn', 'ivacy', 'veepn', 'torguard',
-            'airvpn', 'perfectprivacy', 'cactusvpn', 'ovpn', 'hide.me',
-            'privatevpn', 'protonvpn', 'vultr', 'linode', 'choopa', 'performive',
-            'shock hosting', 'teraswitch', 'melbicom', 'packethub', 'datacamp',
-            // CUSTOMER REQUESTED ADDITION
-            'fastly', 'owl limited', 'akamai'
-        ];
+    /* Speed Test */
+    function setPhase(n){[0,1,2].forEach(i=>{$('ph'+i).className='ph'+(i<n?' done':i===n?' active':'');});}
+    function setSP(pct,msg){$('sPF').style.width=pct+'%';$('sPL').textContent=msg;}
+    function mkRnd(bytes){
+        const buf=new Uint8Array(bytes);
+        for(let i=0;i<bytes;i+=65536)crypto.getRandomValues(buf.subarray(i,Math.min(i+65536,bytes)));
+        return buf;
+    }
 
-        // Compiled Regex for O(1) matching of strings
-        const VPN_REGEX = new RegExp(PROVIDER_NAMES.join('|'), 'i');
-        const GENERIC_REGEX = /vpn|proxy|hosting|cloud|datacenter|vps|server|transit|colo/i;
+    async function runSpeed(){
+        const btn=$('spdBtn');
+        btn.disabled=true;btn.textContent='⏳ Testing…';
+        $('spd-phase-wrap').style.display='block';
+        setSP(0,'Fetching server info…');
 
-        function detectVPN(ipTz, ipUtc, isp, countryCode, org, asn) {
-            const vpnEl = document.getElementById('vpn-status');
-            const detailEl = document.getElementById('vpn-details');
-            const badgeEl = document.getElementById('vpn-risk-badge');
-            const fraudEl = document.getElementById('vpn-fraud-score');
-            const providerNameEl = document.getElementById('vpn-provider-name');
+        try{
+            const m=await fetch('https://speed.cloudflare.com/meta').then(r=>r.json());
+            const nm=`Cloudflare ${m.colo||''}${m.city?' — '+m.city:''}`;
+            const loc=[m.country,m.region].filter(Boolean).join(', ');
+            $('srv-name').textContent=nm;
+            $('srv-sub').textContent=loc||'Cloudflare Edge';
+            $('srv-box').classList.add('loaded');
+            $('v-srv').textContent=`${nm}${loc?' ('+loc+')':''}`;
+            $('v-proto').textContent=m.httpProtocol||'—';
+            $('v-edgeip').textContent=m.clientIp||'—';
+        }catch(e){}
 
-            // Reset the detailed reasons list
-            window.vpnDetectionReasons = [];
-
-            // System UTC Calculation
-            const d = new Date();
-            const offset = -d.getTimezoneOffset();
-            const sign = offset >= 0 ? '+' : '-';
-            const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-            const sysUtcStr = `UTC${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
-            const ipUtcStr = `UTC${ipUtc}`;
-
-            let score = 0;
-            // Reasons will now be pushed to the global array
-            const reasons = window.vpnDetectionReasons;
-
-            // Fast Prep
-            const asnNum = parseInt(asn);
-            const combinedName = (isp + " " + org + " " + asn).toLowerCase();
-
-            // Use original ISP/Org/ASN for detailed logging
-            const rawIsp = isp || 'N/A';
-            const rawOrg = org || 'N/A';
-            const rawAsn = asn || 'N/A';
-            const rawIp = document.getElementById('ipv4-display').innerText || 'N/A';
-
-
-            // Define a set of ASNs that are common cloud platforms (Tier 3/4)
-            const LOW_CONFIDENCE_ASNS = new Set([
-                14061, 202018, 62567, 393406, // DigitalOcean
-                20473, 64515, 206443, // The Constant Company (Vultr)
-                63949, 21844, 17204, // Akamai / Linode
-                16276, 35540, 9989, // OVH SAS
-                24940, 213230, 47232, // Hetzner Online
-                16509, 14618, 7224, 8987, // Amazon AWS
-                15169, 396982, 19527, // Google Cloud
-                8075, 8074, // Microsoft Azure
-                31898, // Oracle Cloud
-            ]);
-
-            // 1. Check Priority Mappings (VPN_BRAND_MAP) - High Confidence
-            let matchedBrand = null;
-            let isHighConfidence = false;
-            for (const brand of VPN_BRAND_MAP) {
-                if (brand.keys.some(k => combinedName.includes(k))) {
-                    matchedBrand = brand.label;
-                    score += 50; // High-Confidence Brand Match
-                    isHighConfidence = true;
-
-                    // ADD DETAILED REASON: Use raw ISP/Org/ASN in the explanation
-                    reasons.push(`High Confidence Match: Detected pattern for ${brand.label}. (ISP: ${rawIsp}, ASN: ${rawAsn})`);
-
-                    document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
-                    document.getElementById('desc-isp').innerText = `Infra Matched: ${brand.keys[0]}`;
-                    break;
-                }
-            }
-
-            let ispFlagged = isHighConfidence; // ISP is definitively flagged only by high-confidence match
-
-            // 2. ASN Check (Differentiated Scoring)
-            if (!isNaN(asnNum) && KNOWN_VPN_ASNS.has(asnNum)) {
-                if (!isHighConfidence) {
-                    // Check if it's a dedicated VPN ASN (High Confidence) vs. a generic Cloud ASN (Low Confidence)
-                    if (LOW_CONFIDENCE_ASNS.has(asnNum)) {
-                        score += 20; // Low-Confidence Cloud/Hosting ASN
-
-                        // ADD DETAILED REASON
-                        reasons.push(`Low Confidence: IP (${rawIp}) is hosted on major Cloud/Hosting ASN (${rawAsn}).`);
-
-                        document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
-                        document.getElementById('desc-isp').innerText = `Cloud/Hosting ASN: ${asnNum}`;
-                    } else {
-                        // This catches dedicated VPN ASNs not covered by the brand map loop above
-                        score += 50; // High-Confidence Dedicated VPN ASN (e.g., Mullvad)
-
-                        // ADD DETAILED REASON
-                        reasons.push(`High Confidence: IP belongs to dedicated VPN ASN (${rawAsn}) used by anonymous services.`);
-
-                        ispFlagged = true;
-                        document.getElementById('icon-isp').className = "fas fa-exclamation-triangle text-red-500";
-                        document.getElementById('desc-isp').innerText = `Flagged Dedicated ASN: ${asnNum}`;
-                    }
-                }
-            } else if (!ispFlagged) {
-                // If ASN check failed, check if the generic Cloudflare ASN (13335) is the provider.
-                // Since it's not in LOW_CONFIDENCE_ASNS, it gets the neutral check mark unless a keyword is found.
-                if (asnNum === 13335) {
-                    document.getElementById('icon-isp').className = "fas fa-check-circle text-emerald-500";
-                    document.getElementById('desc-isp').innerText = "Standard CDN/Relay (Cloudflare)";
-                }
-            }
-
-            // 3. String Match (Generic)
-            if (!ispFlagged && VPN_REGEX.test(combinedName)) {
-                score += 20; // Generic Name Match gets a lower score
-                const match = combinedName.match(VPN_REGEX)[0];
-                const formattedName = match.charAt(0).toUpperCase() + match.slice(1);
-                matchedBrand = `${formattedName} Detected`;
-
-                // ADD DETAILED REASON
-                reasons.push(`Low Confidence: Detected generic VPN provider keyword "${match}" in ISP/Org name (${rawIsp} / ${rawOrg}).`);
-
-                document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
-                document.getElementById('desc-isp').innerText = `Matched: ${formattedName}`;
-            }
-
-            // 4. Generic Heuristics (if nothing else hit)
-            if (score === 0) {
-                if (GENERIC_REGEX.test(combinedName)) {
-                    score += 20;
-
-                    // ADD DETAILED REASON
-                    reasons.push(`Low Confidence: Provider name (${rawIsp} / ${rawOrg}) contains general hosting/datacenter keywords.`);
-
-                    document.getElementById('icon-isp').className = "fas fa-exclamation-circle text-orange-500";
-                    document.getElementById('desc-isp').innerText = "Generic Hosting Keyword";
-                } else {
-                    document.getElementById('icon-isp').className = "fas fa-check-circle text-emerald-500";
-                    document.getElementById('desc-isp').innerText = "Residential/Standard ISP";
-                }
-            }
-
-
-            // 5. Timezone Check
-            if (ipUtcStr !== sysUtcStr) {
-                score += 20;
-                reasons.push("Timezone Mismatch: System Timezone does not match Geolocation Timezone.");
-                document.getElementById('icon-tz').className = "fas fa-exclamation-circle text-orange-500";
-                document.getElementById('desc-tz').innerText = `IP: ${ipUtcStr} vs Sys: ${sysUtcStr}`;
-            } else {
-                document.getElementById('icon-tz').className = "fas fa-check-circle text-emerald-500";
-                document.getElementById('desc-tz').innerText = "Matched";
-            }
-
-            // 6. Language Check
-            const browserLang = navigator.language || "en";
-            document.getElementById('icon-lang').className = "fas fa-info-circle text-blue-400";
-            document.getElementById('desc-lang').innerText = `Browser: ${browserLang}, IP: ${countryCode}`;
-
-            // 7. TOR Check
-            const torKeywords = ['tor exit', 'tor project', 'onion', 'ielo liazo', '100up', 'online.net', 'stiftung erneuerbare freiheit', 'linode', 'dotsrc', 'quxlabs', 'flokinet', '1337 services'];
-            let isTorMatch = false;
-
-            if (matchedBrand) {
-                const matchedLower = matchedBrand.toLowerCase();
-                isTorMatch = torKeywords.some(k => matchedLower.includes(k));
-            }
-
-            if (isTorMatch) {
-                document.getElementById('icon-tor').className = "fas fa-exclamation-circle text-orange-500";
-
-                if (matchedBrand.includes("Tor Exit Node")) {
-                    // ADD DETAILED REASON
-                    reasons.push("CONFIRMED TOR: IP matches a known Tor Exit Node.");
-
-                    document.getElementById('desc-tor').innerText = "Confirmed Tor Exit Node";
-                    document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
-                } else {
-                    // ADD DETAILED REASON
-                    reasons.push("TOR INFRASTRUCTURE: Provider name matches infrastructure commonly used by Tor nodes.");
-
-                    document.getElementById('desc-tor').innerText = "Maybe (Infra Match)";
-                }
-            } else if (/tor exit|tor project|onion/i.test(combinedName)) {
-                // ADD DETAILED REASON
-                reasons.push("CONFIRMED TOR: Raw string contains Tor keywords.");
-
-                document.getElementById('icon-tor').className = "fas fa-exclamation-triangle text-red-500";
-                document.getElementById('desc-tor').innerText = "Tor Node Confirmed";
-            } else {
-                document.getElementById('icon-tor').className = "fas fa-check-circle text-emerald-500";
-                document.getElementById('desc-tor').innerText = "No Tor fingerprints found";
-            }
-
-
-            // --- SCORING & DISPLAY ---
-            if (score >= 50) {
-                // DETECTED (Red)
-                const finalName = matchedBrand || "Detected (Unknown)";
-                let cardStatus = "VPN Detected";
-
-                // 1. Refine Status based on confidence modifiers
-                if (finalName.includes("Possible")) {
-                    cardStatus = "VPN Detected";
-                } else if (finalName.includes("Likely")) {
-                    cardStatus = "VPN Detected";
-                }
-
-                // 2. Refine specifically for Tor/Anonymity infra (MODIFIED STATUS & FRAUD RISK)
-                if (isTorMatch) {
-                    if (finalName.includes("Possible") || finalName.includes("Likely")) {
-                        cardStatus = "Tor Network May Detected";
-                    } else if (finalName.includes("Tor Exit Node")) {
-                        cardStatus = "Tor Confirmed";
-                    } else {
-                        cardStatus = "Tor Network May Detected";
-                    }
-
-                    // *** USER REQUESTED CHANGE: Downgrade Fraud Risk for Tor ***
-                    fraudEl.innerText = "Medium Risk (Tor)";
-                    fraudEl.className = "font-bold text-orange-500";
-
-                    badgeEl.innerText = "High Anonymity (Tor)";
-                    badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
-
-                } else {
-                    // Generic VPN (Nord, PIA, etc.) - Remains High Risk
-                    badgeEl.innerText = "High Anonymity";
-                    badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-red-100 text-red-700";
-                    fraudEl.innerText = "High Risk (Flagged)";
-                    fraudEl.className = "font-bold text-red-500";
-                }
-
-                vpnEl.innerText = cardStatus;
-                vpnEl.className = "text-lg font-bold mt-1 text-red-600";
-                detailEl.innerHTML = "";
-
-                providerNameEl.innerText = finalName.replace("Detected (Likely ", "").replace(")", "");
-                providerNameEl.className = "font-bold text-red-600";
-
-            } else if (score > 0) {
-                // LIKELY (Orange)
-                vpnEl.innerText = "Likely Detected";
-                vpnEl.className = "text-lg font-bold mt-1 text-orange-500";
-                detailEl.innerHTML = "";
-
-                providerNameEl.innerText = "Generic / Datacenter";
-                providerNameEl.className = "font-bold text-orange-500";
-
-                badgeEl.innerText = "Moderate Anonymity";
-                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-100 text-orange-700";
-                fraudEl.innerText = "Medium Risk";
-                fraudEl.className = "font-bold text-orange-500";
-
-            } else {
-                // CLEAN (Green/Black)
-                vpnEl.innerText = "Not Detected";
-                vpnEl.className = "text-lg font-bold mt-1 text-slate-800";
-                detailEl.innerHTML = `Direct Connection`;
-
-                providerNameEl.innerText = "Residential / None";
-                providerNameEl.className = "font-bold text-emerald-600";
-
-                badgeEl.innerText = "Low Anonymity";
-                badgeEl.className = "px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-700";
-                fraudEl.innerText = "Low Risk (Clean)";
-                fraudEl.className = "font-bold text-emerald-500";
-            }
+        /* PING */
+        setPhase(0);setSP(2,'Testing ping…');
+        const pings=[];
+        for(let i=0;i<10;i++){
+            try{
+                const t=performance.now();
+                await fetch('https://speed.cloudflare.com/__down?bytes=0&nc='+Date.now()+i,{cache:'no-store'});
+                pings.push(performance.now()-t);
+                setSP(2+i*0.8,'Ping sample '+(i+1)+'/10…');
+            }catch(e){break;}
         }
-        // --- 4. DATA FETCHERS ---
-        function updateTimestamp() {
-            const n = new Date();
-            const f = (x) => String(x).padStart(2, '0');
-
-            // Offset
-            const offset = -n.getTimezoneOffset();
-            const sign = offset >= 0 ? '+' : '-';
-            const pad = val => String(Math.floor(Math.abs(val))).padStart(2, '0');
-            const utcStr = `UTC${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
-
-            document.getElementById('last-update').innerText = `${f(n.getDate())}/${f(n.getMonth() + 1)}/${n.getFullYear()} , ${f(n.getHours())}:${f(n.getMinutes())}:${f(n.getSeconds())} ${utcStr}`;
+        if(pings.length){
+            pings.sort((a,b)=>a-b);
+            const p=Math.round(pings[0]);
+            $('v-pg').textContent=p;
+            $('b-pg').style.width=Math.min(100,Math.max(5,100-p/2.5))+'%';
+            $('v-jit').textContent=Math.round(pings[pings.length-1]-pings[0])+' ms';
+            $('v-lat').textContent=Math.round(pings.reduce((s,v)=>s+v,0)/pings.length)+' ms';
         }
-        setInterval(updateTimestamp, 1000); updateTimestamp();
+        setSP(10,'✓ Ping done');
 
-        let map;
-        function initMap(lat, lng) { if (map) return; map = L.map('map', { zoomControl: false }).setView([lat, lng], 13); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map); L.marker([lat, lng]).addTo(map).bindPopup("<b>IP Location</b>").openPopup(); document.getElementById('map-coords').innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`; }
-
-        // --- WebRTC IP Detection (No CORS needed) ---
-        async function getIPFromWebRTC() {
-            return new Promise((resolve) => {
-                const pc = new RTCPeerConnection({ iceServers: [] });
-                const noop = () => {};
-                pc.createDataChannel('');
-                pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(noop);
-                pc.onicecandidate = (ice) => {
-                    if (!ice || !ice.candidate) return;
-                    const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3})/;
-                    const ipAddress = ipRegex.exec(ice.candidate.candidate)[1];
-                    pc.close();
-                    resolve(ipAddress);
-                };
-                setTimeout(() => {
-                    pc.close();
-                    resolve(null);
-                }, 1000);
-            });
+        /* DOWNLOAD */
+        setPhase(1);
+        const dlSz=[500000,1500000,4000000,10000000,20000000];
+        let dlB=0,dlT=0,dlSpd=0;
+        for(let si=0;si<dlSz.length;si++){
+            const bytes=dlSz[si];
+            setSP(10+si*(38/dlSz.length),`Download ${si+1}/${dlSz.length} — ${(bytes/1e6).toFixed(1)}MB…`);
+            try{
+                const t=performance.now();
+                const res=await fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}`,{cache:'no-store'});
+                const buf=await res.arrayBuffer();
+                const ms=performance.now()-t;
+                dlB+=buf.byteLength*8;dlT+=ms/1000;
+                dlSpd=dlB/dlT/1e6;
+                $('v-dl').textContent=dlSpd.toFixed(1);
+                $('b-dl').style.width=Math.min(100,dlSpd/1.5)+'%';
+                setSP(10+(si+1)*(38/dlSz.length),`Download: ${dlSpd.toFixed(1)} Mbps`);
+            }catch(e){}
         }
+        setSP(50,`✓ Download ${dlSpd.toFixed(1)} Mbps`);
 
-        async function fetchIPv4Data() {
-            try {
-                let d = null;
-                console.log('Starting IPv4 detection...');
-                
-                // Try primary API: ipapi.co (CORS-enabled)
-                try {
-                    console.log('Trying ipapi.co...');
-                    const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) }); 
-                    const data = await r.json();
-                    console.log('ipapi.co response:', data);
-                    if (data && data.ip) {
-                        d = {
-                            ip: data.ip,
-                            city: data.city || '',
-                            region_code: data.region_code || '',
-                            country_code: data.country_code || '',
-                            latitude: data.latitude || null,
-                            longitude: data.longitude || null,
-                            timezone: { id: data.timezone || 'Unknown' },
-                            connection: {
-                                isp: data.org || 'Unknown',
-                                org: data.org || 'Unknown',
-                                asn: (data.asn || '').replace('AS', '') || '--'
-                            }
-                        };
-                        console.log('✓ ipapi.co successful');
-                    }
-                } catch (e1) {
-                    console.error('✗ ipapi.co failed:', e1.message);
-                }
-                
-                // Fallback: Use WebRTC to get IP (CORS-free method)
-                if (!d || !d.ip) {
-                    try {
-                        console.log('Trying WebRTC IP detection...');
-                        const ip = await getIPFromWebRTC();
-                        if (ip) {
-                            d = {
-                                ip: ip,
-                                city: 'Unknown',
-                                region_code: 'Unknown',
-                                country_code: 'Unknown',
-                                latitude: null,
-                                longitude: null,
-                                timezone: { id: 'Unknown' },
-                                connection: {
-                                    isp: 'Unable to detect',
-                                    org: 'Unable to detect',
-                                    asn: '--'
-                                }
-                            };
-                            console.log('✓ WebRTC IP detection successful:', ip);
-                        }
-                    } catch (e2) {
-                        console.error('✗ WebRTC failed:', e2.message);
-                    }
-                }
-                
-                console.log('Final data object:', d);
-                
-                if (d && d.ip) {
-                    document.getElementById('ipv4-display').innerText = d.ip;
-                    document.getElementById('ipv4-loc').innerText = `${d.city || 'Unknown'}, ${d.region_code || 'Unknown'}`;
-
-                    // Populate ISP and network fields
-                    const isp = (d.connection && d.connection.isp) || 'Unknown';
-                    const org = (d.connection && d.connection.org) || 'Unknown';
-                    const asn = (d.connection && d.connection.asn) || '--';
-                    
-                    document.getElementById('isp-display').innerText = isp;
-                    document.getElementById('org-display').innerText = org;
-                    document.getElementById('as-org-display').innerText = org;
-                    document.getElementById('asn-display').innerText = asn;
-
-                    if (d.connection && d.connection.domain) {
-                        document.getElementById('hostname-display').innerText = d.connection.domain;
-                    } else {
-                        document.getElementById('hostname-display').innerText = "No PTR Record";
-                        // Try reverse DNS lookup on the IP
-                        fetchPTRRecord(d.ip);
-                    }
-                    
-                    if (d.latitude && d.longitude) initMap(d.latitude, d.longitude);
-                    if (d.timezone) detectVPN(d.timezone.id, d.timezone.utc, isp, d.country_code || '', org, asn);
-                } else {
-                    document.getElementById('ipv4-display').innerText = "Unavailable";
-                    document.getElementById('ipv4-loc').innerText = "Unable to detect";
-                    document.getElementById('isp-display').innerText = "Unknown";
-                    document.getElementById('org-display').innerText = "Unknown";
-                    document.getElementById('as-org-display').innerText = "Unknown";
-                    document.getElementById('asn-display').innerText = "--";
-                }
-            } catch (e) { 
-                console.log('fetchIPv4Data error:', e);
-                document.getElementById('ipv4-display').innerText = "Error"; 
-            }
-        }
-
-        // --- NEW: PTR Record / Reverse DNS Lookup ---
-        async function fetchPTRRecord(ip) {
-            try {
-                // Try ipwho.is for hostname/domain info (less blocking)
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 5000);
-                
-                const r = await fetch(`https://ipwho.is/?ip=${ip}`, { signal: controller.signal });
-                clearTimeout(timeout);
-                
-                const data = await r.json();
-                
-                if (data.success && data.connection && data.connection.domain) {
-                    document.getElementById('hostname-display').innerText = data.connection.domain;
-                } else {
-                    // Most cloud IPs don't have PTR records, which is normal
-                    document.getElementById('hostname-display').innerText = "No PTR Record";
-                }
-            } catch (e) {
-                console.warn('PTR lookup skipped (normal for cloud IPs):', e.message);
-                document.getElementById('hostname-display').innerText = "No PTR Record";
-            }
-        }
-
-        // --- UPDATED: IPv6 Detection with Two-Step API ---
-        async function fetchIPv6Data() {
-            try {
-                // 1. Force IPv6 Connection to get the Address via ipify
-                const r = await fetch('https://api64.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
-
-                if (r.ok) {
-                    const ipData = await r.json();
-                    
-                    // Check if response is IPv6
-                    if (ipData.ip && ipData.ip.includes(':')) {
-                        document.getElementById('ipv6-display').innerText = ipData.ip;
-                        document.getElementById('ipv6-status').innerText = "Active";
-                        document.getElementById('ipv6-status').className = "text-xs text-emerald-500 font-bold mt-1";
-
-                        // Get provider info by querying the IP specifically to avoid adblockers
-                        try {
-                            const infoR = await fetch(`https://ipinfo.io/${ipData.ip}/json`, { signal: AbortSignal.timeout(5000) });
-                            if(infoR.ok) {
-                                const d = await infoR.json();
-                                let provider = d.org || "Unknown";
-                                if (provider.startsWith('AS')) {
-                                    provider = provider.split(' ').slice(1).join(' '); // remove AS1234
-                                }
-                                document.getElementById('ipv6-provider').innerText = provider;
-                            } else {
-                                document.getElementById('ipv6-provider').innerText = "Unknown";
-                            }
-                        } catch(e) {
-                            document.getElementById('ipv6-provider').innerText = "Unknown";
-                        }
-                    } else {
-                        // IPv6 not available (api64 fell back to ipv4)
-                        document.getElementById('ipv6-display').innerText = "Not Available";
-                        document.getElementById('ipv6-status').innerText = "Inactive";
-                        document.getElementById('ipv6-status').className = "text-xs text-slate-500 font-bold mt-1";
-                        document.getElementById('ipv6-provider').innerText = "No IPv6 Connection";
-                    }
-                } else {
-                    throw new Error("ipify failed");
-                }
-            } catch (e) {
-                // General Failure (User likely has no IPv6)
-                document.getElementById('ipv6-display').innerText = "Not Detected";
-                document.getElementById('ipv6-status').innerText = "IPv4 Only";
-                document.getElementById('ipv6-provider').innerText = "--";
-                console.log('IPv6 detection error:', e.message);
-            }
-        }
-
-        // --- 5. UPDATED: DNS Detection (No "N/A" Fallback) ---
-        async function fetchDNS() {
-            const list = document.getElementById('dns-list');
-            const badge = document.getElementById('dns-count-badge');
-
-            // UI Reset
-            list.innerHTML = `
-            <li class="text-sm text-gray-600 flex items-center h-full">
-                <span class="loader mr-2"></span>
-                <span class="flex flex-col">
-                    <span>Probing DNS Resolvers...</span>
-                    <span class="text-[10px] text-gray-400">Fetching raw provider data</span>
-                </span>
-            </li>`;
-
-            const detected = new Map();
-            const BATCH_SIZE = 10;
-
-            const runBatch = async () => {
-                const promises = Array(BATCH_SIZE).fill(0).map(async () => {
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-                        const res = await fetch(`https://edns.ip-api.com/json?r=${Math.random()}`, {
-                            signal: controller.signal,
-                            cache: 'no-store'
-                        });
-                        clearTimeout(timeoutId);
-
-                        // CRITICAL: Check for non-200 status codes returned by the API server
-                        if (!res.ok) {
-                            // If the API returns 429 (Rate Limit) or 500, we still return null
-                            console.warn(`DNS Probe API returned status code: ${res.status}`);
-                            return null;
-                        }
-
-                        const data = await res.json();
-                        return (data.dns && data.dns.ip) ? data.dns : null;
-
-                    } catch (e) {
-                        // This catches network errors, ad-blocker blocks, and timeouts.
-                        // We simply log and return null so the other probes continue.
-                        console.error("DNS Probe attempt failed:", e.message);
-                        return null;
-                    }
+        /* UPLOAD */
+        setPhase(2);
+        const ulSz=[250000,500000,1000000,2000000,5000000];
+        let ulB=0,ulT=0,ulSpd=0;
+        for(let si=0;si<ulSz.length;si++){
+            const bytes=ulSz[si];
+            setSP(50+si*(45/ulSz.length),`Upload ${si+1}/${ulSz.length} — ${(bytes/1e6).toFixed(1)}MB…`);
+            try{
+                const data=mkRnd(bytes);
+                const t=performance.now();
+                const res=await fetch('https://speed.cloudflare.com/__up',{
+                    method:'POST',body:data.buffer,
+                    headers:{'Content-Type':'application/octet-stream'}
                 });
-                return Promise.all(promises);
-            };
-
-            // Execution
-            let results = await runBatch();
-            await new Promise(r => setTimeout(r, 250));
-            const results2 = await runBatch();
-            results = results.concat(results2);
-
-            // Process Data
-            let totalSuccessful = 0;
-            results.forEach(dns => {
-                if (dns) {
-                    totalSuccessful++;
-                    if (detected.has(dns.ip)) {
-                        detected.get(dns.ip).count++;
-                    } else {
-                        detected.set(dns.ip, { data: dns, count: 1 });
-                    }
-                }
-            });
-
-            // Render
-            list.innerHTML = '';
-            const uniqueCount = detected.size;
-
-            if (uniqueCount > 0) {
-                badge.innerText = `${uniqueCount} SERVER${uniqueCount > 1 ? 'S' : ''}`;
-                badge.classList.remove('hidden');
-
-                const sorted = Array.from(detected.values()).sort((a, b) => b.count - a.count);
-
-                sorted.forEach(item => {
-                    const dns = item.data;
-                    const percentage = Math.round((item.count / totalSuccessful) * 100);
-
-                    // --- PROVIDER NAMING LOGIC ---
-                    // 1. Get the raw ISP string. Default to empty string if null.
-                    let providerName = dns.isp || "";
-
-                    // 2. Optional: Beautify ONLY major Public DNS for readability.
-                    // Otherwise, the raw 'providerName' is preserved.
-                    const lowerIsp = providerName.toLowerCase();
-
-                    if (lowerIsp.includes("google")) providerName = "Google DNS";
-                    else if (lowerIsp.includes("cloudflare")) providerName = "Cloudflare";
-                    else if (lowerIsp.includes("opendns")) providerName = "OpenDNS";
-                    else if (lowerIsp.includes("quad9")) providerName = "Quad9";
-                    else if (lowerIsp.includes("cisco")) providerName = "Cisco Umbrella";
-
-                    const geoInfo = dns.geo || "";
-
-                    list.innerHTML += `
-                    <li class="mb-3 pb-2 border-b border-gray-100 last:border-0 last:pb-0 last:mb-0">
-                        <div class="flex justify-between items-end mb-1">
-                            <span class="text-sm font-bold text-slate-700 font-mono">${dns.ip}</span>
-                            <span class="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 rounded">${percentage}% Traffic</span>
-                        </div>
-                        <div class="flex justify-between items-start">
-                             <div class="flex flex-col leading-tight">
-                                <span class="text-xs font-bold text-blue-600 break-all">${providerName}</span>
-                                <span class="text-[10px] text-gray-400 mt-0.5">${geoInfo}</span>
-                            </div>
-                        </div>
-                        <div class="w-full bg-gray-100 h-1 mt-1.5 rounded-full overflow-hidden">
-                            <div class="bg-blue-500 h-full transition-all duration-500" style="width: ${percentage}%"></div>
-                        </div>
-                    </li>
-                `;
-                });
-            } else {
-                list.innerHTML = `
-                <li class="p-3 bg-red-50 rounded border border-red-100 text-center">
-                    <p class="text-xs font-bold text-red-600">Detection Failed</p>
-                    <p class="text-[10px] text-red-400 mt-1">Check adblocker or network settings</p>
-                </li>`;
-            }
+                await res.text();
+                const ms=performance.now()-t;
+                ulB+=bytes*8;ulT+=ms/1000;
+                ulSpd=ulB/ulT/1e6;
+                $('v-ul').textContent=ulSpd.toFixed(1);
+                $('b-ul').style.width=Math.min(100,ulSpd/0.8)+'%';
+                setSP(50+(si+1)*(45/ulSz.length),`Upload: ${ulSpd.toFixed(1)} Mbps`);
+            }catch(e){ break; }
         }
 
-        // UPDATED: WebRTC Leak Check (Smart Logic)
-        // UPDATED: WebRTC Leak Check with "VPN Off" Logic
-        // --- 6. UPDATED: WebRTC Leak Check (Fix for VPN False Positives) ---
-        function getWebRTCIPs() {
-            const l = document.getElementById('webrtc-list');
-            const icon = document.getElementById('icon-webrtc');
-            const desc = document.getElementById('desc-webrtc');
-
-            const foundIPs = new Set();
-            let isScanning = true;
-
-            const R = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-            if (!R) {
-                l.innerHTML = '<li>Unsupported</li>';
-                return;
-            }
-
-            const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-            const p = new R(config);
-
-            // Create a data channel to force ICE candidate gathering
-            try { p.createDataChannel(''); } catch (e) { }
-
-            p.onicecandidate = (e) => {
-                if (!e.candidate) return;
-                const candidate = e.candidate.candidate;
-                // Extract IP using Regex
-                const ipMatch = candidate.match(/([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/);
-
-                if (ipMatch) {
-                    const ip = ipMatch[1];
-                    if (candidate.indexOf(".local") > -1) return; // Ignore mDNS
-
-                    if (!foundIPs.has(ip)) {
-                        foundIPs.add(ip);
-                        if (isScanning) {
-                            l.innerHTML = '';
-                            isScanning = false;
-                        }
-
-                        // Helper to check if IP is private
-                        // UPDATED: Now includes 100.64.0.0/10 (CGNAT/VPN) and 169.254 (Link Local)
-                        const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|169\.254\.|100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.|fd|fc|fe80)/i.test(ip);
-
-                        const cssClass = isPrivate ? "text-gray-400" : "text-slate-800 font-bold";
-                        const note = isPrivate ? " (Local/VPN)" : "";
-
-                        l.innerHTML += `<li class="${cssClass} font-mono text-sm mb-1">${ip}${note}</li>`;
-                    }
-                }
-            };
-
-            p.createOffer().then(d => p.setLocalDescription(d)).catch(e => { });
-
-            // Continuous Analysis
-            const analyzer = setInterval(() => {
-                const ipv4 = document.getElementById('ipv4-display').innerText.trim();
-                const ipv6 = document.getElementById('ipv6-display').innerText.trim();
-                const vpnStatusText = document.getElementById('vpn-status').innerText;
-                const isVpnOff = vpnStatusText.includes("Not Detected");
-
-                if (ipv4 === '--' || ipv4.includes('Loader') || ipv4 === 'Error') {
-                    desc.innerText = "Waiting for Main IP...";
-                    return;
-                }
-
-                let status = "safe";
-
-                if (foundIPs.size === 0) return;
-
-                foundIPs.forEach(ip => {
-                    // Same Private IP Regex for logic check
-                    const isPrivate = /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.|127\.|169\.254\.|100\.(6[4-9]|[7-9][0-9]|1[0-1][0-9]|12[0-7])\.|fd|fc|fe80)/i.test(ip);
-
-                    if (!isPrivate) {
-                        // Normalize IPs for comparison (lowercase)
-                        const normIp = ip.toLowerCase();
-                        const normV4 = ipv4.toLowerCase();
-                        const normV6 = ipv6.toLowerCase();
-
-                        // Check strict match against Dashboard IPs
-                        const matchesTunnel = (normIp === normV4) || (normIp === normV6);
-
-                        if (!matchesTunnel) {
-                            status = "leak"; // Priority 1: Critical Leak
-                        } else if (status !== "leak" && isVpnOff) {
-                            status = "exposed"; // Priority 2: Matches but VPN is off
-                        }
-                    }
-                });
-
-                // UI Update
-                if (status === "leak") {
-                    icon.className = "fas fa-exclamation-triangle text-red-600 blink";
-                    desc.innerText = "CRITICAL: Real IP Leaked!";
-                    desc.className = "text-[10px] text-red-600 font-bold";
-                    clearInterval(analyzer);
-                }
-                else if (status === "exposed") {
-                    icon.className = "fas fa-exclamation-triangle text-orange-500";
-                    desc.innerText = "VPN Off — WebRTC Exposed";
-                    desc.className = "text-[10px] text-orange-600 font-bold";
-                }
-                else {
-                    icon.className = "fas fa-check-circle text-emerald-500";
-                    desc.innerText = "Safe (Matches Tunnel IP)";
-                    desc.className = "text-[10px] text-emerald-600 font-bold";
-                }
-
-            }, 1000);
-
-            // Timeout fallback
-            setTimeout(() => {
-                if (foundIPs.size === 0) {
-                    l.innerHTML = '<li class="text-xs text-gray-400">Hidden by Browser Privacy</li>';
-                    icon.className = "fas fa-shield-alt text-emerald-500";
-                    desc.innerText = "WebRTC Disabled/Hidden";
-                    desc.className = "text-[10px] text-gray-500";
-                    clearInterval(analyzer);
-                }
-            }, 5000);
-        }
-
-
-        async function detectSystem() {
-            const u = navigator.userAgent;
-            // UPDATED: Populate Modal ID instead of removed card
-            document.getElementById('modal-ua-raw').innerText = u;
-
-            // --- NEW: Calculate UTC Offset for Display ---
-            const d = new Date();
-            const offset = -d.getTimezoneOffset(); // returns minutes (inverted)
-            const sign = offset >= 0 ? '+' : '-';
-            const pad = n => String(Math.floor(Math.abs(n))).padStart(2, '0');
-            const utcStr = `UTC${sign}${pad(offset / 60)}:${pad(offset % 60)}`;
-
-            document.getElementById('sys-tz').innerHTML = `Sys Timezone: <span class="font-bold text-slate-600">${utcStr}</span> <i class="fas fa-info-circle text-[10px] ml-1"></i>`;
-
-            let o = "Unknown", b = "Unknown"; if (navigator.userAgentData) { const v = await navigator.userAgentData.getHighEntropyValues(["platformVersion"]); const m = parseInt(v.platformVersion?.split('.')[0] || 0); o = (m >= 13) ? "Windows 11" : "Windows 10"; } else { if (u.includes("Win")) o = "Windows"; if (u.includes("Mac")) o = "macOS"; if (u.includes("Linux")) o = "Linux"; if (u.includes("Android")) o = "Android"; if (u.includes("like Mac")) o = "iOS"; } if (u.includes("Firefox")) b = "Firefox"; else if (u.includes("Chrome")) b = "Chrome"; else if (u.includes("Safari")) b = "Safari"; else if (u.includes("Edg")) b = "Edge"; document.getElementById('os-name').innerText = o; document.getElementById('os-detail').innerText = (u.includes("64") ? "64-bit" : "32-bit"); document.getElementById('browser-name').innerText = b; const v = u.match(/(?:Chrome|Firefox|Version|Edg)\/([0-9.]+)/); document.getElementById('browser-ver').innerText = v ? "v" + v[1] : "";
-
-            // --- BROWSER DETAILS POPULATION (NEW) ---
-            // Basic detection
-            let browserName = "Unknown", browserVer = "--", engineName = "--", engineVer = "--";
-            if (u.indexOf("Firefox") > -1) {
-                browserName = "Firefox";
-                browserVer = u.match(/Firefox\/([0-9.]+)/)?.[1] || "";
-                engineName = "Gecko";
-                engineVer = u.match(/Gecko\/([0-9]+)/)?.[1] || "";
-            } else if (u.indexOf("Chrome") > -1) {
-                browserName = "Chrome";
-                if (u.indexOf("Edg") > -1) browserName = "Edge";
-                browserVer = u.match(/(?:Chrome|Edg)\/([0-9.]+)/)?.[1] || "";
-                engineName = "Blink";
-                engineVer = u.match(/AppleWebKit\/([0-9.]+)/)?.[1] || "";
-            } else if (u.indexOf("Safari") > -1) {
-                browserName = "Safari";
-                browserVer = u.match(/Version\/([0-9.]+)/)?.[1] || "";
-                engineName = "WebKit";
-                engineVer = u.match(/AppleWebKit\/([0-9.]+)/)?.[1] || "";
-            }
-
-            document.getElementById('br-name').innerText = browserName;
-            document.getElementById('br-ver').innerText = browserVer;
-            document.getElementById('br-eng').innerText = engineName;
-            document.getElementById('br-eng-ver').innerText = engineVer;
-
-            // Privacy
-            document.getElementById('priv-dnt').innerText = navigator.doNotTrack === "1" ? "Enabled" : "Disabled";
-            // UPDATED: Cookies Moved to Browser Modal
-            document.getElementById('br-cookies').innerText = navigator.cookieEnabled ? "Enabled" : "Disabled";
-            // UPDATED: JS Check Added to Browser Modal
-            document.getElementById('br-js').innerText = "Enabled";
-
-            // --- OS HARDWARE DETAILS POPULATION (NEW) ---
-            document.getElementById('os-cores').innerText = navigator.hardwareConcurrency || "Unknown";
-
-            // Arch / Bitness
-            let arch = "x86";
-            if (u.includes("Win64") || u.includes("x64")) arch = "x86-64";
-            else if (u.includes("arm")) arch = "ARM";
-
-            document.getElementById('os-arch').innerText = arch;
-            document.getElementById('os-bitness').innerText = u.includes("64") ? "64-bit" : "32-bit";
-            document.getElementById('os-memory').innerText = (navigator.deviceMemory ? `>=${navigator.deviceMemory}` : "Unknown") + " GB";
-
-            // Screen
-            const s = window.screen;
-            document.getElementById('os-res').innerText = `${s.width} x ${s.height}`;
-            document.getElementById('os-cdepth').innerText = `${s.colorDepth}-bit`;
-            document.getElementById('os-pdepth').innerText = `${s.pixelDepth}-bit`;
-
-            // Orientation
-            let orient = "Landscape";
-            if (s.orientation && s.orientation.type) orient = s.orientation.type.replace("-", " ");
-            else if (window.innerHeight > window.innerWidth) orient = "Portrait";
-            document.getElementById('os-orient').innerText = orient;
-
-            // Capabilities
-            const aud = new Audio();
-            let codecs = [];
-            if (aud.canPlayType('audio/mpeg')) codecs.push("MP3");
-            if (aud.canPlayType('audio/mp4')) codecs.push("AAC");
-            document.getElementById('os-media').innerText = codecs.join(", ") || "Basic";
-            document.getElementById('os-pdf').innerText = navigator.pdfViewerEnabled ? "Supported" : "No";
-            document.getElementById('os-vendor').innerText = navigator.vendor || "Unknown";
-            document.getElementById('os-model').innerText = "Desktop/Generic"; // Simplified
-        }
-
-        // UPDATED COPY FUNCTION
-        function copyUA() {
-            navigator.clipboard.writeText(document.getElementById('modal-ua-raw').innerText);
-            alert("Copied!");
-        }
-
-        fetchIPv4Data(); fetchIPv6Data(); fetchDNS(); getWebRTCIPs(); detectSystem();
-    </script>
+        setPhase(3);
+        setSP(100,`✅ Done — ↓ ${dlSpd.toFixed(1)} Mbps  ·  ↑ ${ulSpd.toFixed(1)} Mbps  ·  Ping ${$('v-pg').textContent} ms`);
+        btn.textContent='🔄 Run Again';btn.disabled=false;
+    }
+</script>
 </body>
-<br/>
 </html>
