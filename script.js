@@ -549,6 +549,27 @@ const COUNTRY_COORDS = {
     'ZA':[-30.5595,22.9375],'MX':[23.6345,-102.5528],'AR':[-38.4161,-63.6167],'CL':[-35.6751,-71.5430],'CO':[4.5709,-74.2973]
 };
 
+/* === NUCLEAR ADBLOCK BYPASS TOOLS === */
+const COLO_MAP = {
+    'ICN': 'KR', 'SEL': 'KR', 'BJJ': 'KR', 'GMP': 'KR',
+    'NRT': 'JP', 'HND': 'JP', 'KIX': 'JP', 'NGO': 'JP', 'FUK': 'JP', 'CTS': 'JP', 'OKA': 'JP',
+    'HKG': 'HK', 'TPE': 'TW', 'SIN': 'SG', 'BKK': 'TH', 'MNL': 'PH', 'KUL': 'MY', 'JKT': 'ID',
+    'SJC': 'US', 'LAX': 'US', 'JFK': 'US', 'ORD': 'US', 'DFW': 'US', 'EWR': 'US', 'ATL': 'US', 'SEA': 'US', 'MIA': 'US', 'IAD': 'US', 'DEN': 'US', 'PHX': 'US',
+    'LHR': 'GB', 'LGW': 'GB', 'STN': 'GB', 'MAN': 'GB', 'EDI': 'GB', 'CDG': 'FR', 'ORY': 'FR', 'MRS': 'FR', 'LYS': 'FR',
+    'FRA': 'DE', 'MUC': 'DE', 'TXL': 'DE', 'BER': 'DE', 'HAM': 'DE', 'DUS': 'DE', 'AMS': 'NL', 'BRU': 'BE', 'ZRH': 'CH', 'GVA': 'CH', 'MAD': 'ES', 'BCN': 'ES',
+    'MXP': 'IT', 'FCO': 'IT', 'LIN': 'IT', 'YYZ': 'CA', 'YVR': 'CA', 'YUL': 'CA', 'SYD': 'AU', 'MEL': 'AU', 'BNE': 'AU', 'PER': 'AU', 'AKL': 'NZ'
+};
+
+async function fetchIPviaDOH() {
+    try {
+        const r = await fetch('https://cloudflare-dns.com/dns-query?name=whoami.akamai.net&type=A', {
+            headers: { 'Accept': 'application/dns-json' }
+        });
+        const d = await r.json();
+        return d.Answer?.[0]?.data || null;
+    } catch (e) { return null; }
+}
+
 let dnsCountryFrequency = new Map();
 
 /**
@@ -591,7 +612,7 @@ async function fetchIPv4Data() {
     const setLoader = (msg = 'Detecting...') => { el('ipv4-display', msg); el('ipv4-loc', 'Locating...'); };
     setLoader();
 
-    let ip = null, city = '', region = '', countryCode = '', lat = null, lng = null;
+    let ip = null, city = '', region = '', countryCode = '', lat = null, lng = null, colo = '';
     let isp = 'Unknown', org = 'Unknown', asn = '--', as_org = 'Unknown', tzId = '', tzUtc = '+0:00';
 
     // ── STEP 1: IP Detection (Ghost Waterfall — Harder to block) ──
@@ -614,12 +635,21 @@ async function fetchIPv4Data() {
                     if (traceIp) { 
                         ip = traceIp; 
                         countryCode = t.match(/loc=(.+)/)?.[1]?.trim() || countryCode; 
+                        colo = t.match(/colo=(.+)/)?.[1]?.trim() || colo;
                     } 
                 }
                 if (ip) break;
             } catch (e) {}
         }
+        // Nuclear Fallback for IP: DNS-over-HTTPS
+        if (!ip) ip = await fetchIPviaDOH();
     } catch (e) { console.warn('Core IP fetch failed'); }
+
+    // Emergency Geolocation via Cloudflare COLO (Zero-Tracker)
+    if (!countryCode && colo && COLO_MAP[colo]) {
+        countryCode = COLO_MAP[colo];
+        console.log('Zero-Tracker COLO detection:', colo, '->', countryCode);
+    }
 
     // ── STEP 2: Enrichment Waterfall ──
     // Provider A: freeipapi.com
