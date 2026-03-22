@@ -571,8 +571,29 @@ async function fetchIPviaDOH() {
 }
 
 /**
+ * BGPView: High-reputation technical API for BGP/IP data.
+ * Less likely to be blocked than common Geo-IP providers.
+ */
+async function fetchBGPView(ip) {
+    if (!ip) return null;
+    try {
+        const r = await fetchWithTimeout(`https://api.bgpview.io/ip/${ip}`, { timeout: 4500 });
+        if (!r.ok) return null;
+        const d = await r.json();
+        if (d.status === 'ok' && d.data) {
+            const p = d.data.prefixes?.[0] || {};
+            return {
+                asn: p.asn ? `AS${p.asn}` : '--',
+                as_org: p.name || p.description || 'Unknown',
+                isp: p.name || p.description || 'Unknown'
+            };
+        }
+    } catch (e) {}
+    return null;
+}
+
+/**
  * RDAP (Registration Data Access Protocol) - Core Internet Registry Access.
- * Highly resilient against adblockers as it's a technical registry service.
  */
 async function fetchRDAP(ip) {
     if (!ip) return null;
@@ -772,7 +793,16 @@ async function fetchIPv4Data() {
         }
     }
 
-    // Provider E: RDAP (Registration Data Access Protocol) — The "Nuclear" Logic
+    // Provider E: BGPView (Diagnostic API Fallback)
+    if (isp === 'Unknown' || asn === '--') {
+        const bgp = await fetchBGPView(ip);
+        if (bgp) {
+            isp = bgp.isp || isp; asn = bgp.asn || asn; as_org = bgp.as_org || as_org;
+            org = bgp.as_org || org;
+        }
+    }
+
+    // Provider F: RDAP (Registration Data Access Protocol) — The "Nuclear" Logic
     if (isp === 'Unknown' || as_org === 'Unknown') {
         const rdap = await fetchRDAP(ip);
         if (rdap) {
@@ -783,7 +813,7 @@ async function fetchIPv4Data() {
         }
     }
 
-    // Provider F: DNS-Mirroring (If DNS probe succeeded but Geo-IP failed)
+    // Provider G: DNS-Mirroring (Final fallback if DNS probe succeeded)
     if (isp === 'Unknown' && dnsIsps.size > 0) {
         isp = Array.from(dnsIsps)[0];
         org = Array.from(dnsOrgs)[0] || isp;
