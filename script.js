@@ -179,7 +179,14 @@ let animationEnabled = true;
 function updateGauge(v, l, u = false) {
     const gv = document.getElementById('gauge-value'), gl = document.getElementById('gauge-label'), gf = document.getElementById('speed-gauge');
     if (gv) gv.innerText = v; if (gl) gl.innerText = l;
-    if (gf) { gf.style.stroke = u ? "var(--accent-purple)" : "var(--accent-emerald)"; let p = (v / 100) * 100; if (p > 100) p = 100; gf.style.strokeDasharray = `${p}, 100`; }
+    if (gf) {
+        gf.style.stroke = u ? "var(--accent-purple)" : "var(--accent-emerald)";
+        // Scale: 0–1000 Mbps mapped to 0–100% of gauge arc
+        let p = (parseFloat(v) / 1000) * 100;
+        if (p > 100) p = 100;
+        if (p < 0) p = 0;
+        gf.style.strokeDasharray = `${p}, 100`;
+    }
 }
 
 function stopSpeedTest() {
@@ -195,52 +202,174 @@ async function runHighPerformanceTest() {
     speedTestAbortController = new AbortController(); const signal = speedTestAbortController.signal;
     const status = document.getElementById('test-state'), bar = document.getElementById('speed-progress');
     const dlEl = document.getElementById('dl-final'), ulEl = document.getElementById('ul-final'), pgEl = document.getElementById('ping-value');
-    const serverLoc = document.getElementById('server-location'), gaugeFill = document.getElementById('speed-gauge'), gaugeContainer = document.getElementById('gauge-container');
+    const serverLoc = document.getElementById('server-location'), gaugeFill = document.getElementById('speed-gauge');
     const icon = document.getElementById('speed-status-icon');
 
-    if (dlEl) dlEl.innerText = "-- Mbps"; if (ulEl) ulEl.innerText = "-- Mbps"; if (bar) bar.style.width = "0%"; updateGauge(0, "Ready");
+    if (dlEl) dlEl.innerText = "-- Mbps";
+    if (ulEl) ulEl.innerText = "-- Mbps";
+    if (bar) bar.style.width = "0%";
+    updateGauge(0, "Ready");
     if (animationEnabled) { if (icon) icon.style.color = 'var(--accent-emerald)'; gaugeFill?.classList.add('gauge-pulse'); }
 
-    const calcSpeed = (cb, sb, ct, st) => { const td = (ct - st) / 1000; return td <= 0 ? 0 : (((cb - sb) * 8) / td / 1024 / 1024).toFixed(1); };
+    // bytes transferred → Mbps over a given ms window
+    const toMbps = (bytes, ms) => ms <= 0 ? 0 : ((bytes * 8) / ms / 1000).toFixed(1);
     let fP = "--", fD = "--", fU = "--", jitterVal = "0", detectedServer = "Unknown";
     const detectedProvider = "Cloudflare";
 
     try {
-        // LATENCY
+        // ── LATENCY ──────────────────────────────────────────────────────────
         if (status) status.innerText = "Measuring Latency...";
         const pings = [];
-        for (let i = 0; i < 10; i++) { try { const s = performance.now(); await fetch('https://speed.cloudflare.com/cdn-cgi/trace?r=' + Math.random(), { signal }); pings.push(performance.now() - s); } catch (e) { if (signal.aborted) throw e; } }
-        if (pings.length > 0) { pings.sort((a, b) => a - b); if (pings.length > 4) { pings.pop(); pings.shift(); } const avg = pings.reduce((a, b) => a + b, 0) / pings.length; const variance = pings.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / pings.length; jitterVal = Math.sqrt(variance).toFixed(1); fP = Math.round(avg); if (pgEl) pgEl.innerText = fP + " ms"; }
+        for (let i = 0; i < 20; i++) {
+            if (signal.aborted) throw new Error('Aborted');
+            try {
+                const s = performance.now();
+                await fetch('https://speed.cloudflare.com/cdn-cgi/trace?_=' + Math.random(), { signal, cache: 'no-store' });
+                pings.push(performance.now() - s);
+            } catch (e) { if (signal.aborted) throw e; }
+        }
+        if (pings.length > 0) {
+            pings.sort((a, b) => a - b);
+            const trim = Math.max(1, Math.floor(pings.length * 0.2));
+            const trimmed = pings.slice(trim, pings.length - trim);
+            const avg = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+            const variance = trimmed.reduce((a, b) => a + Math.pow(b - avg, 2), 0) / trimmed.length;
+            jitterVal = Math.sqrt(variance).toFixed(1);
+            fP = Math.round(avg);
+            if (pgEl) pgEl.innerText = fP + " ms";
+        }
 
-        // SERVER
-        await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal }).then(r => r.text()).then(t => { const loc = t.match(/loc=(.+)/)?.[1] || "UNK"; const colo = t.match(/colo=(.+)/)?.[1] || "UNK"; detectedServer = `${colo} (${loc})`; if (serverLoc) serverLoc.innerHTML = `${colo} <span style="color:var(--text-muted);font-weight:400">(${loc})</span>`; }).catch(() => {});
+        // ── SERVER ───────────────────────────────────────────────────────────
+        await fetch('https://speed.cloudflare.com/cdn-cgi/trace', { signal })
+            .then(r => r.text())
+            .then(t => {
+                const loc = t.match(/loc=(.+)/)?.[1] || "UNK";
+                const colo = t.match(/colo=(.+)/)?.[1] || "UNK";
+                detectedServer = `${colo} (${loc})`;
+                if (serverLoc) serverLoc.innerHTML = `${colo} <span style="color:var(--text-muted);font-weight:400">(${loc})</span>`;
+            }).catch(() => {});
 
-        // DOWNLOAD
+        // ── DOWNLOAD: 8 streams, 100 MB chunks, 2 s warm-up ─────────────────
         if (status) status.innerText = "Downloading (Warm-up)...";
-        const dlDur = 15000, warmUp = 4000; let dlStart = performance.now(), dlBytes = 0, dlWarmDone = false, dlBytesWarm = 0, dlTimeWarm = 0;
-        const dlProms = Array(6).fill(0).map(async () => { while (performance.now() - dlStart < dlDur) { try { const r = await fetch("https://speed.cloudflare.com/__down?bytes=50000000&r=" + Math.random(), { signal }); const rd = r.body.getReader(); while (true) { const { done, value } = await rd.read(); if (done) break; dlBytes += value.length; if (performance.now() - dlStart > dlDur) { rd.cancel(); return; } } } catch (e) { return; } } });
-        const dlTimer = setInterval(() => { if (signal.aborted) { clearInterval(dlTimer); return; } const now = performance.now(), el = now - dlStart; if (!dlWarmDone && el > warmUp) { dlWarmDone = true; dlBytesWarm = dlBytes; dlTimeWarm = now; if (status) status.innerText = "Downloading (Measuring)..."; } if (el > 500) { let sp = dlWarmDone ? calcSpeed(dlBytes, dlBytesWarm, now, dlTimeWarm) : calcSpeed(dlBytes, 0, now, dlStart); updateGauge(sp, "Mbps (Down)"); if (bar) bar.style.width = Math.min((el / dlDur) * 50, 50) + "%"; } }, 100);
-        await Promise.all(dlProms); clearInterval(dlTimer); if (signal.aborted) throw new Error('Aborted');
-        fD = calcSpeed(dlBytes, dlBytesWarm, performance.now(), dlTimeWarm) + " Mbps"; if (dlEl) dlEl.innerText = fD;
+        const DL_STREAMS = 8, DL_CHUNK = 100_000_000, DL_DUR = 15_000, DL_WARMUP = 2_000;
+        let dlBytes = 0, dlStart = performance.now();
+        let dlBaseBytes = 0, dlBaseTime = 0, dlWarmDone = false;
 
-        // UPLOAD
-        if (status) status.innerText = "Uploading (Warm-up)..."; updateGauge(0, "Mbps (Up)", true);
-        const ulDur = 12000, blob = new Blob([new Uint8Array(2 * 1024 * 1024)]); let ulStart = performance.now(), ulBytes = 0, ulWarmDone = false, ulBytesWarm = 0, ulTimeWarm = 0;
-        const ulProms = Array(4).fill(0).map(async () => { while (performance.now() - ulStart < ulDur) { try { await fetch("https://speed.cloudflare.com/__up", { method: "POST", body: blob, signal }); ulBytes += blob.size; } catch (e) { return; } } });
-        const ulTimer = setInterval(() => { if (signal.aborted) { clearInterval(ulTimer); return; } const now = performance.now(), el = now - ulStart; if (!ulWarmDone && el > warmUp) { ulWarmDone = true; ulBytesWarm = ulBytes; ulTimeWarm = now; if (status) status.innerText = "Uploading (Measuring)..."; } if (el > 500) { let sp = ulWarmDone ? calcSpeed(ulBytes, ulBytesWarm, now, ulTimeWarm) : calcSpeed(ulBytes, 0, now, ulStart); updateGauge(sp, "Mbps (Up)", true); if (bar) bar.style.width = 50 + Math.min((el / ulDur) * 50, 50) + "%"; } }, 100);
-        await Promise.all(ulProms); clearInterval(ulTimer); if (signal.aborted) throw new Error('Aborted');
-        if (ulBytes > 0) { fU = calcSpeed(ulBytes, ulBytesWarm, performance.now(), ulTimeWarm) + " Mbps"; if (ulEl) ulEl.innerText = fU; } else { fU = "Failed"; if (ulEl) ulEl.innerText = "Blocked"; }
+        const dlWorker = async () => {
+            while (performance.now() - dlStart < DL_DUR) {
+                if (signal.aborted) return;
+                try {
+                    const res = await fetch(
+                        `https://speed.cloudflare.com/__down?bytes=${DL_CHUNK}&_=${Math.random()}`,
+                        { signal, cache: 'no-store' }
+                    );
+                    const reader = res.body.getReader();
+                    while (true) {
+                        if (performance.now() - dlStart >= DL_DUR) { reader.cancel(); return; }
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        dlBytes += value.length;
+                    }
+                } catch (e) { if (signal.aborted) return; }
+            }
+        };
 
-        if (status) { status.innerText = "Complete"; status.style.color = "var(--accent-emerald)"; }
-        if (bar) bar.style.width = "100%"; if (icon) icon.style.color = 'var(--accent-emerald)';
+        const dlWorkers = Array.from({ length: DL_STREAMS }, dlWorker);
+        const dlTimer = setInterval(() => {
+            if (signal.aborted) { clearInterval(dlTimer); return; }
+            const now = performance.now(), elapsed = now - dlStart;
+            if (!dlWarmDone && elapsed >= DL_WARMUP) {
+                dlWarmDone = true; dlBaseBytes = dlBytes; dlBaseTime = now;
+                if (status) status.innerText = "Downloading (Measuring)...";
+            }
+            if (elapsed > 300) {
+                const sp = dlWarmDone ? toMbps(dlBytes - dlBaseBytes, now - dlBaseTime) : toMbps(dlBytes, elapsed);
+                updateGauge(sp, "Mbps (Down)");
+                if (bar) bar.style.width = Math.min((elapsed / DL_DUR) * 50, 50) + "%";
+            }
+        }, 80);
+
+        await Promise.all(dlWorkers); clearInterval(dlTimer);
+        if (signal.aborted) throw new Error('Aborted');
+        fD = toMbps(dlBytes - dlBaseBytes, performance.now() - dlBaseTime) + " Mbps";
+        if (dlEl) dlEl.innerText = fD;
+
+        // ── UPLOAD: 8 streams, ReadableStream so bytes count in-flight ────────
+        if (status) status.innerText = "Uploading (Warm-up)...";
+        updateGauge(0, "Mbps (Up)", true);
+        const UL_STREAMS = 8, UL_CHUNK = 4 * 1024 * 1024, UL_DUR = 12_000, UL_WARMUP = 2_000;
+        let ulBytes = 0, ulStart = performance.now();
+        let ulBaseBytes = 0, ulBaseTime = 0, ulWarmDone = false;
+        const chunkBuf = new Uint8Array(UL_CHUNK);
+
+        const ulWorker = async () => {
+            while (performance.now() - ulStart < UL_DUR) {
+                if (signal.aborted) return;
+                try {
+                    let sent = false;
+                    const stream = new ReadableStream({
+                        pull(ctrl) {
+                            if (sent || signal.aborted || performance.now() - ulStart >= UL_DUR) {
+                                ctrl.close(); return;
+                            }
+                            ulBytes += UL_CHUNK;   // count bytes as they leave
+                            sent = true;
+                            ctrl.enqueue(chunkBuf);
+                            ctrl.close();
+                        }
+                    });
+                    await fetch("https://speed.cloudflare.com/__up", {
+                        method: "POST", body: stream, signal, duplex: "half"
+                    });
+                } catch (e) { if (signal.aborted) return; }
+            }
+        };
+
+        const ulWorkers = Array.from({ length: UL_STREAMS }, ulWorker);
+        const ulTimer = setInterval(() => {
+            if (signal.aborted) { clearInterval(ulTimer); return; }
+            const now = performance.now(), elapsed = now - ulStart;
+            if (!ulWarmDone && elapsed >= UL_WARMUP) {
+                ulWarmDone = true; ulBaseBytes = ulBytes; ulBaseTime = now;
+                if (status) status.innerText = "Uploading (Measuring)...";
+            }
+            if (elapsed > 300) {
+                const sp = ulWarmDone ? toMbps(ulBytes - ulBaseBytes, now - ulBaseTime) : toMbps(ulBytes, elapsed);
+                updateGauge(sp, "Mbps (Up)", true);
+                if (bar) bar.style.width = 50 + Math.min((elapsed / UL_DUR) * 50, 50) + "%";
+            }
+        }, 80);
+
+        await Promise.all(ulWorkers); clearInterval(ulTimer);
+        if (signal.aborted) throw new Error('Aborted');
+        if (ulBytes > 0) {
+            fU = toMbps(ulBytes - ulBaseBytes, performance.now() - ulBaseTime) + " Mbps";
+            if (ulEl) ulEl.innerText = fU;
+        } else {
+            fU = "Blocked"; if (ulEl) ulEl.innerText = "Blocked";
+        }
+
+        // ── DONE ─────────────────────────────────────────────────────────────
+        if (status) { status.innerText = "Complete ✓"; status.style.color = "var(--accent-emerald)"; }
+        if (bar) bar.style.width = "100%";
+        if (icon) icon.style.color = 'var(--accent-emerald)';
         gaugeFill?.classList.remove('gauge-pulse');
         lastSpeedData = { dl: fD, ul: fU, ping: fP, jitter: jitterVal, ploss: "0% (Estimated)" };
         saveResult(fP + " ms", fD, fU, detectedServer, detectedProvider);
+
     } catch (e) {
-        if (e.message === 'Aborted' || e.name === 'AbortError') { if (status) { status.innerText = "Stopped"; status.style.color = "var(--accent-orange)"; } }
-        else { console.error(e); if (status) { status.innerText = "Error"; status.style.color = "var(--accent-red)"; } }
-        if (icon) icon.style.color = 'var(--text-muted)'; gaugeFill?.classList.remove('gauge-pulse');
-    } finally { btnS?.classList.remove('hidden'); btnT?.classList.add('hidden'); }
+        if (e.message === 'Aborted' || e.name === 'AbortError') {
+            if (status) { status.innerText = "Stopped"; status.style.color = "var(--accent-orange)"; }
+        } else {
+            console.error(e);
+            if (status) { status.innerText = "Error"; status.style.color = "var(--accent-red)"; }
+        }
+        if (icon) icon.style.color = 'var(--text-muted)';
+        gaugeFill?.classList.remove('gauge-pulse');
+    } finally {
+        btnS?.classList.remove('hidden');
+        btnT?.classList.add('hidden');
+    }
 }
 
 async function refreshServerLocation() {
