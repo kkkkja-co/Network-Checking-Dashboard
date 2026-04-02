@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:#07080f; --bg2:#0c0e1a; --card:#0f1120; --card2:#141728;
+            --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.13);
+            --text:#eef0f6; --text2:#9ca3b8; --text3:#5a6280;
+            --indigo:#6366f1; --violet:#8b5cf6; --cyan:#22d3ee;
+            --green:#22c55e; --yellow:#eab308; --red:#ef4444;
+            --mono:'JetBrains Mono','Consolas',monospace;
+        }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:32px 20px 80px;-webkit-font-smoothing:antialiased;}
+        ::-webkit-scrollbar{width:5px;height:5px;}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:3px;}
+
+        .hdr{max-width:1200px;margin:0 auto 38px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+        .logo{display:flex;align-items:center;gap:12px;}
+        .logo-ic{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--indigo),var(--violet));display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 0 24px rgba(99,102,241,.35);}
+        .logo-t{font-size:1.12rem;font-weight:750;letter-spacing:-.3px;}
+        .logo-s{font-size:.72rem;color:var(--text3);margin-top:1px;}
+        .hdr-st{display:flex;align-items:center;gap:7px;font-size:.76rem;color:var(--text3);}
+        .pdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pdot 2s infinite;box-shadow:0 0 0 0 rgba(34,197,94,.4);}
+        @keyframes pdot{0%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+
+        .prg-w{max-width:1200px;margin:0 auto 26px;}
+        .prg-b{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
+        .prg-f{height:100%;width:0%;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--cyan));transition:width .5s cubic-bezier(.4,0,.2,1);}
+        .prg-l{font-size:.7rem;color:var(--text3);margin-top:6px;text-align:right;}
+
+        .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;max-width:1200px;margin:0 auto;}
+        .c6{grid-column:span 6;} .c12{grid-column:span 12;}
+        @media(max-width:960px){.c6{grid-column:span 12;}}
+
+        .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;position:relative;overflow:hidden;transition:border-color .2s;}
+        .card:hover{border-color:var(--border2);}
+        .ct{position:absolute;top:0;left:0;right:0;height:2px;opacity:.75;}
+        .ct-i{background:linear-gradient(90deg,var(--indigo),var(--violet));}
+        .ct-g{background:linear-gradient(90deg,#16a34a,var(--green));}
+        .ct-c{background:linear-gradient(90deg,#0891b2,var(--cyan));}
+        .ct-o{background:linear-gradient(90deg,#d97706,var(--yellow));}
+        .ct-r{background:linear-gradient(90deg,#dc2626,var(--red));}
+        .ct-v{background:linear-gradient(90deg,#7c3aed,#a78bfa);}
+
+        .ch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
+        .chl{display:flex;align-items:center;gap:10px;}
+        .cion{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+        .ci-i{background:rgba(99,102,241,.15);} .ci-g{background:rgba(34,197,94,.15);}
+        .ci-c{background:rgba(34,211,238,.15);} .ci-o{background:rgba(234,179,8,.15);}
+        .ci-r{background:rgba(239,68,68,.15);}  .ci-v{background:rgba(139,92,246,.15);}
+        .ct2{font-size:.9rem;font-weight:650;letter-spacing:-.2px;}
+        .cs{font-size:.7rem;color:var(--text3);margin-top:2px;}
+
+        .bdg{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:.69rem;font-weight:600;white-space:nowrap;}
+        .b-g{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+        .b-r{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);}
+        .b-y{background:rgba(234,179,8,.1);color:var(--yellow);border:1px solid rgba(234,179,8,.2);}
+        .b-i{background:rgba(99,102,241,.1);color:var(--indigo);border:1px solid rgba(99,102,241,.2);}
+        .b-m{background:rgba(255,255,255,.05);color:var(--text3);border:1px solid rgba(255,255,255,.08);}
+        .b-c{background:rgba(34,211,238,.1);color:var(--cyan);border:1px solid rgba(34,211,238,.2);}
+
+        .rows{display:flex;flex-direction:column;}
+        .row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;}
+        .row:last-child{border-bottom:none;padding-bottom:0;}
+        .rl{color:var(--text3);flex-shrink:0;font-size:.78rem;}
+        .rv{color:var(--text2);text-align:right;word-break:break-all;font-family:var(--mono);font-size:.77rem;}
+        .rv.hi{color:var(--text);font-weight:600;}
+
+        .skel{height:13px;border-radius:6px;background:linear-gradient(90deg,var(--card2) 25%,rgba(255,255,255,.04) 50%,var(--card2) 75%);background-size:200%;animation:shim 1.4s infinite;margin:6px 0;}
+        @keyframes shim{to{background-position:-200% 0}}
+        .sk-sm{width:55%;} .sk-lg{width:100%;}
+        .spin{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.08);border-top-color:var(--indigo);border-radius:50%;animation:sp .65s linear infinite;vertical-align:middle;}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        .al{padding:10px 14px;border-radius:10px;font-size:.79rem;line-height:1.55;margin-bottom:12px;}
+        .al-g{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);color:#86efac;}
+        .al-r{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);color:#fca5a5;}
+        .al-y{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2);color:#fde047;}
+        .al-i{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);color:#a5b4fc;}
+
+        .chips{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0;}
+        .chip{display:inline-block;padding:3px 10px;border-radius:7px;font-family:var(--mono);font-size:.77rem;border:1px solid var(--border);background:var(--card2);}
+        .chip.lk{border-color:rgba(239,68,68,.35);color:var(--red);background:rgba(239,68,68,.05);}
+        .chip.lc{border-color:rgba(34,197,94,.35);color:var(--green);background:rgba(34,197,94,.05);}
+        .chip.v6{border-color:rgba(139,92,246,.35);color:var(--violet);background:rgba(139,92,246,.05);}
+
+        .mlink{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:var(--card2);border:1px solid var(--border);border-radius:10px;text-decoration:none;font-size:.78rem;color:var(--indigo);margin-top:13px;transition:background .15s,border-color .15s;font-weight:500;}
+        .mlink:hover{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.25);}
+
+        .rsn{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.79rem;}
+        .rsn:last-child{border-bottom:none;}
+
+        .dns-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:15px 18px;margin-bottom:9px;position:relative;overflow:hidden;transition:border-color .15s;}
+        .dns-card:last-of-type{margin-bottom:0;}
+        .dns-card:hover{border-color:rgba(255,255,255,.12);}
+        .dns-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--indigo),var(--violet));border-radius:3px 0 0 3px;}
+        .dns-r1{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+        .dns-ip{font-family:var(--mono);font-size:1.05rem;font-weight:600;color:var(--text);letter-spacing:-.3px;}
+        .dns-traf{font-size:.72rem;font-weight:600;color:var(--cyan);background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.15);padding:2px 8px;border-radius:20px;}
+        .dns-r2{display:flex;align-items:center;gap:6px;font-size:.77rem;}
+        .dns-ctry{color:var(--text2);font-weight:500;}
+        .dns-isp{color:var(--text3);}
+
+        .ua-raw{font-family:var(--mono);font-size:.7rem;color:var(--violet);background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:11px 13px;word-break:break-all;line-height:1.65;margin-bottom:13px;}
+        .env-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px;}
+        .ep{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:8px;background:var(--card2);border:1px solid var(--border);font-size:.77rem;}
+        .feat-l{font-size:.67rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin:12px 0 7px;}
+        .feats{display:flex;flex-wrap:wrap;gap:5px;}
+        .fi{padding:3px 8px;border-radius:6px;background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.12);color:var(--cyan);font-size:.71rem;font-weight:500;}
+
+        .spd-btn{padding:10px 26px;background:linear-gradient(135deg,var(--indigo),var(--violet));border:none;border-radius:50px;color:#fff;font-size:.86rem;font-weight:600;cursor:pointer;transition:opacity .2s,transform .15s;margin-bottom:16px;font-family:'Inter',sans-serif;}
+        .spd-btn:hover{opacity:.87;transform:translateY(-1px);}
+        .spd-btn:disabled{opacity:.38;cursor:not-allowed;transform:none;}
+
+        .spd-phases{display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+        .ph{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:.73rem;font-weight:500;background:var(--card2);border:1px solid var(--border);color:var(--text3);transition:all .3s;}
+        .ph.active{background:rgba(99,102,241,.12);border-color:rgba(99,102,241,.3);color:var(--indigo);}
+        .ph.done{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.2);color:var(--green);}
+        .ph-sep{color:var(--text3);font-size:.8rem;opacity:.4;}
+
+        .spd-prog-wrap{margin-bottom:4px;}
+        .spd-prog-track{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+        .spd-prog-fill{height:100%;width:0%;border-radius:3px;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--cyan));transition:width .4s cubic-bezier(.4,0,.2,1);}
+        .spd-prog-label{font-size:.71rem;color:var(--text3);margin-top:5px;min-height:16px;}
+
+        .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0;}
+        .met{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:15px 12px;text-align:center;transition:border-color .2s;}
+        .met-icon{font-size:1.15rem;margin-bottom:7px;}
+        .met-lbl{font-size:.63rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:5px;}
+        .met-val{font-family:var(--mono);font-size:1.65rem;font-weight:700;color:var(--text);line-height:1;}
+        .met-unit{font-size:.66rem;color:var(--text3);margin-top:3px;}
+        .met-bw{height:4px;background:rgba(255,255,255,.06);border-radius:2px;margin-top:9px;overflow:hidden;}
+        .met-b{height:100%;width:0;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+        .b-dl{background:linear-gradient(90deg,var(--indigo),var(--cyan));}
+        .b-ul{background:linear-gradient(90deg,var(--violet),#f472b6);}
+        .b-pg{background:linear-gradient(90deg,var(--green),var(--yellow));}
+
+        .srv-box{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;margin-bottom:14px;font-size:.8rem;transition:border-color .2s;}
+        .srv-box.loaded{border-color:rgba(34,211,238,.2);}
+        .srv-icon{font-size:1.1rem;flex-shrink:0;}
+        .srv-name{font-weight:600;color:var(--text);font-size:.83rem;}
+        .srv-sub{color:var(--text3);font-size:.72rem;margin-top:1px;}
+
+        @media(max-width:520px){.metrics{grid-template-columns:1fr;}}
+    </style>
+</head>
+<body>
+
+<header class="hdr">
+    <div class="logo">
+        <div class="logo-ic">🛡️</div>
+        <div><div class="logo-t">Privacy Analyzer</div><div class="logo-s">Real-time network &amp; privacy diagnostics</div></div>
+    </div>
+    <div class="hdr-st" id="hSt"><div class="pdot"></div> Running tests…</div>
+</header>
+
+<div class="prg-w">
+    <div class="prg-b"><div class="prg-f" id="pF"></div></div>
+    <div class="prg-l" id="pL">Initializing…</div>
+</div>
+
+<div class="grid">
+
+    <div class="card c6">
+        <div class="ct ct-i"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-i">🌐</div><div><div class="ct2">Your IP Address</div><div class="cs">IPv4 · IPv6 · Geolocation · ASN</div></div></div></div>
+        <div id="ip-out"><div class="skel sk-lg"></div><div class="skel sk-sm"></div><div class="skel sk-lg"></div><div class="skel sk-sm"></div></div>
+    </div>
+
+    <div class="card c6">
+        <div class="ct ct-o"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-o">🔒</div><div><div class="ct2">VPN &amp; Proxy Detection</div><div class="cs">VPN · Proxy · Tor · Datacenter signals</div></div></div><div id="vpn-bdg"></div></div>
+        <div id="vpn-out"><div class="skel sk-sm"></div><div class="skel sk-lg"></div><div class="skel sk-sm"></div></div>
+    </div>
+
+    <div class="card c6">
+        <div class="ct ct-r"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-r">⚡</div><div><div class="ct2">WebRTC Leak Test</div><div class="cs">STUN · Local IPs · IPv6 exposure</div></div></div><div id="rtc-bdg"></div></div>
+        <div id="rtc-out"><div class="skel sk-lg"></div><div class="skel sk-sm"></div></div>
+    </div>
+
+    <div class="card c6">
+        <div class="ct ct-v"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-v">💻</div><div><div class="ct2">Browser &amp; System</div><div class="cs">User-Agent · OS · Features</div></div></div></div>
+        <div id="ua-out"><div class="skel sk-lg"></div><div class="skel sk-sm"></div><div class="skel sk-lg"></div></div>
+    </div>
+
+    <div class="card c12">
+        <div class="ct ct-g"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-g">🔍</div><div><div class="ct2">Your DNS Resolvers</div><div class="cs">Actual DNS servers your device uses — detected via leak probes</div></div></div><div id="dns-bdg"></div></div>
+        <div id="dns-out">
+            <div class="skel sk-lg" style="height:66px;border-radius:12px;margin-bottom:9px;"></div>
+            <div class="skel sk-lg" style="height:66px;border-radius:12px;"></div>
+        </div>
+    </div>
+
+    <div class="card c12">
+        <div class="ct ct-c"></div>
+        <div class="ch"><div class="chl"><div class="cion ci-c">🚀</div><div><div class="ct2">Speed Test</div><div class="cs">Download · Upload · Ping · Jitter via Cloudflare Edge</div></div></div></div>
+
+        <div class="srv-box" id="srv-box">
+            <span class="srv-icon">🖧</span>
+            <div><div class="srv-name" id="srv-name">Test server will appear here</div><div class="srv-sub" id="srv-sub">Click Start to begin</div></div>
+        </div>
+
+        <button class="spd-btn" id="spdBtn" onclick="runSpeed()">▶ Start Speed Test</button>
+
+        <div id="spd-phase-wrap" style="display:none">
+            <div class="spd-phases">
+                <span class="ph" id="ph0">📡 Ping</span>
+                <span class="ph-sep">›</span>
+                <span class="ph" id="ph1">⬇️ Download</span>
+                <span class="ph-sep">›</span>
+                <span class="ph" id="ph2">⬆️ Upload</span>
+            </div>
+            <div class="spd-prog-wrap">
+                <div class="spd-prog-track"><div class="spd-prog-fill" id="sPF"></div></div>
+                <div class="spd-prog-label" id="sPL">Preparing…</div>
+            </div>
+        </div>
+
+        <div class="metrics">
+            <div class="met">
+                <div class="met-icon">⬇️</div><div class="met-lbl">Download</div>
+                <div class="met-val" id="v-dl">—</div><div class="met-unit">Mbps</div>
+                <div class="met-bw"><div class="met-b b-dl" id="b-dl"></div></div>
+            </div>
+            <div class="met">
+                <div class="met-icon">⬆️</div><div class="met-lbl">Upload</div>
+                <div class="met-val" id="v-ul">—</div><div class="met-unit">Mbps</div>
+                <div class="met-bw"><div class="met-b b-ul" id="b-ul"></div></div>
+            </div>
+            <div class="met">
+                <div class="met-icon">📡</div><div class="met-lbl">Ping</div>
+                <div class="met-val" id="v-pg">—</div><div class="met-unit">ms</div>
+                <div class="met-bw"><div class="met-b b-pg" id="b-pg"></div></div>
+            </div>
+        </div>
+
+        <div class="rows" style="border-top:1px solid rgba(255,255,255,.05);padding-top:11px">
+            <div class="row"><span class="rl">Jitter</span><span class="rv" id="v-jit">—</span></div>
+            <div class="row"><span class="rl">Avg Latency</span><span class="rv" id="v-lat">—</span></div>
+            <div class="row"><span class="rl">Test Server</span><span class="rv" id="v-srv">—</span></div>
+            <div class="row"><span class="rl">Protocol</span><span class="rv" id="v-proto">—</span></div>
+            <div class="row"><span class="rl">Your IP at Edge</span><span class="rv" id="v-edgeip">—</span></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const $=id=>document.getElementById(id);
+    const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const flag=c=>{if(!c||c.length!==2)return '';return c.toUpperCase().replace(/./g,x=>String.fromCodePoint(x.charCodeAt(0)+127397));};
+    const row=(l,v,hi=false)=>`<div class="row"><span class="rl">${l}</span><span class="rv${hi?' hi':''}">${v}</span></div>`;
+    const safeStr=v=>{
+        if(v===null||v===undefined)return '';
+        if(typeof v==='string')return v;
+        if(typeof v==='number')return String(v);
+        if(Array.isArray(v))return v.map(safeStr).filter(Boolean).join(', ');
+        if(typeof v==='object')return v.name||v.description||v.org||v.isp||'';
+        return String(v);
+    };
+
+    const STEPS=4;
+    function prog(n,msg){
+        $('pF').style.width=Math.round(n/STEPS*100)+'%';
+        $('pL').textContent=msg;
+        if(n>=STEPS)$('hSt').innerHTML='<span style="color:var(--green)">✓</span> All tests complete';
+    }
+
+    window.addEventListener('DOMContentLoaded',async()=>{
+        renderUA();
+        prog(0,'Fetching IP data…');
+        try{
+            const ip=await fetchIP();
+            renderIP(ip); renderVPN(ip);
+            prog(1,'Detecting WebRTC IPs…');
+            await runWebRTC(ip);
+            prog(2,'Detecting DNS resolvers…');
+            await runDNS();
+            prog(STEPS,'All tests complete — start speed test when ready');
+        }catch(e){ prog(0,'Error: '+e.message); }
+    });
+
+    async function fetchIP(){
+        const [v4,v6]=await Promise.allSettled([
+            fetch('https://api.ipapi.is/').then(r=>r.json()),
+            fetch('https://api64.ipify.org/?format=json').then(r=>r.json())
+        ]);
+        const d=v4.status==='fulfilled'?v4.value:{};
+        const v6ip=v6.status==='fulfilled'?v6.value.ip:null;
+        if(v6ip&&v6ip!==d.ip&&v6ip.includes(':'))d.ipv6=v6ip;
+        return d;
+    }
+    function renderIP(d){
+        const loc=d.location||{},asn=d.asn||{},co=d.company||{};
+        const f=flag(loc.country_code);
+        let h='<div class="rows">';
+        h+=row('IPv4',`<span style="color:var(--cyan);font-weight:600">${esc(d.ip||'—')}</span>`,true);
+        h+=row('IPv6',d.ipv6?`<span style="color:var(--violet)">${esc(d.ipv6)}</span>`:'<span style="color:var(--text3)">Not detected</span>');
+        h+=row('Country',f+' '+esc(loc.country||'—')+(loc.country_code?' <span style="color:var(--text3)">('+loc.country_code+')</span>':''));
+        h+=row('City / Region',esc([loc.city,loc.state].filter(Boolean).join(', ')||'—'));
+        h+=row('Timezone',esc(loc.timezone||'—'));
+        h+=row('Local Time',esc(loc.local_time||'—'));
+        h+=row('Coordinates',loc.latitude?loc.latitude+', '+loc.longitude:'—');
+        h+=row('AS Number',asn.asn?`<span style="color:var(--indigo);font-weight:600">AS${asn.asn}</span>`:'—',true);
+        h+=row('AS Org',esc(asn.org||co.name||'—'));
+        h+=row('Network',esc(asn.route||'—'));
+        h+=row('RIR',esc(d.rir||'—'));
+        h+='</div>';
+        if(loc.latitude){
+            h+=`<a class="mlink" href="https://www.openstreetmap.org/?mlat=${loc.latitude}&mlon=${loc.longitude}&zoom=11" target="_blank"><span>🗺️</span> Open on Map — ${esc(loc.city||'')}, ${esc(loc.country||'')}</a>`;
+        }
+        $('ip-out').innerHTML=h;
+    }
+
+    function renderVPN(d){
+        const co=d.company||{},loc=d.location||{},vp=d.vpn||{};
+        const isVPN=d.is_vpn===true,isTor=d.is_tor===true,isProxy=d.is_proxy===true,isDC=d.is_datacenter===true,isAbuser=d.is_abuser===true;
+        const rs=[];
+        if(isVPN)    rs.push({i:'🔐',t:'IP flagged as VPN exit node',c:'var(--red)'});
+        if(isTor)    rs.push({i:'🧅',t:'Tor exit node detected',c:'var(--red)'});
+        if(isProxy)  rs.push({i:'🔄',t:'Proxy server detected',c:'var(--yellow)'});
+        if(isDC)     rs.push({i:'🏢',t:'Datacenter / hosting provider IP',c:'var(--yellow)'});
+        if(isAbuser) rs.push({i:'⚠️',t:'IP linked to abuse',c:'var(--yellow)'});
+        if(loc.timezone){const btz=Intl.DateTimeFormat().resolvedOptions().timeZone;if(btz&&btz!==loc.timezone)rs.push({i:'🕐',t:`TZ mismatch — Browser: "${btz}" vs IP: "${loc.timezone}"`,c:'var(--yellow)'});}
+        const clean=!isVPN&&!isTor&&!isProxy;
+        $('vpn-bdg').innerHTML=`<span class="bdg ${(isTor||isVPN)?'b-r':!clean?'b-y':'b-g'}">${isTor?'🧅 Tor':isVPN?'🔐 VPN':isProxy?'🔄 Proxy':isDC?'🏢 Datacenter':'✅ Clean'}</span>`;
+        let h='';
+        if(isVPN){const nm=safeStr(vp.name||vp.service||co.name);if(nm)h+=`<div class="al al-r"><strong>VPN:</strong> ${esc(nm)}</div>`;}
+        if(isTor)h+=`<div class="al al-r">🧅 <strong>Tor Network</strong> — traffic routed via Tor.</div>`;
+        if(clean)h+=`<div class="al al-g">No VPN, proxy, or anonymizing indicators detected.</div>`;
+        if(rs.length){h+='<div>';rs.forEach(r=>{h+=`<div class="rsn"><span>${r.i}</span><span style="color:${r.c};line-height:1.5">${esc(r.t)}</span></div>`;});h+='</div>';}
+        h+='<div class="rows" style="margin-top:10px">';
+        if(co.type)  h+=row('Company Type',esc(safeStr(co.type)));
+        if(co.domain)h+=row('Domain',esc(safeStr(co.domain)));
+        if(d.rir)    h+=row('RIR',esc(safeStr(d.rir)));
+        h+='</div>';
+        $('vpn-out').innerHTML=h;
+    }
+
+    async function runWebRTC(ipData){
+        const ips=await getWebRTCIPs(),pub=ipData.ip;
+        const lk=[],pr=[],v6=[];
+        ips.forEach(ip=>{
+            if(ip.includes('.local')||ip==='0.0.0.0')return;
+            if(ip.includes(':'))v6.push(ip);
+            else if(/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.)/.test(ip))pr.push(ip);
+            else lk.push(ip);
+        });
+        const hasLk=lk.some(ip=>ip!==pub);
+        $('rtc-bdg').innerHTML=`<span class="bdg ${hasLk?'b-r':lk.length?'b-y':'b-g'}">${hasLk?'🚨 Leak':lk.length?'⚠️ Exposed':'✅ No Leak'}</span>`;
+        let h='';
+        if(!lk.length&&!v6.length)h+=`<div class="al al-g">✅ No WebRTC leak — no public IPs exposed.</div>`;
+        else if(hasLk)h+=`<div class="al al-r">🚨 <strong>WebRTC Leak!</strong> Real IP exposed even behind VPN.</div>`;
+        else h+=`<div class="al al-i">ℹ️ WebRTC active. IP matches known IP — no unexpected leak.</div>`;
+        if(ips.length){
+            h+='<div class="chips">';
+            lk.forEach(ip=>{h+=`<span class="chip lk">${esc(ip)} ${ip!==pub?'⚠️':'✓'}</span>`;});
+            pr.forEach(ip=>{h+=`<span class="chip lc">🏠 ${esc(ip)}</span>`;});
+            v6.forEach(ip=>{h+=`<span class="chip v6">${esc(ip.length>28?ip.slice(0,26)+'…':ip)}</span>`;});
+            h+='</div>';
+        }
+        h+='<div class="rows" style="margin-top:10px">';
+        h+=row('Total IPs',ips.length);
+        h+=row('Public',`<span style="color:${lk.length?'var(--red)':'var(--green)'}">${lk.length}</span>`);
+        h+=row('Private / LAN',pr.length);
+        h+=row('IPv6',v6.length);
+        h+='</div>';
+        $('rtc-out').innerHTML=h;
+    }
+    function getWebRTCIPs(){
+        return new Promise(resolve=>{
+            const ips=new Set();let pc;
+            try{pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]});}
+            catch(e){resolve([]);return;}
+            pc.createDataChannel('');
+            pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>resolve([]));
+            pc.onicecandidate=e=>{
+                if(!e.candidate)return;
+                const c=e.candidate.candidate;
+                const v4=c.match(/([0-9]{1,3}\.){3}[0-9]{1,3}/);
+                const v6=c.match(/([a-f0-9:]+:+)+[a-f0-9]+/i);
+                if(v4)ips.add(v4[0]);
+                if(v6&&v6[0].includes(':'))ips.add(v6[0]);
+            };
+            setTimeout(()=>{try{pc.close();}catch(e){}resolve(Array.from(ips));},5500);
+        });
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────
+       DNS LEAK — ipleak.net subdomain probes
+       FIX: Increased probe count from 20 → 80 (first wave) + 40 (second
+            wave if too few resolvers found), totalling up to 120 probes.
+            Each probe uses a unique random subdomain so every single DNS
+            query goes to a different ipleak.net record, maximising the
+            chance of catching all resolvers in round-robin pools.
+    ───────────────────────────────────────────────────────────────────── */
+    async function runDNS(){
+        $('dns-out').innerHTML=`<div style="display:flex;align-items:center;gap:9px;color:var(--text3);font-size:.8rem;padding:10px 0"><span class="spin"></span>Detecting DNS resolvers (sending 80+ probes)…</div>`;
+
+        const session=[...Array(40)].map(()=>Math.floor(Math.random()*16).toString(16)).join('');
+        const dnsMap=new Map();
+
+        /* Helper: fire N probes and collect results into dnsMap */
+        async function sendProbes(count, offset=0){
+            const probes = [];
+            for(let i=0; i<count; i++){
+                /* Unique subdomain per probe — forces a fresh DNS lookup each time */
+                const rnd=Math.random().toString(36).substr(2,12)+(Date.now().toString(36))+(offset+i);
+                probes.push(
+                    fetch(`https://${session}-${rnd}.ipleak.net/dnsdetection/`,{cache:'no-store', mode:'cors'})
+                        .then(r=>r.text())
+                        .then(txt=>{
+                            let data; try{ data=JSON.parse(txt); }catch(e){ return; }
+                            if(!data||typeof data!=='object')return;
+                            const items=Array.isArray(data)?data:[data];
+                            items.forEach(item => {
+                                if(!item)return;
+                                const ip    =safeStr(item.ip||'');
+                                const ctry  =safeStr(item.country_name||item.country||'Unknown');
+                                const cc    =safeStr(item.country_code||item.cc||'');
+                                const isp   =safeStr(item.isp||item.as_org||item.org||item['as']||'Unknown');
+                                // Support both IPv4 and IPv6 resolvers
+                                if(!ip||(!/^\d+\.\d+\.\d+\.\d+$/.test(ip) && !ip.includes(':')))return;
+                                if(!dnsMap.has(ip))dnsMap.set(ip,{ip,ctry,cc,isp,count:0,method:'probe'});
+                                dnsMap.get(ip).count++;
+                            });
+                        })
+                        .catch(()=>{})
+                );
+                /* Small delay every 10 probes to avoid browser/network throttling */
+                if(i % 10 === 0) await new Promise(r => setTimeout(r, 20));
+            }
+            await Promise.all(probes);
+        }
+
+        /* Wave 1 — 80 parallel probes */
+        await sendProbes(80, 0);
+
+        /* Wave 2 — 40 more probes if resolver pool seems small
+           (catches load-balanced resolvers that rarely appeared in wave 1) */
+        if(dnsMap.size < 4){
+            $('dns-out').innerHTML=`<div style="display:flex;align-items:center;gap:9px;color:var(--text3);font-size:.8rem;padding:10px 0"><span class="spin"></span>Running additional probes…</div>`;
+            await sendProbes(40, 80);
+        }
+
+        let dohActive = false;
+        let dohProvider = '';
+
+        /* ── EDNS fallback (only used when ipleak probes return nothing — DoH active) ── */
+        if(dnsMap.size===0){
+            try{
+                const r = await fetch('https://edns.ip-api.com/json',{cache:'no-store'}).then(r=>r.json());
+                if(r&&r.dns&&r.dns.ip){
+                    const geo = String(r.dns.geo||'');
+                    const parts = geo.split(' - ');
+                    const isp = parts[1]||geo||'Unknown';
+                    const ctry = parts[0]||'Unknown';
+                    dnsMap.set(r.dns.ip,{ip:r.dns.ip, ctry, cc:'', isp, count:120, method:'edns'});
+                    dohActive = true;
+                    const knownDoH = {
+                        '1.1.1.1':'Cloudflare 1.1.1.1','1.0.0.1':'Cloudflare 1.0.0.1',
+                        '8.8.8.8':'Google DNS','8.8.4.4':'Google DNS',
+                        '9.9.9.9':'Quad9','94.140.14.14':'AdGuard DNS',
+                        '45.90.28.0':'NextDNS'
+                    };
+                    dohProvider = knownDoH[r.dns.ip]||isp||r.dns.ip;
+                }
+            }catch(e){}
+        }
+
+        const servers=Array.from(dnsMap.values());
+        const total=servers.reduce((s,v)=>s+v.count,0)||1;
+        servers.forEach(s=>{s.pct=Math.round(s.count/total*100);});
+        servers.sort((a,b)=>b.count-a.count);
+
+        if(!servers.length){
+            $('dns-bdg').innerHTML=`<span class="bdg b-y">⚠️ Blocked</span>`;
+            $('dns-out').innerHTML=`
+      <div class="al al-i">
+        <strong>DNS detection inconclusive.</strong> Your browser's DoH or local network policy
+        blocked both detection methods. This usually means DNS queries are encrypted and private — which is good!
+        <br><br>
+        <strong>Tip:</strong> If you want to verify your specific resolver,
+        check your browser's Security settings (chrome://settings/security or about:preferences#privacy).
+      </div>`;
+            return;
+        }
+
+        if(dohActive){
+            $('dns-bdg').innerHTML=`<span class="bdg b-c">🔐 DoH Active</span>`;
+        } else {
+            const leak=servers.length>1;
+            $('dns-bdg').innerHTML=`<span class="bdg ${leak?'b-y':'b-g'}">${leak?'⚠️ '+servers.length+' Servers':'✅ 1 Server'} Detected</span>`;
+        }
+
+        let h='';
+        if(dohActive){
+            h+=`<div class="al al-i" style="margin-bottom:14px">
+      🔐 <strong>DNS-over-HTTPS is active</strong> — your DNS queries are encrypted.
+      Resolver identified via EDNS client subnet: <strong>${esc(dohProvider)}</strong>.
+      The ipleak.net subdomain method cannot detect DoH resolvers (this is expected and correct behaviour).
+    </div>`;
+        }
+
+        servers.forEach(s=>{
+            const f=flag(s.cc);
+            h+=`<div class="dns-card">
+      <div class="dns-r1">
+        <span class="dns-ip">${esc(s.ip)}</span>
+        <span class="dns-traf">${s.pct}% Traffic</span>
+      </div>
+      <div class="dns-r2">
+        <span>${f||'🌐'}</span>
+        <span class="dns-ctry">${esc(s.ctry)}</span>
+        <span style="opacity:.35">·</span>
+        <span class="dns-isp">${esc(s.isp)}</span>
+      </div>
+    </div>`;
+        });
+
+        const leak=!dohActive&&servers.length>1;
+        h+=`<div style="margin-top:12px;padding:10px 14px;background:rgba(${dohActive?'34,211,238':leak?'234,179,8':'34,197,94'},.05);border:1px solid rgba(${dohActive?'34,211,238':leak?'234,179,8':'34,197,94'},.12);border-radius:10px;font-size:.74rem;color:var(--text3);line-height:1.65">
+    <strong style="color:${dohActive?'var(--cyan)':leak?'var(--yellow)':'var(--green)'}">${dohActive?'🔐 DoH Encrypted':leak?'⚠️ Possible DNS Leak':'✅ No DNS Leak'}</strong> —
+    ${dohActive?'DNS queries are encrypted to '+esc(dohProvider)+' via DoH. No traditional leak is possible.':servers.length===1?'All probes resolved via a single DNS server.':'Queries distributed across '+servers.length+' resolvers — possible leak.'}
+    <span style="color:var(--text3);font-size:.69rem;display:block;margin-top:5px">Probes sent: up to 120 · Unique resolvers found: ${servers.length}</span>
+  </div>`;
+
+        $('dns-out').innerHTML=h;
+    }
+
+
+    function renderUA(){
+        const ua=navigator.userAgent;
+        let br='Unknown',bv='',os='Unknown',ov='',eng='Unknown',dev='Desktop';
+        if(/Edg\/([\d.]+)/.test(ua)){br='Microsoft Edge';bv=RegExp.$1;}
+        else if(/Firefox\/([\d.]+)/.test(ua)){br='Mozilla Firefox';bv=RegExp.$1;}
+        else if(/OPR\/([\d.]+)/.test(ua)){br='Opera';bv=RegExp.$1;}
+        else if(/Chrome\/([\d.]+)/.test(ua)&&!/Chromium/.test(ua)){br='Google Chrome';bv=RegExp.$1;}
+        else if(/Chromium\/([\d.]+)/.test(ua)){br='Chromium';bv=RegExp.$1;}
+        else if(/Safari\//.test(ua)&&/Version\/([\d.]+)/.test(ua)){br='Apple Safari';bv=RegExp.$1;}
+        if(/Windows NT 10/.test(ua)){os='Windows';ov='10/11';}
+        else if(/Mac OS X ([\d_]+)/.test(ua)){os='macOS';ov=RegExp.$1.replace(/_/g,'.');}
+        else if(/Android ([\d.]+)/.test(ua)){os='Android';ov=RegExp.$1;}
+        else if(/iPhone OS ([\d_]+)/.test(ua)){os='iOS';ov=RegExp.$1.replace(/_/g,'.');}
+        else if(/iPad.*OS ([\d_]+)/.test(ua)){os='iPadOS';ov=RegExp.$1.replace(/_/g,'.');}
+        else if(/Linux/.test(ua)){os='Linux';}
+        if(/Gecko\//.test(ua)&&/Firefox/.test(ua))eng='Gecko';
+        else if(/WebKit\//.test(ua))eng='WebKit / Blink';
+        const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+        const feat=[];
+        if('serviceWorker' in navigator)feat.push('Service Worker');
+        if(window.WebAssembly)feat.push('WebAssembly');
+        if(window.crypto?.subtle)feat.push('Web Crypto');
+        if('bluetooth' in navigator)feat.push('Bluetooth API');
+        if('gpu' in navigator)feat.push('WebGPU');
+        if('xr' in navigator)feat.push('WebXR');
+        if(navigator.doNotTrack==='1')feat.push('Do Not Track ON');
+        if(/Mobile/.test(ua))dev='Mobile';else if(/Tablet|iPad/.test(ua))dev='Tablet';
+        let h=`<div class="ua-raw">${esc(ua)}</div>`;
+        h+=`<div class="env-pills">
+    <span class="ep"><span>🌐</span><span style="color:#a5b4fc">${br} ${bv}</span></span>
+    <span class="ep"><span>💻</span><span style="color:#86efac">${os} ${ov}</span></span>
+    <span class="ep"><span>⚙️</span><span style="color:#d8b4fe">${eng}</span></span>
+    <span class="ep"><span>📱</span><span style="color:#fde047">${dev}</span></span>
+  </div>`;
+        const dr=[['Platform',navigator.platform||'—'],['Language',navigator.language||'—'],
+            ['Screen',screen.width+'×'+screen.height+' / '+screen.colorDepth+'bit'],
+            ['Viewport',window.innerWidth+'×'+window.innerHeight],
+            ['Pixel Ratio',(window.devicePixelRatio||1)+'x'],
+            ['CPU Cores',navigator.hardwareConcurrency||'—'],
+            ['RAM',navigator.deviceMemory?navigator.deviceMemory+' GB':'—'],
+            ['Touch Points',navigator.maxTouchPoints||'0'],
+            ['Network Type',conn?(conn.effectiveType||'—'):'—'],
+            ['RTT',conn&&conn.rtt!=null?conn.rtt+'ms':'—'],
+            ['Cookies',navigator.cookieEnabled?'Enabled':'Disabled'],
+            ['Do Not Track',navigator.doNotTrack==='1'?'Enabled':'Disabled'],
+        ];
+        h+='<div class="rows">';dr.forEach(([l,v])=>{h+=row(l,esc(String(v)));});h+='</div>';
+        if(feat.length){h+=`<div class="feat-l">Supported APIs</div><div class="feats">`;feat.forEach(f=>{h+=`<span class="fi">✓ ${f}</span>`;});h+='</div>';}
+        $('ua-out').innerHTML=h;
+    }
+
+    /* ─────────────────────────────────────────────────────────────────────
+       SPEED TEST
+    ───────────────────────────────────────────────────────────────────── */
+    function setPhase(n){[0,1,2].forEach(i=>{$('ph'+i).className='ph'+(i<n?' done':i===n?' active':'');});}
+    function setSP(pct,msg){$('sPF').style.width=pct+'%';$('sPL').textContent=msg;}
+
+    function mkRnd(bytes){
+        const buf=new Uint8Array(bytes);
+        for(let i=0;i<bytes;i+=65536)crypto.getRandomValues(buf.subarray(i,Math.min(i+65536,bytes)));
+        return buf;
+    }
+
+    /* ── Upload helper using XHR ──────────────────────────────────────────
+       WHY XHR instead of fetch for upload?
+       • xhr.upload.onload fires the moment the browser finishes SENDING the
+         request body — before the server even responds. This gives a clean
+         measurement of outbound throughput, unaffected by server processing
+         or response latency.
+       • fetch() resolves only after the full response is received, mixing
+         upload time + server processing + download of the response, which
+         makes the upload measurement inaccurate.
+       • XHR also avoids the preflight CORS issue that fetch POST can trigger
+         on some networks/proxies.
+    ──────────────────────────────────────────────────────────────────── */
+    async function uploadChunk(bytes){
+        const data = mkRnd(bytes);
+        const start = performance.now();
+        /* mode: no-cors avoids preflight for simple POST. We measure the full 
+           round-trip of the send which approximates upload speed. */
+        await fetch('https://speed.cloudflare.com/__up', {
+            method: 'POST',
+            body: data,
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' }
+        });
+        return performance.now() - start;
+    }
+
+    async function runSpeed(){
+        const btn=$('spdBtn');
+        btn.disabled=true; btn.textContent='⏳ Testing…';
+        $('spd-phase-wrap').style.display='block';
+        setSP(0,'Fetching server info…');
+
+        try{
+            const m=await fetch('https://speed.cloudflare.com/meta').then(r=>r.json());
+            const colo = (typeof m.colo === 'object' ? (m.colo.iata || m.colo.name) : m.colo) || '';
+            const nm=`Cloudflare ${colo}${m.city?' — '+m.city:''}`;
+            const loc=[m.country,m.region].filter(Boolean).join(', ');
+            $('srv-name').textContent=nm;
+            $('srv-sub').textContent=loc||'Cloudflare Edge';
+            $('srv-box').classList.add('loaded');
+            $('v-srv').textContent=`${nm}${loc?' ('+loc+')':''}`;
+            $('v-proto').textContent=m.httpProtocol||'—';
+            $('v-edgeip').textContent=m.clientIp||'—';
+        }catch(e){}
+
+        /* ── PING ── */
+        setPhase(0); setSP(2,'Testing ping…');
+        const pings=[];
+        for(let i=0;i<10;i++){
+            try{
+                const t=performance.now();
+                await fetch('https://speed.cloudflare.com/__down?bytes=0&nc='+Date.now()+i,{cache:'no-store'});
+                pings.push(performance.now()-t);
+                setSP(2+i*0.8,'Ping sample '+(i+1)+'/10…');
+            }catch(e){break;}
+        }
+        if(pings.length){
+            pings.sort((a,b)=>a-b);
+            const p=Math.round(pings[0]);
+            $('v-pg').textContent=p;
+            $('b-pg').style.width=Math.min(100,Math.max(5,100-p/2.5))+'%';
+            $('v-jit').textContent=Math.round(pings[pings.length-1]-pings[0])+' ms';
+            $('v-lat').textContent=Math.round(pings.reduce((s,v)=>s+v,0)/pings.length)+' ms';
+        }
+        setSP(10,'✓ Ping done');
+
+        /* ── DOWNLOAD ── */
+        setPhase(1);
+        const dlSz=[500000,1500000,4000000,10000000,20000000];
+        let dlB=0,dlT=0,dlSpd=0;
+        for(let si=0;si<dlSz.length;si++){
+            const bytes=dlSz[si];
+            setSP(10+si*(38/dlSz.length),`Download ${si+1}/${dlSz.length} — ${(bytes/1e6).toFixed(1)} MB…`);
+            try{
+                const t=performance.now();
+                const res=await fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}`,{cache:'no-store'});
+                const buf=await res.arrayBuffer();
+                const ms=performance.now()-t;
+                dlB+=buf.byteLength*8; dlT+=ms/1000;
+                dlSpd=dlB/dlT/1e6;
+                $('v-dl').textContent=dlSpd.toFixed(1);
+                $('b-dl').style.width=Math.min(100,dlSpd/5)+'%';
+                setSP(10+(si+1)*(38/dlSz.length),`Download: ${dlSpd.toFixed(1)} Mbps`);
+            }catch(e){ console.warn('Download chunk failed:',e); }
+        }
+        setSP(50,`✓ Download ${dlSpd.toFixed(1)} Mbps`);
+
+        /* ── UPLOAD ──────────────────────────────────────────────────────────
+           FIX 1: Uses fetch + mode: no-cors for accurate outbound timing without preflight.
+           FIX 2: catch uses 'continue' — a single failed chunk no longer
+                  aborts the entire upload test.
+           FIX 3: Payload passed as Uint8Array (no .buffer detach risk).
+        ──────────────────────────────────────────────────────────────────── */
+        setPhase(2);
+        const ulSz=[250000,500000,1000000,2000000,5000000,10000000];
+        let ulB=0,ulT=0,ulSpd=0;
+        for(let si=0;si<ulSz.length;si++){
+            const bytes=ulSz[si];
+            setSP(50+si*(45/ulSz.length),`Upload ${si+1}/${ulSz.length} — ${(bytes/1e6).toFixed(1)} MB…`);
+            try{
+                const ms = await uploadChunk(bytes);
+                ulB+=bytes*8; ulT+=ms/1000;
+                ulSpd=ulB/ulT/1e6;
+                $('v-ul').textContent=ulSpd.toFixed(1);
+                $('b-ul').style.width=Math.min(100,ulSpd/2)+'%';
+                setSP(50+(si+1)*(45/ulSz.length),`Upload: ${ulSpd.toFixed(1)} Mbps`);
+            }catch(e){
+                console.warn('Upload chunk',si+1,'failed:',e.message);
+                /* continue — don't abort the remaining upload chunks */
+            }
+        }
+
+        setPhase(3);
+        setSP(100,`✅ Done — ↓ ${dlSpd.toFixed(1)} Mbps  ·  ↑ ${ulSpd.toFixed(1)} Mbps  ·  Ping ${$('v-pg').textContent} ms`);
+        btn.textContent='🔄 Run Again'; btn.disabled=false;
+    }
+</script>
+</body>
+</html>
