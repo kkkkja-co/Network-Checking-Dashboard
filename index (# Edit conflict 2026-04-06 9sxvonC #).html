@@ -556,7 +556,6 @@
         <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
             <div class="row"><span class="rl">Jitter</span><span class="rv" id="v-jit">—</span></div>
             <div class="row"><span class="rl">Average Latency</span><span class="rv" id="v-lat">—</span></div>
-            <div class="row"><span class="rl">Packet Loss</span><span class="rv" id="v-loss">—</span></div>
             <div class="row"><span class="rl">Connection Protocol</span><span class="rv" id="v-proto">—</span></div>
             <div class="row"><span class="rl">Edge Node</span><span class="rv" id="v-srv">—</span></div>
             <div class="row"><span class="rl">IP at Edge</span><span class="rv" id="v-edgeip">—</span></div>
@@ -946,35 +945,18 @@
     }
 
     async function uploadChunk(bytes, signal){
-        return new Promise((resolve) => {
-            const data = mkRnd(bytes);
-            const blob = new Blob([data], { type: 'text/plain' });
-            const xhr = new XMLHttpRequest();
-            const start = performance.now();
-            let isDone = false;
-
-            const finish = () => {
-                if (isDone) return;
-                isDone = true;
-                resolve(performance.now() - start);
-            };
-
-            if (signal) {
-                if (signal.aborted) return resolve(0);
-                signal.addEventListener('abort', () => {
-                    if (isDone) return;
-                    isDone = true;
-                    xhr.abort();
-                    resolve(0);
-                });
-            }
-
-            xhr.onload = finish;
-            xhr.onerror = finish;
-            
-            xhr.open('POST', 'https://speed.cloudflare.com/__up', true);
-            xhr.send(blob);
-        });
+        const data = mkRnd(bytes);
+        const start = performance.now();
+        const blob = new Blob([data], { type: 'text/plain' });
+        try {
+            await fetch('https://speed.cloudflare.com/__up', {
+                method: 'POST',
+                body: blob,
+                mode: 'no-cors',
+                signal: signal
+            });
+        } catch (e) { return 0; }
+        return performance.now() - start;
     }
 
     async function runSpeed(){
@@ -1004,39 +986,18 @@
             $('v-edgeip').textContent=m.clientIp||'—';
         }catch(e){ if(e.name==='AbortError') return endSpeed(); }
 
-        /* ── PING & PACKET LOSS ── */
-        setPhase(0); setSP(5,'Measuring latency and packet loss…');
+        /* ── PING ── */
+        setPhase(0); setSP(5,'Measuring latency…');
         const pings=[];
-        let lossCount=0;
-        const PING_TOTAL = 20;
-        for(let i=0;i<PING_TOTAL;i++){
+        for(let i=0;i<10;i++){
             if(!isTesting) return endSpeed();
-            const pStart = performance.now();
-            try {
-                // Set a 1.5 second timeout per ping sample
-                const ctrl = new AbortController();
-                const timeoutId = setTimeout(() => ctrl.abort('timeout'), 1500); 
-                const onGlobal = () => ctrl.abort('user');
-                signal.addEventListener('abort', onGlobal);
-
-                await fetch('https://speed.cloudflare.com/__down?bytes=0&nc='+Date.now()+i, {cache:'no-store', signal: ctrl.signal});
-                
-                clearTimeout(timeoutId);
-                signal.removeEventListener('abort', onGlobal);
-                pings.push(performance.now() - pStart);
-                setSP(5+i*0.25,'Ping sample '+(i+1)+'/'+PING_TOTAL+'…');
-            } catch(e) {
-                if(e === 'user' || (signal && signal.aborted)) return endSpeed();
-                lossCount++; // Counts as a dropped packet if it times out or errors
-            }
+            try{
+                const t=performance.now();
+                await fetch('https://speed.cloudflare.com/__down?bytes=0&nc='+Date.now()+i,{cache:'no-store', signal});
+                pings.push(performance.now()-t);
+                setSP(5+i*0.5,'Ping sample '+(i+1)+'/10…');
+            }catch(e){ if(e.name==='AbortError') return endSpeed(); break; }
         }
-        
-        const lossPct = Math.round((lossCount / PING_TOTAL) * 100);
-        const lossEl = $('v-loss');
-        lossEl.textContent = lossPct + '%';
-        if(lossPct > 0) lossEl.style.color = 'var(--danger)';
-        else lossEl.style.color = 'var(--text)';
-
         if(pings.length){
             pings.sort((a,b)=>a-b);
             const p=Math.round(pings[0]);
@@ -1045,11 +1006,11 @@
             $('v-jit').textContent=Math.round(pings[pings.length-1]-pings[0])+' ms';
             $('v-lat').textContent=Math.round(pings.reduce((s,v)=>s+v,0)/pings.length)+' ms';
         }
-        setSP(10,'✓ Latency & Packet Loss confirmed');
+        setSP(10,'✓ Latency test complete');
 
         /* ── DOWNLOAD ── */
         setPhase(1);
-        const dlSz=[1000000, 2000000, 5000000, 10000000, 15000000, 25000000, 35000000, 50000000];
+        const dlSz=[1000000, 4000000, 10000000, 20000000];
         let dlB=0,dlT=0,dlSpd=0;
         for(let si=0;si<dlSz.length;si++){
             if(!isTesting) return endSpeed();
@@ -1069,7 +1030,7 @@
 
         /* ── UPLOAD ── */
         setPhase(2);
-        const ulSz=[500000, 1000000, 2000000, 5000000, 10000000, 15000000, 25000000];
+        const ulSz=[500000, 2000000, 5000000, 10000000];
         let ulB=0,ulT=0,ulSpd=0;
         for(let si=0;si<ulSz.length;si++){
             if(!isTesting) return endSpeed();
