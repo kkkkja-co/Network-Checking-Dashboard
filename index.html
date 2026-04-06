@@ -9,315 +9,379 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Apple Dark Mode Palette */
-            --bg: #000000;
-            --secondary-bg: #1c1c1e;
-            --card-glass: rgba(28, 28, 30, 0.6);
-            --border: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.15);
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --card-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             
-            /* User Requested Colors */
-            --danger: #e06c60;
-            --warning: #e5dc70;
-            --success: #72d377;
-            --info: #97a0ec;
+            --accent-primary: #3b82f6;
+            --accent-primary-hover: #2563eb;
+            --accent-secondary: #8b5cf6;
             
-            /* Standard Tints */
-            --blue: #007aff;
-            --gray: #8e8e93;
-            --text: #ffffff;
-            --text-secondary: #8e8e93;
-            --text-tertiary: #48484a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
             
-            --radius-lg: 28px;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            
+            --radius-lg: 24px;
             --radius-md: 16px;
             --radius-sm: 8px;
             
-            --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --font-mono: 'JetBrains Mono', 'SF Mono', menlo, monospace;
-        }
-
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
+            --font-main: 'Inter', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         body {
             font-family: var(--font-main);
-            background: var(--bg);
-            color: var(--text);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
             min-height: 100vh;
-            padding: 80px 20px 140px;
-            line-height: 1.5;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+            line-height: 1.6;
         }
 
-        /* Glassmorphism utility */
-        .glass {
-            background: var(--card-glass);
-            backdrop-filter: blur(30px) saturate(200%);
-            -webkit-backdrop-filter: blur(30px) saturate(200%);
-            border: 1px solid var(--border);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 24px 120px;
         }
 
+        /* HEADER */
         .hdr {
-            max-width: 1000px;
-            margin: 0 auto 60px;
             text-align: center;
+            margin-bottom: 64px;
+            position: relative;
         }
 
         .logo-ic {
-            width: 72px;
-            height: 72px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, var(--blue), var(--info));
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 20px;
-            box-shadow: 0 15px 40px rgba(0, 122, 255, 0.25);
-            animation: fadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 2.5rem;
+            margin: 0 auto 24px;
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.3);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
         .logo-t {
-            font-size: 2.2rem;
+            font-size: 2.75rem;
             font-weight: 800;
-            letter-spacing: -0.8px;
-            margin-bottom: 6px;
-            animation: fadeIn 1s ease-out;
+            letter-spacing: -1px;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .logo-s {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: var(--text-secondary);
             font-weight: 400;
-            animation: fadeIn 1.2s ease-out;
         }
 
-        .hdr-st {
-            margin-top: 24px;
-            font-size: 0.9rem;
-            color: var(--text-tertiary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .pdot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 15px var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.6; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
+        /* PROGRESS BAR */
         .prg-w {
             max-width: 800px;
-            margin: 0 auto 60px;
+            margin: 0 auto 48px;
+            position: relative;
         }
 
         .prg-b {
-            height: 6px;
+            height: 8px;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
+            border-radius: 4px;
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
         }
 
         .prg-f {
             height: 100%;
             width: 0%;
-            background: var(--blue);
-            transition: width 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+            transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+            overflow: hidden;
         }
 
+        .prg-f::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateX(-100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+        /* GRID LAYOUT */
         .grid {
             display: grid;
             grid-template-columns: repeat(12, 1fr);
-            gap: 32px;
-            max-width: 1100px;
-            margin: 0 auto;
+            gap: 24px;
         }
 
+        .c4 { grid-column: span 4; }
         .c6 { grid-column: span 6; }
+        .c8 { grid-column: span 8; }
         .c12 { grid-column: span 12; }
-        @media (max-width: 900px) { .c6 { grid-column: span 12; } }
 
-        .card {
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s;
-            background: var(--card-glass);
-            backdrop-filter: blur(30px) saturate(200%);
-            -webkit-backdrop-filter: blur(30px) saturate(200%);
-            border: 1px solid var(--border);
-            opacity: 0;
-            transform: translateY(30px);
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        @media (max-width: 1024px) {
+            .c4, .c6, .c8 { grid-column: span 12; }
         }
 
-        .card:nth-child(1) { animation-delay: 0.1s; }
-        .card:nth-child(2) { animation-delay: 0.2s; }
-        .card:nth-child(3) { animation-delay: 0.3s; }
-        .card:nth-child(4) { animation-delay: 0.4s; }
-        .card:nth-child(5) { animation-delay: 0.5s; }
-        .card:nth-child(6) { animation-delay: 0.6s; }
+        /* CARDS */
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--card-glow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        }
 
         .card:hover {
             border-color: var(--border-hover);
-            transform: translateY(-4px);
+            transform: translateY(-2px);
         }
 
         .ch {
-            margin-bottom: 32px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 28px;
         }
 
         .chl {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 16px;
         }
 
         .cion {
             width: 48px;
             height: 48px;
-            border-radius: 12px;
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
-            background: rgba(255, 255, 255, 0.05);
+            font-size: 1.5rem;
         }
 
         .ct2 {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             font-weight: 700;
-            letter-spacing: -0.4px;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
         }
 
         .cs {
             font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 4px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
         }
 
+        /* BADGES */
         .bdg {
-            padding: 6px 14px;
-            border-radius: 24px;
-            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: 600;
-            letter-spacing: -0.1px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
         }
 
-        .b-g { background: rgba(114, 211, 119, 0.12); color: var(--success); }
-        .b-r { background: rgba(224, 108, 96, 0.12); color: var(--danger); }
-        .b-y { background: rgba(229, 220, 112, 0.12); color: var(--warning); }
-        .b-i { background: rgba(151, 160, 236, 0.12); color: var(--info); }
-        .b-m { background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); }
+        .b-g { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.2); }
+        .b-r { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
+        .b-y { background: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: rgba(245, 158, 11, 0.2); }
+        .b-i { background: rgba(59, 130, 246, 0.1); color: var(--info); border-color: rgba(59, 130, 246, 0.2); }
+        .b-m { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border-color: var(--border); }
+        
+        /* ROWS & DATA */
+        .rows {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
         .row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            transition: background 0.2s;
         }
-
-        .row:last-child { border-bottom: none; }
+        
+        .row:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
 
         .rl {
             color: var(--text-secondary);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 500;
         }
 
         .rv {
             font-family: var(--font-mono);
-            font-size: 0.95rem;
-            color: var(--text);
-            text-align: right;
-            line-height: 1.6;
-        }
-
-        .rv.hi { font-weight: 600; color: var(--text); }
-
-        .map-link {
-            color: var(--blue);
-            text-decoration: none;
             font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: opacity 0.2s;
-            margin-top: 12px;
+            color: var(--text-primary);
+            text-align: right;
         }
 
-        .map-link:hover { opacity: 0.8; }
+        .rv.hi { font-weight: 700; color: var(--accent-primary); }
 
+        /* ALERTS */
+        .al {
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            border-left: 4px solid transparent;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .al-g { border-left-color: var(--success); }
+        .al-r { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+        .al-i { border-left-color: var(--info); }
+        .al-y { border-left-color: var(--warning); background: rgba(245, 158, 11, 0.05); }
+
+        /* SPEED TEST BUTTON */
         .spd-btn {
             width: 100%;
-            padding: 16px;
-            background: var(--blue);
+            padding: 20px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
             border: none;
             border-radius: var(--radius-md);
-            font-size: 1.1rem;
-            font-weight: 650;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
             cursor: pointer;
             margin-bottom: 32px;
-            transition: opacity 0.2s, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+            position: relative;
+            overflow: hidden;
         }
 
-        .spd-btn:hover { opacity: 0.95; transform: scale(1.02); }
-        .spd-btn:active { transform: scale(0.98); }
-        .spd-btn:disabled { background: var(--text-tertiary); cursor: not-allowed; transform: none; }
-        .spd-btn.stop { background: var(--danger); box-shadow: 0 15px 40px rgba(224, 108, 96, 0.25); }
+        .spd-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
 
+        .spd-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.5);
+        }
+        
+        .spd-btn:hover:not(:disabled)::before { left: 100%; }
+        
+        .spd-btn:active:not(:disabled) { transform: translateY(1px); }
+
+        .spd-btn:disabled {
+            background: var(--bg-secondary);
+            color: var(--text-tertiary);
+            box-shadow: none;
+            cursor: not-allowed;
+            border: 1px solid var(--border);
+        }
+
+        .spd-btn.stop {
+            background: linear-gradient(135deg, var(--danger), #b91c1c);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+        }
+
+        /* METRICS GRID */
         .metrics {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 16px;
-            margin: 32px 0;
+            margin-bottom: 32px;
         }
 
         .met {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 24px 12px;
+            padding: 24px 16px;
             text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .met:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-hover);
         }
 
         .met-lbl {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             color: var(--text-secondary);
-            margin-bottom: 12px;
-            font-weight: 600;
+            margin-bottom: 8px;
+            font-weight: 700;
         }
 
         .met-val {
-            font-size: 1.8rem;
+            font-size: 2.2rem;
             font-weight: 800;
             font-family: var(--font-mono);
-            margin-bottom: 6px;
-            letter-spacing: -1px;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 4px;
         }
 
         .met-unit {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: var(--text-tertiary);
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .met-bw {
@@ -329,242 +393,282 @@
         }
 
         .met-b { height: 100%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
-        .b-dl { background: var(--blue); }
-        .b-ul { background: var(--info); }
+        .b-dl { background: var(--accent-primary); }
+        .b-ul { background: var(--accent-secondary); }
         .b-pg { background: var(--success); }
 
-        .al {
-            padding: 16px 20px;
-            border-radius: var(--radius-md);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            border: 1px solid transparent;
-            line-height: 1.6;
-        }
-
-        .al-g { background: rgba(114, 211, 119, 0.08); border-color: rgba(114, 211, 119, 0.15); color: var(--success); }
-        .al-r { background: rgba(224, 108, 96, 0.08); border-color: rgba(224, 108, 96, 0.15); color: var(--danger); }
-        .al-i { background: rgba(0, 122, 255, 0.08); border-color: rgba(0, 122, 255, 0.15); color: var(--blue); }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .skel {
-            height: 18px;
+        /* CUSTOM CHIPS & PILLS */
+        .chip {
+            display: inline-block;
+            padding: 4px 12px;
             border-radius: 6px;
-            background: rgba(255, 255, 255, 0.04);
-            animation: pulse-skel 2s infinite ease-in-out;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            margin: 4px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+        }
+        
+        .chip.lk { border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
+        .chip.v6 { color: var(--accent-secondary); }
+
+        .env-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
         }
 
-        @keyframes pulse-skel {
-            0% { opacity: 0.3; }
-            50% { opacity: 0.6; }
-            100% { opacity: 0.3; }
-        }
-
-        .srv-box {
+        .ep {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 18px 24px;
-            border-radius: var(--radius-md);
-            background: rgba(255, 255, 255, 0.03);
-            margin-bottom: 28px;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
+        /* DNS CARDS */
         .dns-card {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: var(--radius-md);
-            padding: 20px 24px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        
+        .dns-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255,255,255,0.1);
         }
 
-        @media(max-width:520px){.metrics{grid-template-columns:1fr;}}
+        /* SKELETON LOADING */
+        .skel {
+            height: 20px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 400% 100%;
+            animation: skeleton-load 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes skeleton-load {
+            0% { background-position: 100% 50%; }
+            100% { background-position: 0 50%; }
+        }
+
+        /* UTILS */
+        .map-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            transition: all 0.2s;
+        }
+        .map-link:hover { background: rgba(59, 130, 246, 0.2); }
+        
+        .ua-raw {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-tertiary);
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: var(--radius-sm);
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+        
+        .feat-l { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 1px;}
+        .feats { display: flex; flex-wrap: wrap; gap: 8px; }
+        .fi { font-size: 0.8rem; padding: 4px 10px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 4px; border: 1px solid rgba(16,185,129,0.2);}
+
     </style>
 </head>
-<body>
+<div class="container">
+    <header class="hdr">
+        <div class="logo-ic">🛡️</div>
+        <div class="logo-t">Privacy Analyzer</div>
+        <div class="logo-s">Advanced real-time network, privacy, and performance diagnostics.</div>
+        <div class="hdr-st" id="hSt" style="margin-top: 32px;"><div class="pdot"></div> <span style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.5px;">INITIALIZING SECURITY PROTOCOLS...</span></div>
+    </header>
 
-<header class="hdr">
-    <div class="logo-ic">🛡️</div>
-    <div class="logo-t">Privacy Analyzer</div>
-    <div class="logo-s">Real-time network & privacy diagnostics</div>
-    <div class="hdr-st" id="hSt"><div class="pdot"></div> Initializing security scan…</div>
-</header>
+    <div class="prg-w">
+        <div class="prg-b"><div class="prg-f" id="pF"></div></div>
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); margin-top: 12px; text-align: right; text-transform: uppercase;" id="pL">Awaiting data...</div>
+    </div>
 
-<div class="prg-w">
-    <div class="prg-b"><div class="prg-f" id="pF"></div></div>
-    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; text-align: right;" id="pL">Initializing security scan…</div>
-</div>
+    <div class="grid">
 
-<div class="grid">
+        <!-- IP & Identity -->
+        <div class="card c4">
+            <div class="ch">
+                <div class="chl">
+                    <div class="cion">🌐</div>
+                    <div>
+                        <div class="ct2">Network Identity</div>
+                        <div class="cs">IP Address & Geolocation</div>
+                    </div>
+                </div>
+            </div>
+            <div id="ip-out">
+                <div class="skel" style="width:100%; margin-bottom:12px;"></div>
+                <div class="skel" style="width:80%; margin-bottom:12px;"></div>
+                <div class="skel" style="width:60%; margin-bottom:12px;"></div>
+                <div class="skel" style="width:90%;"></div>
+            </div>
+        </div>
 
-    <!-- IP & Identity -->
-    <div class="card c6">
-        <div class="ch">
-            <div class="chl">
-                <div class="cion">🌐</div>
+        <!-- VPN & Proxy -->
+        <div class="card c4">
+            <div class="ch">
+                <div class="chl">
+                    <div class="cion">🔐</div>
+                    <div>
+                        <div class="ct2">Traffic Security</div>
+                        <div class="cs">VPN, Tor & Proxy Detection</div>
+                    </div>
+                </div>
+                <div id="vpn-bdg"></div>
+            </div>
+            <div id="vpn-out">
+                <div class="skel" style="width:85%; margin-bottom:12px;"></div>
+                <div class="skel" style="width:100%;"></div>
+            </div>
+        </div>
+
+        <!-- WebRTC -->
+        <div class="card c4">
+            <div class="ch">
+                <div class="chl">
+                    <div class="cion">⚡</div>
+                    <div>
+                        <div class="ct2">WebRTC Leaks</div>
+                        <div class="cs">Local & STUN IP Exposure</div>
+                    </div>
+                </div>
+                <div id="rtc-bdg"></div>
+            </div>
+            <div id="rtc-out">
+                <div class="skel" style="width:90%; margin-bottom:12px;"></div>
+                <div class="skel" style="width:75%;"></div>
+            </div>
+        </div>
+
+        <!-- DNS Resolvers -->
+        <div class="card c8">
+            <div class="ch">
+                <div class="chl">
+                    <div class="cion">🔍</div>
+                    <div>
+                        <div class="ct2">DNS Infrastructure</div>
+                        <div class="cs">Authoritative resolver discovery via multi-stage probing</div>
+                    </div>
+                </div>
+                <div id="dns-bdg"></div>
+            </div>
+            <div id="dns-out">
+                <div class="skel" style="width:100%; height:80px; margin-bottom:16px;"></div>
+                <div class="skel" style="width:100%; height:40px;"></div>
+            </div>
+        </div>
+
+        <!-- System & Browser -->
+        <div class="card c4">
+            <div class="ch">
+                <div class="chl">
+                    <div class="cion">💻</div>
+                    <div>
+                        <div class="ct2">Device Fingerprint</div>
+                        <div class="cs">Browser, OS & Hardware</div>
+                    </div>
+                </div>
+            </div>
+            <div id="ua-out">
+                <div class="skel" style="width:100%; height:60px; margin-bottom:16px;"></div>
+                <div class="skel" style="width:80%;"></div>
+            </div>
+        </div>
+
+        <!-- Speed Test -->
+        <div class="card c12">
+            <div class="ch" style="margin-bottom: 40px;">
+                <div class="chl">
+                    <div class="cion" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-color: rgba(59, 130, 246, 0.3);">🚀</div>
+                    <div>
+                        <div class="ct2">Performance Benchmark</div>
+                        <div class="cs">High-capacity bandwidth testing via Cloudflare Edge network</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
                 <div>
-                    <div class="ct2">Internet Protocol</div>
-                    <div class="cs">IPv4 · IPv6 · Geolocation · ASN</div>
+                    <button class="spd-btn" id="spdBtn" onclick="toggleSpeed()">Initiate Global Speed Test</button>
+                    
+                    <div class="al al-i" id="srv-box" style="margin-bottom: 0;">
+                        <div style="display: flex; gap: 16px; align-items: center;">
+                            <span style="font-size: 1.5rem;">🌍</span>
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" id="srv-name">Network Node Discovery</div>
+                                <div style="color: var(--text-tertiary); font-size: 0.8rem; font-family: var(--font-mono); margin-top: 4px;" id="srv-sub">Awaiting initialization</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div id="spd-phase-wrap" style="display:none; margin-bottom: 32px;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                            <span class="bdg b-m" id="ph0">1. Ping</span>
+                            <span class="bdg b-m" id="ph1">2. Download</span>
+                            <span class="bdg b-m" id="ph2">3. Upload</span>
+                        </div>
+                        <div class="prg-b" style="height: 4px;"><div class="prg-f" id="sPF"></div></div>
+                        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); margin-top: 12px; letter-spacing: 0.5px;" id="sPL">Warming up connection...</div>
+                    </div>
+
+                    <div class="metrics">
+                        <div class="met">
+                            <div class="met-lbl">Download</div>
+                            <div class="met-val" id="v-dl" style="color: var(--accent-primary);">—</div>
+                            <div class="met-unit">Mbps</div>
+                            <div class="met-bw"><div class="met-b b-dl" id="b-dl"></div></div>
+                        </div>
+                        <div class="met">
+                            <div class="met-lbl">Upload</div>
+                            <div class="met-val" id="v-ul" style="color: var(--accent-secondary);">—</div>
+                            <div class="met-unit">Mbps</div>
+                            <div class="met-bw"><div class="met-b b-ul" id="b-ul"></div></div>
+                        </div>
+                        <div class="met">
+                            <div class="met-lbl">Latency</div>
+                            <div class="met-val" id="v-pg" style="color: var(--success);">—</div>
+                            <div class="met-unit">ms</div>
+                            <div class="met-bw"><div class="met-b b-pg" id="b-pg"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="rows" style="background: rgba(255,255,255,0.01); border-radius: var(--radius-md); padding: 12px; border: 1px solid rgba(255,255,255,0.03);">
+                        <div class="row"><span class="rl">Jitter Variance</span><span class="rv" id="v-jit">—</span></div>
+                        <div class="row"><span class="rl">Average Latency</span><span class="rv" id="v-lat">—</span></div>
+                        <div class="row"><span class="rl">Packet Loss Rate</span><span class="rv" id="v-loss">—</span></div>
+                        <div class="row"><span class="rl">Negotiated Protocol</span><span class="rv" id="v-proto">—</span></div>
+                        <div class="row"><span class="rl">Routing Edge Node</span><span class="rv" id="v-srv">—</span></div>
+                        <div class="row"><span class="rl">Identified Edge IP</span><span class="rv" id="v-edgeip">—</span></div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div id="ip-out">
-            <div class="skel" style="width:100%; height:20px; margin-bottom:12px;"></div>
-            <div class="skel" style="width:70%; height:20px; margin-bottom:12px;"></div>
-            <div class="skel" style="width:90%; height:20px;"></div>
-        </div>
+
     </div>
-
-    <!-- VPN & Proxy -->
-    <div class="card c6">
-        <div class="ch">
-            <div class="chl">
-                <div class="cion">🔐</div>
-                <div>
-                    <div class="ct2">Security & VPN</div>
-                    <div class="cs">Proxy · Tor · Datacenter detection</div>
-                </div>
-            </div>
-            <div id="vpn-bdg"></div>
-        </div>
-        <div id="vpn-out">
-            <div class="skel" style="width:80%; height:20px; margin-bottom:12px;"></div>
-            <div class="skel" style="width:100%; height:20px;"></div>
-        </div>
-    </div>
-
-    <!-- WebRTC -->
-    <div class="card c6">
-        <div class="ch">
-            <div class="chl">
-                <div class="cion">⚡</div>
-                <div>
-                    <div class="ct2">WebRTC Privacy</div>
-                    <div class="cs">STUN · Local IP · Leak detection</div>
-                </div>
-            </div>
-            <div id="rtc-bdg"></div>
-        </div>
-        <div id="rtc-out">
-            <div class="skel" style="width:90%; height:20px; margin-bottom:12px;"></div>
-            <div class="skel" style="width:60%; height:20px;"></div>
-        </div>
-    </div>
-
-    <!-- System & Browser -->
-    <div class="card c6">
-        <div class="ch">
-            <div class="chl">
-                <div class="cion">💻</div>
-                <div>
-                    <div class="ct2">Device & Environment</div>
-                    <div class="cs">Browser · OS · Hardware features</div>
-                </div>
-            </div>
-        </div>
-        <div id="ua-out">
-            <div class="skel" style="width:100%; height:40px; margin-bottom:12px;"></div>
-            <div class="skel" style="width:80%; height:20px;"></div>
-        </div>
-    </div>
-
-    <!-- DNS Resolvers -->
-    <div class="card c12">
-        <div class="ch">
-            <div class="chl">
-                <div class="cion">🔍</div>
-                <div>
-                    <div class="ct2">DNS Infrastructure</div>
-                    <div class="cs">Active resolvers detected via unique leak probes</div>
-                </div>
-            </div>
-            <div id="dns-bdg"></div>
-        </div>
-        <div id="dns-out">
-            <div class="skel" style="width:100%; height:60px; margin-bottom:12px;"></div>
-            <div class="skel" style="width:100%; height:60px;"></div>
-        </div>
-    </div>
-
-    <!-- Speed Test -->
-    <div class="card c12">
-        <div class="ch">
-            <div class="chl">
-                <div class="cion">🚀</div>
-                <div>
-                    <div class="ct2">Performance Benchmark</div>
-                    <div class="cs">Download · Upload · Ping · Jitter</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="srv-box" id="srv-box">
-            <span style="font-size: 1.2rem;">📡</span>
-            <div>
-                <div style="font-weight: 600; font-size: 0.9rem;" id="srv-name">Network Node Discovery</div>
-                <div style="color: var(--text-secondary); font-size: 0.75rem;" id="srv-sub">Select Start to begin benchmarking</div>
-            </div>
-        </div>
-
-        <button class="spd-btn" id="spdBtn" onclick="toggleSpeed()">Begin Speed Test</button>
-
-        <div id="spd-phase-wrap" style="display:none; margin-bottom: 24px;">
-            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                <span class="bdg b-m" id="ph0">Ping</span>
-                <span class="bdg b-m" id="ph1">Download</span>
-                <span class="bdg b-m" id="ph2">Upload</span>
-            </div>
-            <div class="prg-b"><div class="prg-f" id="sPF"></div></div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px;" id="sPL">Warming up...</div>
-        </div>
-
-        <div class="metrics">
-            <div class="met">
-                <div class="met-lbl">Download</div>
-                <div class="met-val" id="v-dl">—</div>
-                <div class="met-unit">Mbps</div>
-                <div class="met-bw"><div class="met-b b-dl" id="b-dl"></div></div>
-            </div>
-            <div class="met">
-                <div class="met-lbl">Upload</div>
-                <div class="met-val" id="v-ul">—</div>
-                <div class="met-unit">Mbps</div>
-                <div class="met-bw"><div class="met-b b-ul" id="b-ul"></div></div>
-            </div>
-            <div class="met">
-                <div class="met-lbl">Ping</div>
-                <div class="met-val" id="v-pg">—</div>
-                <div class="met-unit">ms</div>
-                <div class="met-bw"><div class="met-b b-pg" id="b-pg"></div></div>
-            </div>
-        </div>
-
-        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border);">
-            <div class="row"><span class="rl">Jitter</span><span class="rv" id="v-jit">—</span></div>
-            <div class="row"><span class="rl">Average Latency</span><span class="rv" id="v-lat">—</span></div>
-            <div class="row"><span class="rl">Packet Loss</span><span class="rv" id="v-loss">—</span></div>
-            <div class="row"><span class="rl">Connection Protocol</span><span class="rv" id="v-proto">—</span></div>
-            <div class="row"><span class="rl">Edge Node</span><span class="rv" id="v-srv">—</span></div>
-            <div class="row"><span class="rl">IP at Edge</span><span class="rv" id="v-edgeip">—</span></div>
-        </div>
-    </div>
-
-</div>
-
 </div>
 
 <script>
