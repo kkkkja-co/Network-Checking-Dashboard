@@ -64,13 +64,56 @@
         p, ul, li { color: var(--text-secondary); margin-bottom: 16px; font-size: 0.95rem; line-height: 1.7; }
         a { color: var(--accent-primary); text-decoration: none; transition: 0.2s; }
         a:hover { opacity: 0.8; }
-        .back-link { display: inline-flex; gap: 8px; margin-bottom: 32px; color: var(--text-tertiary); font-weight: 600; font-size: 0.9rem;}
-        .back-link:hover { color: var(--text-primary); }
+        /* UNIVERSAL HEADER */
+        .top-nav {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(9, 9, 11, 0.75);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            height: 72px; display: flex; align-items: center; padding: 0 2rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .top-nav .nav-container { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto; }
+        .top-nav .logo-section { display: flex; align-items: center; font-weight: 800; font-size: 1.25rem; color: var(--text-primary); text-decoration: none; letter-spacing: -0.5px; transition: opacity 0.2s;}
+        .top-nav .logo-section:hover { opacity: 0.8; }
+        .top-nav .logo-text span { color: var(--accent-primary); }
+        .top-nav .nav-links { display: flex; align-items: center; gap: 2.5rem; margin-right: 2.5rem; }
+        .top-nav .nav-item { font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); text-decoration: none; transition: color 0.3s ease; padding: 1rem 0; position: relative; }
+        .top-nav .nav-item::after { content: ''; position: absolute; bottom: 0px; left: 50%; transform: translateX(-50%); width: 0; height: 2px; background: var(--accent-primary); transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-radius: 2px; }
+        .top-nav .nav-item:hover { color: var(--text-primary); }
+        .top-nav .nav-item:hover::after { width: 100%; }
+        .top-nav .btn-primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: #fff; padding: 0.6rem 1.4rem; border-radius: 9999px; font-weight: 700; font-size: 0.9rem; text-decoration: none; transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
+        .top-nav .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4); }
+
+        @media (max-width: 768px) {
+            .top-nav .nav-links { display: none; }
+            .top-nav .header-right { display: none; }
+            .top-nav { padding: 0 1rem; }
+        }
     </style>
 </head>
 <body>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/" class="logo-section">
+                <span style="font-size: 1.4rem; margin-right: 8px;">🛡️</span>
+                <div class="logo-text">Privacy <span>Analyzer</span></div>
+            </a>
+            <div style="display: flex; align-items: center;">
+                <nav class="nav-links">
+                    <a href="/" class="nav-item">Dashboard</a>
+                    <a href="privacy.html" class="nav-item">Privacy Policy</a>
+                    <a href="tnu.html" class="nav-item">Terms of Use</a>
+                    <a href="contact.html" class="nav-item">Contact Us</a>
+                </nav>
+                <div class="header-right">
+                    <a href="https://bunorden.com" class="btn-primary" target="_blank">Bunorden Main</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
     <div class="container">
-        <a href="/" class="back-link">← Return to Dashboard</a>
         <div class="card">
             <h1>Terms of Use</h1>
             <div class="subhead">Effective Date: April 2026</div>
