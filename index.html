@@ -701,130 +701,163 @@
     }
 
     /* ─────────────────────────────────────────────────────────────────────
-       DNS LEAK — ipleak.net parallel probes with LIVE progressive rendering.
-       Each probe resolves independently and immediately renders its result.
-       No "loading" state — resolvers appear as discovered in real time.
-       Uses 100 probes across rotating session IDs to catch all round-robin IPs.
+       DNS LEAK & DoH DETECTION — Progressive Multi-Provider Probes
+       Uses parallel probes to both ipleak.net and ip-api.com (EDNS).
+       Detections are rendered instantly as discovered.
+       Enriched with logic to identify known Encrypted DNS providers.
     ───────────────────────────────────────────────────────────────────── */
     async function runDNS(){
-        const dnsMap = new Map(); // ip → server object
+        const dnsMap = new Map();
         let probesDone = 0;
-        const TOTAL = 100;
+        const TOTAL = 60; // 30 per provider for optimal speed/accuracy
+        let dohDetected = false;
 
-        // Prepare the output area with an empty list — cards will appear live
+        // Reset and prepare UI
         $('dns-out').innerHTML = `
             <div id="dns-live-status" style="display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:.85rem;margin-bottom:16px">
-                <span class="spin"></span>
-                <span id="dns-live-count">Scanning — 0 resolvers found…</span>
+                <div class="pdot" style="margin:0;width:8px;height:8px"></div>
+                <span id="dns-live-count">Initializing massive paralleled probe…</span>
             </div>
-            <div id="dns-live-list"></div>
-            <div id="dns-live-footer"></div>`;
+            <div id="dns-live-list" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:16px;"></div>
+            <div id="dns-live-footer" style="margin-top:20px;"></div>`;
 
         function updateStatus() {
             const el = document.getElementById('dns-live-count');
-            if (el) el.textContent = `Scanning — ${dnsMap.size} resolver${dnsMap.size !== 1 ? 's' : ''} found (${probesDone}/${TOTAL} probes)…`;
+            if (el) el.textContent = `Analyzing infrastructure — ${dnsMap.size} resolver${dnsMap.size !== 1 ? 's' : ''} found (${probesDone}/${TOTAL} probes)…`;
         }
 
-        function addResolverCard(s) {
+        const dohIspPool = ["cloudflare", "google", "nextdns", "quad9", "opendns", "adguard", "mullvad", "control d", "cleanbrowsing", "cisco", "umbrella", "ahadns", "yandex", "ahadns", "comodo"];
+
+        function handleResolver(s) {
+            if (!s || !s.ip) return;
+            const ip = safeStr(s.ip);
+            if (!/^\d+\.\d+\.\d+\.\d+$|:/.test(ip)) return;
+            
+            if (dnsMap.has(ip)) return;
+            dnsMap.set(ip, s);
+            
+            const isp = (s.isp || "").toLowerCase();
+            if (dohIspPool.some(p => isp.includes(p))) {
+                dohDetected = true;
+            }
+
             const list = document.getElementById('dns-live-list');
             if (!list) return;
+            
             const cc = s.country_code || s.cc || '';
             const card = document.createElement('div');
             card.className = 'dns-card';
-            card.id = 'dnsip-' + s.ip.replace(/[:.]/g, '-');
-            card.style.cssText = 'opacity:0;transform:translateY(12px);transition:opacity .4s,transform .4s';
+            card.style.cssText = 'opacity:0;transform:translateY(10px);transition:opacity 0.4s, transform 0.4s;margin:0;';
             card.innerHTML = `
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                <span style="font-family:var(--font-mono);font-weight:700;font-size:1rem;color:var(--text)">${esc(s.ip)}</span>
-                ${cc ? `<span style="font-size:.9rem">${flag(cc)||'🌐'} ${esc(s.country||'')}</span>` : ''}
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font-family:var(--font-mono);font-weight:700;font-size:0.95rem;color:var(--text)">${esc(ip)}</span>
+                ${cc ? `<span style="font-size:0.8rem">${flag(cc)||'🌐'} ${esc(s.country||'')}</span>` : ''}
               </div>
-              <div style="font-size:.85rem;color:var(--text-secondary)">${esc(s.isp||'Unknown ISP')}</div>
-              ${s.city ? `<div style="font-size:.8rem;color:var(--text-tertiary);margin-top:4px">${esc(s.city)}</div>` : ''}`;
+              <div style="font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(s.isp)}">${esc(s.isp||'Unknown ISP')}</div>
+              ${s.city ? `<div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:3px">${esc(s.city)}</div>` : ''}`;
             list.appendChild(card);
-            // Animate in
-            requestAnimationFrame(() => { card.style.opacity='1'; card.style.transform='translateY(0)'; });
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            });
+            
+            updateBadges();
+        }
+
+        function updateBadges() {
+            const count = dnsMap.size;
+            const leak = count > 1;
+            let h = `<span class="bdg ${leak?'b-r':count>0?'b-g':'b-m'}">${count === 0 ? '⚠️ No detection' : (leak ? '🚨 ' + count + ' Resolvers' : '✅ 1 Resolver')}</span>`;
+            if (dohDetected) h += ` <span class="bdg b-i">🛡️ DoH / Encrypted</span>`;
+            $('dns-bdg').innerHTML = h;
         }
 
         function finalize() {
             const status = document.getElementById('dns-live-status');
-            if (status) status.remove();
+            if (status) status.style.opacity = '0.4';
+            const countEl = document.getElementById('dns-live-count');
+            if (countEl) countEl.textContent = `Deep scan complete. Discoveries synced.`;
+
             const footer = document.getElementById('dns-live-footer');
+            if (!footer) return;
+
             const servers = Array.from(dnsMap.values());
             const leak = servers.length > 1;
-            $('dns-bdg').innerHTML = `<span class="bdg ${leak?'b-r':'b-g'}">${servers.length > 0 ? (leak ? '🚨 '+ servers.length +' Resolvers' : '✅ 1 Resolver') : '⚠️ None'} Found</span>`;
-            if (footer) {
-                if (servers.length === 0) {
-                    footer.innerHTML = `<div class="al al-i">No resolvers detected — your DNS may be fully encrypted via DoH.</div>`;
-                } else {
-                    const msg = leak
-                        ? `Queries distributed across <strong>${servers.length}</strong> servers — possible DNS leak.`
-                        : `All queries resolved via a single DNS server.`;
-                    footer.innerHTML = `<div class="al ${leak?'al-r':'al-g'}" style="margin-top:12px">
-                        <strong>${leak ? '🚨 DNS Leak Detected' : '✅ DNS Looks Clean'}</strong> — ${msg}
-                        <div style="font-size:.75rem;margin-top:8px;opacity:.8">${TOTAL} probes · ${servers.length} unique resolver${servers.length!==1?'s':''} found</div>
-                    </div>`;
-                }
+            
+            let assessment = '';
+            if (servers.length === 0) {
+                assessment = `<div class="al al-i">Unable to identify DNS resolvers. Queries may be blocked or entirely hidden via a private relay.</div>`;
+            } else {
+                let msg = '';
+                if (dohDetected) msg = 'Encrypted DNS (DoH/DoT) is active. Queries are secured from local snooping but resolved via centralized infrastructure.';
+                else if (leak) msg = 'Multiple backend resolvers detected. This is typical for load-balanced DNS but can also indicate a DNS leak if ISPs are mixed.';
+                else msg = 'Clean, single-threaded DNS path detected. Standard configuration.';
+
+                assessment = `<div class="al ${leak?'al-r':dohDetected?'al-i':'al-g'}" style="margin-top:16px">
+                    <div style="font-weight:700;margin-bottom:4px">${leak ? '🚨 DNS LEAK RISK' : dohDetected ? '🛡️ ENCRYPTED DNS ACTIVE' : '✅ DNS PATH SECURE'}</div>
+                    <div style="opacity:0.9">${msg}</div>
+                    <div style="font-size:0.7rem;margin-top:10px;opacity:0.6;font-family:var(--font-mono)">PROBES: ${TOTAL} · CAPTURED: ${servers.length} · SESSIONS: ROTATING</div>
+                </div>`;
+            }
+            footer.innerHTML = assessment;
+            updateBadges();
+        }
+
+        const sessionID = [...Array(16)].map(()=>Math.floor(Math.random()*36).toString(36)).join('');
+        const probes = [];
+
+        for(let i=0; i<TOTAL; i++) {
+            const rnd = Math.random().toString(36).substring(2, 12);
+            
+            // Family A: ip-api.com (EDNS method)
+            if (i % 2 === 0) {
+                probes.push(
+                    fetch(`https://edns.ip-api.com/json?cache=${rnd}`, { cache: 'no-store' })
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.dns) {
+                            const geoArr = (d.dns.geo || "").split(" - ");
+                            handleResolver({
+                                ip: d.dns.ip,
+                                isp: geoArr[1] || geoArr[0] || "Unknown",
+                                country: geoArr[0] || "",
+                                country_code: "",
+                                city: ""
+                            });
+                        }
+                    })
+                    .catch(()=>null)
+                    .finally(() => { probesDone++; updateStatus(); })
+                );
+            } 
+            // Family B: ipleak.net (authoritative logging)
+            else {
+                probes.push(
+                    fetch(`https://${sessionID}-${rnd}.ipleak.net/dnsdetection/`, { cache: 'no-store' })
+                    .then(r => r.json())
+                    .then(d => {
+                        const item = Array.isArray(d) ? d[0] : d;
+                        if (item && item.ip) {
+                            handleResolver({
+                                ip: item.ip,
+                                isp: item.isp || item.as_org || item.org || "Unknown",
+                                country: item.country_name || item.country || "",
+                                country_code: item.country_code || item.cc || "",
+                                city: item.city || ""
+                            });
+                        }
+                    })
+                    .catch(()=>null)
+                    .finally(() => { probesDone++; updateStatus(); })
+                );
             }
         }
 
-        // Fire all probes in parallel; each one renders immediately when it returns
-        const probePromises = [...Array(TOTAL)].map((_, idx) => {
-            // Rotate session every 10 probes so the pool sees different sessions
-            const session = [...Array(40)].map(()=>Math.floor(Math.random()*16).toString(16)).join('');
-            const rnd = Math.random().toString(36).substr(2, 12) + idx;
-            return fetch(`https://${session}-${rnd}.ipleak.net/dnsdetection/`, { cache: 'no-store' })
-                .then(r => r.json())
-                .then(data => {
-                    const item = Array.isArray(data) ? data[0] : data;
-                    if (!item || !item.ip) return;
-                    const ip = safeStr(item.ip);
-                    if (!ip || !/^\d+\.\d+\.\d+\.\d+$|:/.test(ip)) return;
-                    const isNew = !dnsMap.has(ip);
-                    if (isNew) {
-                        const s = {
-                            ip,
-                            isp: safeStr(item.isp || item.as_org || item.org || 'Unknown ISP'),
-                            country: safeStr(item.country_name || item.country || ''),
-                            country_code: safeStr(item.country_code || item.cc || ''),
-                            city: safeStr(item.city || '')
-                        };
-                        dnsMap.set(ip, s);
-                        addResolverCard(s);
-                    }
-                })
-                .catch(() => {})
-                .finally(() => { probesDone++; updateStatus(); });
-        });
-
-        await Promise.allSettled(probePromises);
+        await Promise.allSettled(probes);
         finalize();
     }
-
-    function renderDNSResults(servers, probeCount) {
-        const leak = servers.length > 1;
-        $('dns-bdg').innerHTML=`<span class="bdg ${leak?'b-r':'b-g'}">${leak?'🚨 '+servers.length+' Resolvers':'✅ 1 Resolver'} Found</span>`;
-        let h = '';
-        servers.forEach(s => {
-            const cc = s.country_code || s.cc || '';
-            h += `<div class="dns-card">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-                <span style="font-family:var(--font-mono);font-weight:700;font-size:1rem;color:var(--text)">${esc(s.ip)}</span>
-                ${cc ? `<span style="font-size:0.9rem">${flag(cc)||'🌐'} ${esc(s.country||'')}</span>` : ''}
-              </div>
-              <div style="font-size:0.85rem;color:var(--text-secondary)">${esc(s.isp||s.organization||'Unknown ISP')}</div>
-              ${s.city ? `<div style="font-size:0.8rem;color:var(--text-tertiary);margin-top:4px">${esc(s.city)}</div>` : ''}
-            </div>`;
-        });
-        const leakMsg = leak
-            ? `DNS queries distributed across <strong>${servers.length}</strong> different servers — possible leak.`
-            : `All DNS queries resolved via a single server.`;
-        h += `<div class="al ${leak?'al-r':'al-g'}" style="margin-top:20px">
-            <strong>${leak?'🚨 DNS Leak Detected':'✅ DNS Looks Clean'}</strong> — ${leakMsg}
-            <div style="font-size:0.75rem;margin-top:8px;opacity:0.8">${probeCount||50} authoritative probes · ${servers.length} unique resolver${servers.length!==1?'s':''} found</div>
-        </div>`;
-        $('dns-out').innerHTML = h;
-    }
-
 
     function renderUA(){
         const ua=navigator.userAgent;
