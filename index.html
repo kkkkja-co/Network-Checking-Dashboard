@@ -709,7 +709,9 @@
     async function runDNS(){
         const dnsMap = new Map();
         let probesDone = 0;
-        const TOTAL = 60; // 30 per provider for optimal speed/accuracy
+        const TOTAL = 90; 
+        const sessionID = [...Array(16)].map(()=>Math.floor(Math.random()*36).toString(36)).join('');
+        const probes = [];
         let dohDetected = false;
 
         // Reset and prepare UI
@@ -805,16 +807,23 @@
             updateBadges();
         }
 
-        const sessionID = [...Array(16)].map(()=>Math.floor(Math.random()*36).toString(36)).join('');
-        const probes = [];
 
         for(let i=0; i<TOTAL; i++) {
             const rnd = Math.random().toString(36).substring(2, 12);
             
-            // Family A: ip-api.com (EDNS method)
-            if (i % 2 === 0) {
-                probes.push(
-                    fetch(`https://edns.ip-api.com/json?cache=${rnd}`, { cache: 'no-store' })
+            // Probes are distributed across 3 different infrastructure patterns:
+            // 1. IP-API (EDNS method) - Highly reliable for IPv4
+            // 2. IPLeak Standard - Dual-stack authoritative logging
+            // 3. IPLeak IPv6-Only - Forces detection of IPv6 resolvers if available
+            
+            const variant = i % 3;
+            let host = `${sessionID}-${rnd}.ipleak.net`;
+            if (variant === 2) host = `${sessionID}-${rnd}.ipv6.ipleak.net`;
+
+            let p;
+            if (variant === 0) {
+                // IP-API EDNS 
+                p = fetch(`https://edns.ip-api.com/json?cache=${rnd}`, { cache: 'no-store' })
                     .then(r => r.json())
                     .then(d => {
                         if (d.dns) {
@@ -827,15 +836,10 @@
                                 city: ""
                             });
                         }
-                    })
-                    .catch(()=>null)
-                    .finally(() => { probesDone++; updateStatus(); })
-                );
-            } 
-            // Family B: ipleak.net (authoritative logging)
-            else {
-                probes.push(
-                    fetch(`https://${sessionID}-${rnd}.ipleak.net/dnsdetection/`, { cache: 'no-store' })
+                    });
+            } else {
+                // IPLeak (Standard or IPv6 forced)
+                p = fetch(`https://${host}/dnsdetection/`, { cache: 'no-store' })
                     .then(r => r.json())
                     .then(d => {
                         const item = Array.isArray(d) ? d[0] : d;
@@ -848,11 +852,10 @@
                                 city: item.city || ""
                             });
                         }
-                    })
-                    .catch(()=>null)
-                    .finally(() => { probesDone++; updateStatus(); })
-                );
+                    });
             }
+
+            probes.push(p.catch(()=>null).finally(() => { probesDone++; updateStatus(); }));
         }
 
         await Promise.allSettled(probes);
