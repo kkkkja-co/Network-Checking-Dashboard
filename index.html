@@ -29,12 +29,12 @@
             --text-secondary: #94a3b8;
             --text-tertiary: #64748b;
             
-            --radius-lg: 24px;
-            --radius-md: 16px;
-            --radius-sm: 8px;
+            --radius-lg: 32px;
+            --radius-md: 20px;
+            --radius-sm: 12px;
             
-            --font-main: 'Inter', -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --font-main: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
         }
 
         body {
@@ -62,6 +62,12 @@
             text-align: center;
             margin-bottom: 64px;
             position: relative;
+            animation: fadeInDown 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .logo-ic {
@@ -162,9 +168,24 @@
             border-radius: var(--radius-lg);
             padding: 32px;
             box-shadow: var(--card-glow);
-            transition: all 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s;
             position: relative;
             overflow: hidden;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        .card:nth-child(5) { animation-delay: 0.5s; }
+        .card:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .card::before {
@@ -318,13 +339,16 @@
         }
 
         .spd-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.01);
             box-shadow: 0 15px 35px rgba(59, 130, 246, 0.5);
         }
         
         .spd-btn:hover:not(:disabled)::before { left: 100%; }
         
-        .spd-btn:active:not(:disabled) { transform: translateY(1px); }
+        .spd-btn:active:not(:disabled) { 
+            transform: scale(0.97); 
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
         .spd-btn:disabled {
             background: var(--bg-secondary);
@@ -490,6 +514,52 @@
         .feat-l { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 1px;}
         .feats { display: flex; flex-wrap: wrap; gap: 8px; }
         .fi { font-size: 0.8rem; padding: 4px 10px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 4px; border: 1px solid rgba(16,185,129,0.2);}
+
+        /* FOOTER */
+        .ftr {
+            margin-top: 64px;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .ftr-content {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .ftr-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .ftr-badge:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-primary);
+        }
+
+        .ftr-policy {
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 0.85rem;
+            color: var(--text-tertiary);
+            line-height: 1.6;
+        }
+        .ftr-policy strong {
+            color: var(--text-secondary);
+        }
 
         .split-view {
             display: grid; 
@@ -709,6 +779,29 @@
         </div>
 
     </div>
+
+    <!-- Footer / Privacy -->
+    <footer class="ftr">
+        <div class="ftr-content">
+            <span class="ftr-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                100% Open Source
+            </span>
+            <span class="ftr-badge">
+                <svg width="16" height="16" viewBox="0 0 76 65" fill="#fff"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+                Hosted on Vercel
+            </span>
+        </div>
+        <div class="ftr-policy">
+            <strong>Privacy Policy:</strong> This service runs strictly on the client-side inside your browser. We do not log, store, track, or aggregate your IP address, network infrastructure, or performance metrics. Any telemetry queries to APIs originate directly from your machine with no middle-man server tracking your session.
+            <div style="margin-top: 16px; font-weight: 500;">
+                <a href="privacy.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Privacy Policy</a> &bull;
+                <a href="tnu.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Terms of Use</a> &bull;
+                <a href="contact.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
 </div>
 
 <script>

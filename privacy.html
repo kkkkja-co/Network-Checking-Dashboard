@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Privacy Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --accent-primary: #3b82f6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            --radius-lg: 32px;
+            --font-main: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+            line-height: 1.6;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 60px 24px; }
+        .card { 
+            background: var(--bg-glass); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-lg); 
+            padding: 48px; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { 
+            font-size: 2.5rem; 
+            text-align: center; 
+            margin-bottom: 8px; 
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #94a3b8); 
+            background-clip: text; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+        }
+        h2 { color: var(--text-primary); margin-top: 32px; font-size: 1.4rem; letter-spacing: -0.5px; }
+        .subhead { text-align: center; color: var(--text-secondary); margin-bottom: 48px; font-size: 1.1rem;}
+        p, ul, li { color: var(--text-secondary); margin-bottom: 16px; font-size: 0.95rem; line-height: 1.7; }
+        ul { padding-left: 20px; }
+        a { color: var(--accent-primary); text-decoration: none; transition: 0.2s; }
+        a:hover { opacity: 0.8; }
+        .back-link { 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 32px; 
+            color: var(--text-tertiary); 
+            font-weight: 600; 
+            font-size: 0.9rem;
+        }
+        .back-link:hover { color: var(--text-primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Return to Dashboard</a>
+        <div class="card">
+            <h1>Privacy Policy</h1>
+            <div class="subhead">Effective Date: April 2026</div>
+
+            <p>Welcome to <strong>Privacy Analyzer</strong> by Bunorden. We are fully committed to protecting your privacy and ensuring transparency regarding how our service operates.</p>
+            
+            <h2>1. Zero-Knowledge Architecture</h2>
+            <p>Our entire diagnostic suite operates on a "Zero-Knowledge" and strict client-side model. This means that all network analyzing, DNS resolving, packet loss probing, and speed testing commands execute entirely within your browser environment. Your device makes the requests directly to testing APIs and edge networks.</p>
+
+            <h2>2. Data Collection and Tracking</h2>
+            <p>We <strong>do not</strong> log, store, track, or aggregate any of the following data points onto our servers:</p>
+            <ul>
+                <li>Your IP Addresses (IPv4 or IPv6)</li>
+                <li>Your Geographic Location or ISP Details</li>
+                <li>Your Local Network Configuration or WebRTC Local IPs</li>
+                <li>Your Download, Upload, or Ping Performance Metrics</li>
+                <li>Your Browser, OS, or Device Fingerprints</li>
+            </ul>
+            <p>Once you close the generic browser tab, all session data disappears definitively. We do not use user footprint tracking mechanisms such as Google Analytics or Meta Pixels.</p>
+
+            <h2>3. Third-Party APIs</h2>
+            <p>To provide high-quality diagnostic details, the Analyzer queries public and trusted third-party endpoints (such as Cloudflare Edge endpoints for testing speeds and IP-API/ipleak for resolution lookups). These requests originate from your IP address to those endpoints, adhering to the third parties' individual privacy frameworks. The responses simply render on your screen.</p>
+
+            <h2>4. Open Source Transparency</h2>
+            <p>We believe security requires verifiable trust. This service is 100% open-source. You can review the exact logic, fetching mechanism, and source code directly on our GitHub repository to confirm the absence of trackers or malicious data harvesting routines.</p>
+            
+            <h2>5. Contact</h2>
+            <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:contact@bunorden.com">contact@bunorden.com</a> or via our <a href="/contact.html">Contact Form</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

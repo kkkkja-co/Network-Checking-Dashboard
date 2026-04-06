@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Use - Privacy Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-glass: rgba(24, 24, 27, 0.6);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent-primary: #3b82f6;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-tertiary: #64748b;
+            --radius-lg: 32px;
+            --font-main: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+            line-height: 1.6;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 60px 24px; }
+        .card { 
+            background: var(--bg-glass); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid var(--border); 
+            border-radius: var(--radius-lg); 
+            padding: 48px; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 { 
+            font-size: 2.5rem; 
+            text-align: center; 
+            margin-bottom: 8px; 
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #94a3b8); 
+            background-clip: text; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+        }
+        h2 { color: var(--text-primary); margin-top: 32px; font-size: 1.4rem; letter-spacing: -0.5px; }
+        .subhead { text-align: center; color: var(--text-secondary); margin-bottom: 48px; font-size: 1.1rem;}
+        p, ul, li { color: var(--text-secondary); margin-bottom: 16px; font-size: 0.95rem; line-height: 1.7; }
+        a { color: var(--accent-primary); text-decoration: none; transition: 0.2s; }
+        a:hover { opacity: 0.8; }
+        .back-link { display: inline-flex; gap: 8px; margin-bottom: 32px; color: var(--text-tertiary); font-weight: 600; font-size: 0.9rem;}
+        .back-link:hover { color: var(--text-primary); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Return to Dashboard</a>
+        <div class="card">
+            <h1>Terms of Use</h1>
+            <div class="subhead">Effective Date: April 2026</div>
+
+            <p>Welcome to <strong>Privacy Analyzer</strong> by Bunorden. By utilizing this network diagnostic service, you accept the following terms entirely.</p>
+            
+            <h2>1. Acceptable Use</h2>
+            <p>This service is designed specifically for personal network auditing, cybersecurity verification, and internet bandwidth benchmarking. You agree to use this service exclusively for lawful purposes. You shall not employ the Analyzer to facilitate malicious operations, evade lawful geographical boundaries illicitly, or execute denial of service attacks.</p>
+
+            <h2>2. "As-Is" Service Warranty</h2>
+            <p>The information and performance metrics provided by this Analyzer are delivered strictly "AS IS". We strive to provide highly accurate detection (such as WebRTC Leaks and DNS mapping), but we offer no warranties or guarantees regarding the absolute completeness, reliability, or precision of the data displayed. Your network carrier, strict firewalls, or browser extensions may affect the reported values.</p>
+
+            <h2>3. Third-Party Edge Endpoints</h2>
+            <p>Because the network benchmarks (Ping, Download, Upload speeds) heavily utilize external proxy networks globally (such as Cloudflare Edge nodes), we are not responsible for downtimes or rate-limits implemented natively by those infrastructure providers. High usage periods may affect benchmark results natively.</p>
+
+            <h2>4. Open Source License</h2>
+            <p>The source code of the Privacy Analyzer interface and toolings are presented openly on GitHub. You are free to view, fork, and assess the underlying mechanics of this app in accordance with the repository's provided open-source license.</p>
+
+            <h2>5. Service Adjustments</h2>
+            <p>We maintain the perpetual right to modify, restrict access, or discontinue the service elements, the integrated external API hooks, or structural UI without providing prior notice.</p>
+            
+            <p style="margin-top: 40px; font-size: 0.85rem; text-align: center;">For legal inquiries, please contact <a href="mailto:contact@bunorden.com">contact@bunorden.com</a>.</p>
+        </div>
+    </div>
+</body>
+</html>
