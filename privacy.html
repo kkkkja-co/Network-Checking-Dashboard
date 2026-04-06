@@ -93,6 +93,14 @@
             .top-nav .header-right { display: none; }
             .top-nav { padding: 0 1rem; }
         }
+
+        /* FOOTER */
+        .ftr { margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center; }
+        .ftr-content { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+        .ftr-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: var(--text-secondary); transition: all 0.2s; }
+        .ftr-badge:hover { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); }
+        .ftr-policy { max-width: 700px; margin: 0 auto; font-size: 0.85rem; color: var(--text-tertiary); line-height: 1.6; padding-bottom: 40px; }
+        .ftr-policy strong { color: var(--text-secondary); }
     </style>
 </head>
 <body>
@@ -137,8 +145,14 @@
             </ul>
             <p>Once you close the generic browser tab, all session data disappears definitively. We do not use user footprint tracking mechanisms such as Google Analytics or Meta Pixels.</p>
 
-            <h2>3. Third-Party APIs</h2>
-            <p>To provide high-quality diagnostic details, the Analyzer queries public and trusted third-party endpoints (such as Cloudflare Edge endpoints for testing speeds and IP-API/ipleak for resolution lookups). These requests originate from your IP address to those endpoints, adhering to the third parties' individual privacy frameworks. The responses simply render on your screen.</p>
+            <h2>3. Core APIs & Applied Technologies</h2>
+            <p>To deliver high-fidelity diagnostic performance without routing your footprint through an intermediate web server, we interface directly with trusted public edge networks and native browser engines. The active technologies driving this application include:</p>
+            <ul>
+                <li><strong>Cloudflare Edge Infrastructure:</strong> Handled securely via <code>speed.cloudflare.com</code>, this backbone processes payload testing (Up/Down speeds), sub-millisecond pings, and TLS protocol negotiation tracking.</li>
+                <li><strong>IPLeak.net API Toolkit:</strong> Accessed natively (<code>ipleak.net/json/</code>) to calculate exact geographic layouts, track ISP routing, and trace your multi-stack IPv4/IPv6 DNS leaks in real-time.</li>
+                <li><strong>Native WebRTC (`RTCPeerConnection`):</strong> Client-side browser logic utilized purely to expose any obfuscated local IP addresses bypassing your active VPN tunnels.</li>
+                <li><strong>`XMLHttpRequest` & `AbortController`:</strong> Native Javascript standards implemented to bypass `fetch`-induced hardware latency inflation, granting you completely accurate bandwidth graphs that can be immediately canceled client-side without memory leaks.</li>
+            </ul>
 
             <h2>4. Open Source Transparency</h2>
             <p>We believe security requires verifiable trust. This service is 100% open-source. You can review the exact logic, fetching mechanism, and source code directly on our GitHub repository to confirm the absence of trackers or malicious data harvesting routines.</p>
@@ -147,5 +161,27 @@
             <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:contact@bunorden.com">contact@bunorden.com</a> or via our <a href="/contact.html">Contact Form</a>.</p>
         </div>
     </div>
+
+    <!-- Footer / Privacy -->
+    <footer class="ftr">
+        <div class="ftr-content">
+            <a href="https://github.com/kkkkja-co/network-checking-dashboard" target="_blank" class="ftr-badge" style="text-decoration: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                100% Open Source
+            </a>
+            <span class="ftr-badge">
+                <svg width="16" height="16" viewBox="0 0 76 65" fill="#fff"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+                Hosted on Vercel
+            </span>
+        </div>
+        <div class="ftr-policy">
+            <strong>Privacy Policy:</strong> This service runs strictly on the client-side inside your browser. We do not log, store, track, or aggregate your IP address, network infrastructure, or performance metrics. Any telemetry queries to APIs originate directly from your machine with no middle-man server tracking your session.
+            <div style="margin-top: 16px; font-weight: 500;">
+                <a href="privacy.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Privacy Policy</a> &bull;
+                <a href="tnu.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Terms of Use</a> &bull;
+                <a href="contact.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Contact Us</a>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

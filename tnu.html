@@ -90,6 +90,14 @@
             .top-nav .header-right { display: none; }
             .top-nav { padding: 0 1rem; }
         }
+
+        /* FOOTER */
+        .ftr { margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); text-align: center; }
+        .ftr-content { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+        .ftr-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); color: var(--text-secondary); transition: all 0.2s; }
+        .ftr-badge:hover { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); }
+        .ftr-policy { max-width: 700px; margin: 0 auto; font-size: 0.85rem; color: var(--text-tertiary); line-height: 1.6; padding-bottom: 40px; }
+        .ftr-policy strong { color: var(--text-secondary); }
     </style>
 </head>
 <body>
@@ -126,8 +134,13 @@
             <h2>2. "As-Is" Service Warranty</h2>
             <p>The information and performance metrics provided by this Analyzer are delivered strictly "AS IS". We strive to provide highly accurate detection (such as WebRTC Leaks and DNS mapping), but we offer no warranties or guarantees regarding the absolute completeness, reliability, or precision of the data displayed. Your network carrier, strict firewalls, or browser extensions may affect the reported values.</p>
 
-            <h2>3. Third-Party Edge Endpoints</h2>
-            <p>Because the network benchmarks (Ping, Download, Upload speeds) heavily utilize external proxy networks globally (such as Cloudflare Edge nodes), we are not responsible for downtimes or rate-limits implemented natively by those infrastructure providers. High usage periods may affect benchmark results natively.</p>
+            <h2>3. Ecosystem Dependencies and Assigned APIs</h2>
+            <p>Because accurate network benchmarking and routing evaluations mandate querying external networks entirely outside our infrastructure, our functional stability is directly tethered to the following systems:</p>
+            <ul>
+                <li><strong>Cloudflare Network Processing:</strong> Our speed engine natively downloads and uploads byte payloads to Cloudflare Edge endpoints. We maintain zero ownership or warranty over the capacity constraints, peering limits, or random latency spikes incurred natively by Cloudflare's server matrix.</li>
+                <li><strong>IPLeak Locational Resolvers:</strong> Active ISP fingerprinting is mapped via the `ipleak.net` JSON endpoints. Data is strictly indicative and tied completely to the provider's geographic precision tables.</li>
+                <li><strong>Client-Side Engine Support:</strong> The mathematical operations (latency plotting, HTTP/3 resolution checks, WebRTC peering checks) operate asynchronously inside your active web session leveraging Glassmorphism rendering and CSS Grid structures. Using outdated or ultra-restrictive web browsers with muted DOM components (missing `AbortController` logic or crippled `XMLHttpRequest` hooks) voids expected accuracy entirely.</li>
+            </ul>
 
             <h2>4. Open Source License</h2>
             <p>The source code of the Privacy Analyzer interface and toolings are presented openly on GitHub. You are free to view, fork, and assess the underlying mechanics of this app in accordance with the repository's provided open-source license.</p>
@@ -138,5 +151,27 @@
             <p style="margin-top: 40px; font-size: 0.85rem; text-align: center;">For legal inquiries, please contact <a href="mailto:contact@bunorden.com">contact@bunorden.com</a>.</p>
         </div>
     </div>
+
+    <!-- Footer / Privacy -->
+    <footer class="ftr">
+        <div class="ftr-content">
+            <a href="https://github.com/kkkkja-co/network-checking-dashboard" target="_blank" class="ftr-badge" style="text-decoration: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                100% Open Source
+            </a>
+            <span class="ftr-badge">
+                <svg width="16" height="16" viewBox="0 0 76 65" fill="#fff"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
+                Hosted on Vercel
+            </span>
+        </div>
+        <div class="ftr-policy">
+            <strong>Privacy Policy:</strong> This service runs strictly on the client-side inside your browser. We do not log, store, track, or aggregate your IP address, network infrastructure, or performance metrics. Any telemetry queries to APIs originate directly from your machine with no middle-man server tracking your session.
+            <div style="margin-top: 16px; font-weight: 500;">
+                <a href="privacy.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Privacy Policy</a> &bull;
+                <a href="tnu.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Terms of Use</a> &bull;
+                <a href="contact.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Contact Us</a>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

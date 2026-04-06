@@ -30,11 +30,23 @@ Since the project operates securely without a backend, deployment is universally
 2. Open `index.html` locally in any modern Chromium-based or WebKit browser.
 3. Or deploy to strict static-hosting providers like **Vercel** (our default host), Cloudflare Pages, or GitHub Pages.
 
-## 🛠 Active Technologies
-- **Markup**: Pure Semantic HTML5
-- **Design Paradigm**: Vanilla CSS3 (`-apple-system` typography, progressive DOM scaling, `@keyframes` flex timing, squircle geometry).
-- **Logic Engine**: Native Vanilla JavaScript (leveraging native web APIs exclusively: `AbortController`, `fetch()`, `XMLHttpRequest`, `RTCPeerConnection`).
-- **Telemetry Endpoints**: Highly available Edge nodes including [Cloudflare Speed Edge](https://speed.cloudflare.com/) and [IPLeak DNS infrastructure](https://ipleak.net/).
+## 🛠 Core Technologies & APIS
+This product natively bypasses traditional backend-heavy frameworks in favor of ultra-efficient JavaScript parsing. Specifically, it employs:
+
+**Design & UI Layer**
+- Pure Semantic HTML5 document handling.
+- **Apple-Inspired Vanilla CSS3:** Employing geometric squircle borders (`border-radius: 32px`), tracking-perfect topography (`-apple-system`), heavy Glassmorphism layered backdrops, and iOS-like bouncy `@keyframes` (`cubic-bezier` timing mechanisms).
+
+**Logic & Threading Layer**
+- Native Vanilla JavaScript interacting directly with standard Web APIs.
+- `AbortController`: Enforces strict and immediate cancellation of heavy bandwidth fetch blocks without crashing background memory threads.
+- `XMLHttpRequest`: Chosen intentionally over `fetch()` for Upload logic to perfectly isolate outbound pipe saturation and defeat browser DOM-overhead inflation.
+- `RTCPeerConnection (WebRTC)`: Natively queried to check structural VPN slippages via STUN relays natively in script logic.
+
+**Telemetry & API Endpoints**
+- **Cloudflare Edge (`speed.cloudflare.com`)**: Utilized comprehensively as our load-bearing stresser. It fields our up/down blob packets, captures ultra-low sub-millisecond route timings, and exposes the `http/1 v http/2 v http/3` peering layer logic.
+- **IPLeak API (`ipleak.net/json/`)**: Ingests your IP footprint to natively resolve timezone disparities, ASN (Autonomous System Number) identity, and precise macro geographic coordinates.
+- **Dynamic DNS Probing Engine**: Runs dozens of parallel asynchronous XHR pings targeting vast global proxy domains to strip off DoH (DNS Over HTTPS) filtering masks and log raw IPv4 & IPv6 caching resolvers universally.
 
 <br>
 
