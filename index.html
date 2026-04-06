@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Analyzer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --bg-primary: #09090b;
@@ -15,24 +18,24 @@
             --border: rgba(255, 255, 255, 0.1);
             --border-hover: rgba(255, 255, 255, 0.2);
             --card-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            
+
             --accent-primary: #3b82f6;
             --accent-primary-hover: #2563eb;
             --accent-secondary: #8b5cf6;
-            
+
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
             --info: #3b82f6;
-            
+
             --text-primary: #f8fafc;
             --text-secondary: #94a3b8;
             --text-tertiary: #64748b;
-            
+
             --radius-lg: 32px;
             --radius-md: 20px;
             --radius-sm: 12px;
-            
+
             --font-main: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
             --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
         }
@@ -44,7 +47,7 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            background-image: 
+            background-image:
                 radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
                 radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
             background-attachment: fixed;
@@ -66,8 +69,15 @@
         }
 
         @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .logo-ic {
@@ -85,9 +95,17 @@
         }
 
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
 
         .logo-t {
@@ -119,7 +137,7 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 4px;
             overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
         .prg-f {
@@ -135,13 +153,20 @@
         .prg-f::after {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transform: translateX(-100%);
             animation: shimmer 2s infinite;
         }
 
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        @keyframes shimmer {
+            100% {
+                transform: translateX(100%);
+            }
+        }
 
         /* GRID LAYOUT */
         .grid {
@@ -150,13 +175,29 @@
             gap: 24px;
         }
 
-        .c4 { grid-column: span 4; }
-        .c6 { grid-column: span 6; }
-        .c8 { grid-column: span 8; }
-        .c12 { grid-column: span 12; }
+        .c4 {
+            grid-column: span 4;
+        }
+
+        .c6 {
+            grid-column: span 6;
+        }
+
+        .c8 {
+            grid-column: span 8;
+        }
+
+        .c12 {
+            grid-column: span 12;
+        }
 
         @media (max-width: 1024px) {
-            .c4, .c6, .c8 { grid-column: span 12; }
+
+            .c4,
+            .c6,
+            .c8 {
+                grid-column: span 12;
+            }
         }
 
         /* CARDS */
@@ -176,24 +217,50 @@
             animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        .card:nth-child(1) { animation-delay: 0.1s; }
-        .card:nth-child(2) { animation-delay: 0.2s; }
-        .card:nth-child(3) { animation-delay: 0.3s; }
-        .card:nth-child(4) { animation-delay: 0.4s; }
-        .card:nth-child(5) { animation-delay: 0.5s; }
-        .card:nth-child(6) { animation-delay: 0.6s; }
+        .card:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .card:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .card:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .card:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .card:nth-child(5) {
+            animation-delay: 0.5s;
+        }
+
+        .card:nth-child(6) {
+            animation-delay: 0.6s;
+        }
 
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
         }
 
         .card:hover {
@@ -252,12 +319,36 @@
             border: 1px solid transparent;
         }
 
-        .b-g { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.2); }
-        .b-r { background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.2); }
-        .b-y { background: rgba(245, 158, 11, 0.1); color: var(--warning); border-color: rgba(245, 158, 11, 0.2); }
-        .b-i { background: rgba(59, 130, 246, 0.1); color: var(--info); border-color: rgba(59, 130, 246, 0.2); }
-        .b-m { background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border-color: var(--border); }
-        
+        .b-g {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .b-r {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .b-y {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .b-i {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .b-m {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+
         /* ROWS & DATA */
         .rows {
             display: flex;
@@ -275,7 +366,7 @@
             border: 1px solid transparent;
             transition: background 0.2s;
         }
-        
+
         .row:hover {
             background: rgba(255, 255, 255, 0.04);
             border-color: rgba(255, 255, 255, 0.05);
@@ -294,7 +385,10 @@
             text-align: right;
         }
 
-        .rv.hi { font-weight: 700; color: var(--accent-primary); }
+        .rv.hi {
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
 
         /* ALERTS & NOTIFICATIONS */
         .al {
@@ -307,11 +401,26 @@
             line-height: 1.5;
         }
 
-        .al-g { border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); }
-        .al-r { border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08); }
-        .al-i { border-color: rgba(59, 130, 246, 0.3); background: rgba(59, 130, 246, 0.08); }
-        .al-y { border-color: rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.08); }
-        
+        .al-g {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .al-r {
+            border-color: rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .al-i {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .al-y {
+            border-color: rgba(245, 158, 11, 0.3);
+            background: rgba(245, 158, 11, 0.08);
+        }
+
         .rsn {
             display: flex;
             align-items: center;
@@ -347,8 +456,11 @@
         .spd-btn::before {
             content: '';
             position: absolute;
-            top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
 
@@ -356,11 +468,13 @@
             transform: translateY(-2px) scale(1.01);
             box-shadow: 0 15px 35px rgba(59, 130, 246, 0.5);
         }
-        
-        .spd-btn:hover:not(:disabled)::before { left: 100%; }
-        
-        .spd-btn:active:not(:disabled) { 
-            transform: scale(0.97); 
+
+        .spd-btn:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .spd-btn:active:not(:disabled) {
+            transform: scale(0.97);
             transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -393,7 +507,7 @@
             text-align: center;
             transition: transform 0.2s, border-color 0.2s;
         }
-        
+
         .met:hover {
             transform: translateY(-2px);
             border-color: var(--border-hover);
@@ -431,10 +545,22 @@
             overflow: hidden;
         }
 
-        .met-b { height: 100%; transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
-        .b-dl { background: var(--accent-primary); }
-        .b-ul { background: var(--accent-secondary); }
-        .b-pg { background: var(--success); }
+        .met-b {
+            height: 100%;
+            transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .b-dl {
+            background: var(--accent-primary);
+        }
+
+        .b-ul {
+            background: var(--accent-secondary);
+        }
+
+        .b-pg {
+            background: var(--success);
+        }
 
         /* CUSTOM CHIPS & PILLS */
         .chip {
@@ -444,12 +570,18 @@
             font-family: var(--font-mono);
             font-size: 0.85rem;
             margin: 4px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
         }
-        
-        .chip.lk { border-color: rgba(239, 68, 68, 0.3); color: var(--danger); }
-        .chip.v6 { color: var(--accent-secondary); }
+
+        .chip.lk {
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+
+        .chip.v6 {
+            color: var(--accent-secondary);
+        }
 
         .env-pills {
             display: flex;
@@ -463,7 +595,7 @@
             align-items: center;
             gap: 8px;
             padding: 8px 14px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 0.85rem;
@@ -478,24 +610,29 @@
             border: 1px solid var(--border);
             transition: all 0.2s;
         }
-        
+
         .dns-card:hover {
             background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255,255,255,0.1);
+            border-color: rgba(255, 255, 255, 0.1);
         }
 
         /* SKELETON LOADING */
         .skel {
             height: 20px;
             border-radius: 4px;
-            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
             background-size: 400% 100%;
             animation: skeleton-load 1.5s ease-in-out infinite;
         }
-        
+
         @keyframes skeleton-load {
-            0% { background-position: 100% 50%; }
-            100% { background-position: 0 50%; }
+            0% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0 50%;
+            }
         }
 
         /* UTILS */
@@ -512,22 +649,45 @@
             background: rgba(59, 130, 246, 0.1);
             transition: all 0.2s;
         }
-        .map-link:hover { background: rgba(59, 130, 246, 0.2); }
-        
+
+        .map-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
         .ua-raw {
             font-family: var(--font-mono);
             font-size: 0.75rem;
             color: var(--text-tertiary);
             padding: 12px;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: var(--radius-sm);
             margin-bottom: 20px;
             word-break: break-all;
         }
-        
-        .feat-l { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 1px;}
-        .feats { display: flex; flex-wrap: wrap; gap: 8px; }
-        .fi { font-size: 0.8rem; padding: 4px 10px; background: rgba(16, 185, 129, 0.1); color: var(--success); border-radius: 4px; border: 1px solid rgba(16,185,129,0.2);}
+
+        .feat-l {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin: 24px 0 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .feats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .fi {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-radius: 4px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
 
         /* FOOTER */
         .ftr {
@@ -571,15 +731,16 @@
             color: var(--text-tertiary);
             line-height: 1.6;
         }
+
         .ftr-policy strong {
             color: var(--text-secondary);
         }
 
         /* split view layout */
         .split-view {
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 40px; 
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
             align-items: start;
         }
 
@@ -618,9 +779,14 @@
             letter-spacing: -0.5px;
             transition: opacity 0.2s;
         }
-        
-        .top-nav .logo-section:hover { opacity: 0.8; }
-        .top-nav .logo-text span { color: var(--accent-primary); }
+
+        .top-nav .logo-section:hover {
+            opacity: 0.8;
+        }
+
+        .top-nav .logo-text span {
+            color: var(--accent-primary);
+        }
 
         .top-nav .nav-links {
             display: flex;
@@ -652,8 +818,13 @@
             border-radius: 2px;
         }
 
-        .top-nav .nav-item:hover { color: var(--text-primary); }
-        .top-nav .nav-item:hover::after { width: 100%; }
+        .top-nav .nav-item:hover {
+            color: var(--text-primary);
+        }
+
+        .top-nav .nav-item:hover::after {
+            width: 100%;
+        }
 
         .top-nav .btn-primary {
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
@@ -674,418 +845,549 @@
 
         /* 📱 RESPONSIVE & MOBILE OPTIMIZATIONS */
         @media (max-width: 1024px) {
-            .split-view { grid-template-columns: 1fr; gap: 32px; }
-            .metrics { gap: 12px; }
-            .met { padding: 16px 12px; }
-            .met-val { font-size: 1.8rem; }
-            .container { padding: 40px 20px 80px; }
-            .top-nav .nav-links { display: none; }
+            .split-view {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+
+            .metrics {
+                gap: 12px;
+            }
+
+            .met {
+                padding: 16px 12px;
+            }
+
+            .met-val {
+                font-size: 1.8rem;
+            }
+
+            .container {
+                padding: 40px 20px 80px;
+            }
+
+            .top-nav .nav-links {
+                display: none;
+            }
         }
 
         @media (max-width: 768px) {
-            .c8 { grid-column: span 12; }
-            .card { padding: 24px; }
-            .logo-ic { width: 64px; height: 64px; font-size: 2rem; }
-            .logo-t { font-size: 2.2rem; }
-            .row { flex-direction: column; align-items: flex-start; gap: 4px; }
-            .rv { text-align: left; }
-            .ch { flex-direction: column; gap: 16px; align-items: flex-start; }
-            #dns-bdg, #vpn-bdg, #rtc-bdg { align-self: flex-start; }
-            .top-nav .header-right { display: none; }
-            .top-nav { padding: 0 1rem; }
+            .c8 {
+                grid-column: span 12;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .logo-ic {
+                width: 64px;
+                height: 64px;
+                font-size: 2rem;
+            }
+
+            .logo-t {
+                font-size: 2.2rem;
+            }
+
+            .row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .rv {
+                text-align: left;
+            }
+
+            .ch {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            #dns-bdg,
+            #vpn-bdg,
+            #rtc-bdg {
+                align-self: flex-start;
+            }
+
+            .top-nav .header-right {
+                display: none;
+            }
+
+            .top-nav {
+                padding: 0 1rem;
+            }
         }
 
         @media (max-width: 480px) {
-            .metrics { grid-template-columns: 1fr; gap: 16px; }
-            .met { padding: 20px; display: flex; flex-direction: column; align-items: center; }
-            .met-val { font-size: 2rem; }
-            #spd-phase-wrap > div:first-child { flex-direction: column; align-items: stretch; }
-            #spd-phase-wrap .bdg { text-align: center; justify-content: center; }
-            .logo-t { font-size: 1.8rem; letter-spacing: -0.5px; }
-            .logo-s { font-size: 0.95rem; }
-            .al { font-size: 0.85rem; padding: 12px; }
-            .container { padding: 30px 16px 60px; }
-        }
+            .metrics {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
 
+            .met {
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .met-val {
+                font-size: 2rem;
+            }
+
+            #spd-phase-wrap>div:first-child {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #spd-phase-wrap .bdg {
+                text-align: center;
+                justify-content: center;
+            }
+
+            .logo-t {
+                font-size: 1.8rem;
+                letter-spacing: -0.5px;
+            }
+
+            .logo-s {
+                font-size: 0.95rem;
+            }
+
+            .al {
+                font-size: 0.85rem;
+                padding: 12px;
+            }
+
+            .container {
+                padding: 30px 16px 60px;
+            }
+        }
     </style>
 </head>
+
 <body>
 
-<header class="top-nav">
-    <div class="nav-container">
-        <a href="/" class="logo-section">
-            <span style="font-size: 1.4rem; margin-right: 8px;">🛡️</span>
-            <div class="logo-text">Privacy <span>Analyzer</span></div>
-        </a>
-        
-        <div style="display: flex; align-items: center;">
-            <nav class="nav-links">
-                <a href="/" class="nav-item">Dashboard</a>
-                <a href="privacy.html" class="nav-item">Privacy Policy</a>
-                <a href="tnu.html" class="nav-item">Terms of Use</a>
-                <a href="contact.html" class="nav-item">Contact Us</a>
-            </nav>
-            <div class="header-right">
-                <a href="https://bunorden.com" class="btn-primary" target="_blank">Bunorden Main</a>
+    <header class="top-nav">
+        <div class="nav-container">
+            <a href="/" class="logo-section">
+                <span style="font-size: 1.4rem; margin-right: 8px;">🛡️</span>
+                <div class="logo-text">Privacy <span>Analyzer</span></div>
+            </a>
+
+            <div style="display: flex; align-items: center;">
+                <nav class="nav-links">
+                    <a href="/" class="nav-item">Dashboard</a>
+                    <a href="privacy.html" class="nav-item">Privacy Policy</a>
+                    <a href="tnu.html" class="nav-item">Terms of Use</a>
+                    <a href="contact.html" class="nav-item">Contact Us</a>
+                </nav>
+                <div class="header-right">
+                    <a href="https://bunorden.com" class="btn-primary" target="_blank">Bunorden Main</a>
+                </div>
             </div>
         </div>
-    </div>
-</header>
-
-<div class="container">
-    <header class="hdr">
-        <div class="logo-ic">🛡️</div>
-        <div class="logo-t">Privacy Analyzer</div>
-        <div class="logo-s">Advanced real-time network, privacy, and performance diagnostics.</div>
-        <div class="hdr-st" id="hSt" style="margin-top: 32px;"><div class="pdot"></div> <span style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.5px;">INITIALIZING SECURITY PROTOCOLS...</span></div>
     </header>
 
-    <div class="prg-w">
-        <div class="prg-b"><div class="prg-f" id="pF"></div></div>
-        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); margin-top: 12px; text-align: right; text-transform: uppercase;" id="pL">Awaiting data...</div>
-    </div>
-
-    <div class="grid">
-
-        <!-- IP & Identity -->
-        <div class="card c4">
-            <div class="ch">
-                <div class="chl">
-                    <div class="cion">🌐</div>
-                    <div>
-                        <div class="ct2">Network Identity</div>
-                        <div class="cs">IP Address & Geolocation</div>
-                    </div>
-                </div>
+    <div class="container">
+        <header class="hdr">
+            <div class="logo-ic">🛡️</div>
+            <div class="logo-t">Privacy Analyzer</div>
+            <div class="logo-s">Advanced real-time network, privacy, and performance diagnostics.</div>
+            <div class="hdr-st" id="hSt" style="margin-top: 32px;">
+                <div class="pdot"></div> <span
+                    style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 0.5px;">INITIALIZING
+                    SECURITY PROTOCOLS...</span>
             </div>
-            <div id="ip-out">
-                <div class="skel" style="width:100%; margin-bottom:12px;"></div>
-                <div class="skel" style="width:80%; margin-bottom:12px;"></div>
-                <div class="skel" style="width:60%; margin-bottom:12px;"></div>
-                <div class="skel" style="width:90%;"></div>
+        </header>
+
+        <div class="prg-w">
+            <div class="prg-b">
+                <div class="prg-f" id="pF"></div>
             </div>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-tertiary); margin-top: 12px; text-align: right; text-transform: uppercase;"
+                id="pL">Awaiting data...</div>
         </div>
 
-        <!-- VPN & Proxy -->
-        <div class="card c4">
-            <div class="ch">
-                <div class="chl">
-                    <div class="cion">🔐</div>
-                    <div>
-                        <div class="ct2">Traffic Security</div>
-                        <div class="cs">VPN, Tor & Proxy Detection</div>
+        <div class="grid">
+
+            <!-- IP & Identity -->
+            <div class="card c4">
+                <div class="ch">
+                    <div class="chl">
+                        <div class="cion">🌐</div>
+                        <div>
+                            <div class="ct2">Network Identity</div>
+                            <div class="cs">IP Address & Geolocation</div>
+                        </div>
                     </div>
                 </div>
-                <div id="vpn-bdg"></div>
-            </div>
-            <div id="vpn-out">
-                <div class="skel" style="width:85%; margin-bottom:12px;"></div>
-                <div class="skel" style="width:100%;"></div>
-            </div>
-        </div>
-
-        <!-- WebRTC -->
-        <div class="card c4">
-            <div class="ch">
-                <div class="chl">
-                    <div class="cion">⚡</div>
-                    <div>
-                        <div class="ct2">WebRTC Leaks</div>
-                        <div class="cs">Local & STUN IP Exposure</div>
-                    </div>
-                </div>
-                <div id="rtc-bdg"></div>
-            </div>
-            <div id="rtc-out">
-                <div class="skel" style="width:90%; margin-bottom:12px;"></div>
-                <div class="skel" style="width:75%;"></div>
-            </div>
-        </div>
-
-        <!-- DNS Resolvers -->
-        <div class="card c8">
-            <div class="ch">
-                <div class="chl">
-                    <div class="cion">🔍</div>
-                    <div>
-                        <div class="ct2">DNS Infrastructure</div>
-                        <div class="cs">Authoritative resolver discovery via multi-stage probing</div>
-                    </div>
-                </div>
-                <div id="dns-bdg"></div>
-            </div>
-            <div id="dns-out">
-                <div class="skel" style="width:100%; height:80px; margin-bottom:16px;"></div>
-                <div class="skel" style="width:100%; height:40px;"></div>
-            </div>
-        </div>
-
-        <!-- System & Browser -->
-        <div class="card c4">
-            <div class="ch">
-                <div class="chl">
-                    <div class="cion">💻</div>
-                    <div>
-                        <div class="ct2">Device Fingerprint</div>
-                        <div class="cs">Browser, OS & Hardware</div>
-                    </div>
-                </div>
-            </div>
-            <div id="ua-out">
-                <div class="skel" style="width:100%; height:60px; margin-bottom:16px;"></div>
-                <div class="skel" style="width:80%;"></div>
-            </div>
-        </div>
-
-        <!-- Speed Test -->
-        <div class="card c12">
-            <div class="ch" style="margin-bottom: 40px;">
-                <div class="chl">
-                    <div class="cion" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-color: rgba(59, 130, 246, 0.3);">🚀</div>
-                    <div>
-                        <div class="ct2">Performance Benchmark</div>
-                        <div class="cs">High-capacity bandwidth testing via Cloudflare Edge network</div>
-                    </div>
+                <div id="ip-out">
+                    <div class="skel" style="width:100%; margin-bottom:12px;"></div>
+                    <div class="skel" style="width:80%; margin-bottom:12px;"></div>
+                    <div class="skel" style="width:60%; margin-bottom:12px;"></div>
+                    <div class="skel" style="width:90%;"></div>
                 </div>
             </div>
 
-            <div class="split-view">
-                <div>
-                    <button class="spd-btn" id="spdBtn" onclick="toggleSpeed()">Initiate Global Speed Test</button>
-                    
-                    <div class="al al-i" id="srv-box" style="margin-bottom: 0;">
-                        <div style="display: flex; gap: 16px; align-items: center;">
-                            <span style="font-size: 1.5rem;">🌍</span>
-                            <div>
-                                <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" id="srv-name">Network Node Discovery</div>
-                                <div style="color: var(--text-tertiary); font-size: 0.8rem; font-family: var(--font-mono); margin-top: 4px;" id="srv-sub">Awaiting initialization</div>
+            <!-- VPN & Proxy -->
+            <div class="card c4">
+                <div class="ch">
+                    <div class="chl">
+                        <div class="cion">🔐</div>
+                        <div>
+                            <div class="ct2">Traffic Security</div>
+                            <div class="cs">VPN, Tor & Proxy Detection</div>
+                        </div>
+                    </div>
+                    <div id="vpn-bdg"></div>
+                </div>
+                <div id="vpn-out">
+                    <div class="skel" style="width:85%; margin-bottom:12px;"></div>
+                    <div class="skel" style="width:100%;"></div>
+                </div>
+            </div>
+
+            <!-- WebRTC -->
+            <div class="card c4">
+                <div class="ch">
+                    <div class="chl">
+                        <div class="cion">⚡</div>
+                        <div>
+                            <div class="ct2">WebRTC Leaks</div>
+                            <div class="cs">Local & STUN IP Exposure</div>
+                        </div>
+                    </div>
+                    <div id="rtc-bdg"></div>
+                </div>
+                <div id="rtc-out">
+                    <div class="skel" style="width:90%; margin-bottom:12px;"></div>
+                    <div class="skel" style="width:75%;"></div>
+                </div>
+            </div>
+
+            <!-- DNS Resolvers -->
+            <div class="card c8">
+                <div class="ch">
+                    <div class="chl">
+                        <div class="cion">🔍</div>
+                        <div>
+                            <div class="ct2">DNS Infrastructure</div>
+                            <div class="cs">Authoritative resolver discovery via multi-stage probing</div>
+                        </div>
+                    </div>
+                    <div id="dns-bdg"></div>
+                </div>
+                <div id="dns-out">
+                    <div class="skel" style="width:100%; height:80px; margin-bottom:16px;"></div>
+                    <div class="skel" style="width:100%; height:40px;"></div>
+                </div>
+            </div>
+
+            <!-- System & Browser -->
+            <div class="card c4">
+                <div class="ch">
+                    <div class="chl">
+                        <div class="cion">💻</div>
+                        <div>
+                            <div class="ct2">Device Fingerprint</div>
+                            <div class="cs">Browser, OS & Hardware</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="ua-out">
+                    <div class="skel" style="width:100%; height:60px; margin-bottom:16px;"></div>
+                    <div class="skel" style="width:80%;"></div>
+                </div>
+            </div>
+
+            <!-- Speed Test -->
+            <div class="card c12">
+                <div class="ch" style="margin-bottom: 40px;">
+                    <div class="chl">
+                        <div class="cion"
+                            style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border-color: rgba(59, 130, 246, 0.3);">
+                            🚀</div>
+                        <div>
+                            <div class="ct2">Performance Benchmark</div>
+                            <div class="cs">High-capacity bandwidth testing via Cloudflare Edge network</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="split-view">
+                    <div>
+                        <button class="spd-btn" id="spdBtn" onclick="toggleSpeed()">Initiate Global Speed Test</button>
+
+                        <div class="al al-i" id="srv-box" style="margin-bottom: 0;">
+                            <div style="display: flex; gap: 16px; align-items: center;">
+                                <span style="font-size: 1.5rem;">🌍</span>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary);"
+                                        id="srv-name">Network Node Discovery</div>
+                                    <div style="color: var(--text-tertiary); font-size: 0.8rem; font-family: var(--font-mono); margin-top: 4px;"
+                                        id="srv-sub">Awaiting initialization</div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div>
-                    <div id="spd-phase-wrap" style="display:none; margin-bottom: 32px;">
-                        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                            <span class="bdg b-m" id="ph0">1. Ping</span>
-                            <span class="bdg b-m" id="ph1">2. Download</span>
-                            <span class="bdg b-m" id="ph2">3. Upload</span>
+                    <div>
+                        <div id="spd-phase-wrap" style="display:none; margin-bottom: 32px;">
+                            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                                <span class="bdg b-m" id="ph0">1. Ping</span>
+                                <span class="bdg b-m" id="ph1">2. Download</span>
+                                <span class="bdg b-m" id="ph2">3. Upload</span>
+                            </div>
+                            <div class="prg-b" style="height: 4px;">
+                                <div class="prg-f" id="sPF"></div>
+                            </div>
+                            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); margin-top: 12px; letter-spacing: 0.5px;"
+                                id="sPL">Warming up connection...</div>
                         </div>
-                        <div class="prg-b" style="height: 4px;"><div class="prg-f" id="sPF"></div></div>
-                        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); margin-top: 12px; letter-spacing: 0.5px;" id="sPL">Warming up connection...</div>
-                    </div>
 
-                    <div class="metrics">
-                        <div class="met">
-                            <div class="met-lbl">Download</div>
-                            <div class="met-val" id="v-dl" style="color: var(--accent-primary);">—</div>
-                            <div class="met-unit">Mbps</div>
-                            <div class="met-bw"><div class="met-b b-dl" id="b-dl"></div></div>
+                        <div class="metrics">
+                            <div class="met">
+                                <div class="met-lbl">Download</div>
+                                <div class="met-val" id="v-dl" style="color: var(--accent-primary);">—</div>
+                                <div class="met-unit">Mbps</div>
+                                <div class="met-bw">
+                                    <div class="met-b b-dl" id="b-dl"></div>
+                                </div>
+                            </div>
+                            <div class="met">
+                                <div class="met-lbl">Upload</div>
+                                <div class="met-val" id="v-ul" style="color: var(--accent-secondary);">—</div>
+                                <div class="met-unit">Mbps</div>
+                                <div class="met-bw">
+                                    <div class="met-b b-ul" id="b-ul"></div>
+                                </div>
+                            </div>
+                            <div class="met">
+                                <div class="met-lbl">Latency</div>
+                                <div class="met-val" id="v-pg" style="color: var(--success);">—</div>
+                                <div class="met-unit">ms</div>
+                                <div class="met-bw">
+                                    <div class="met-b b-pg" id="b-pg"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="met">
-                            <div class="met-lbl">Upload</div>
-                            <div class="met-val" id="v-ul" style="color: var(--accent-secondary);">—</div>
-                            <div class="met-unit">Mbps</div>
-                            <div class="met-bw"><div class="met-b b-ul" id="b-ul"></div></div>
-                        </div>
-                        <div class="met">
-                            <div class="met-lbl">Latency</div>
-                            <div class="met-val" id="v-pg" style="color: var(--success);">—</div>
-                            <div class="met-unit">ms</div>
-                            <div class="met-bw"><div class="met-b b-pg" id="b-pg"></div></div>
-                        </div>
-                    </div>
 
-                    <div class="rows" style="background: rgba(255,255,255,0.01); border-radius: var(--radius-md); padding: 12px; border: 1px solid rgba(255,255,255,0.03);">
-                        <div class="row"><span class="rl">Jitter Variance</span><span class="rv" id="v-jit">—</span></div>
-                        <div class="row"><span class="rl">Average Latency</span><span class="rv" id="v-lat">—</span></div>
-                        <div class="row"><span class="rl">Packet Loss Rate</span><span class="rv" id="v-loss">—</span></div>
-                        <div class="row"><span class="rl">Negotiated Protocol</span><span class="rv" id="v-proto">—</span></div>
-                        <div class="row"><span class="rl">Routing Edge Node</span><span class="rv" id="v-srv">—</span></div>
-                        <div class="row"><span class="rl">Identified Edge IP</span><span class="rv" id="v-edgeip">—</span></div>
+                        <div class="rows"
+                            style="background: rgba(255,255,255,0.01); border-radius: var(--radius-md); padding: 12px; border: 1px solid rgba(255,255,255,0.03);">
+                            <div class="row"><span class="rl">Jitter Variance</span><span class="rv" id="v-jit">—</span>
+                            </div>
+                            <div class="row"><span class="rl">Average Latency</span><span class="rv" id="v-lat">—</span>
+                            </div>
+                            <div class="row"><span class="rl">Packet Loss Rate</span><span class="rv"
+                                    id="v-loss">—</span></div>
+                            <div class="row"><span class="rl">Negotiated Protocol</span><span class="rv"
+                                    id="v-proto">—</span></div>
+                            <div class="row"><span class="rl">Routing Edge Node</span><span class="rv"
+                                    id="v-srv">—</span></div>
+                            <div class="row"><span class="rl">Identified Edge IP</span><span class="rv"
+                                    id="v-edgeip">—</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
+
+        <!-- Footer / Privacy -->
+        <footer class="ftr">
+            <div class="ftr-content">
+                <a href="https://github.com/kkkkja-co/network-checking-dashboard" target="_blank" class="ftr-badge"
+                    style="text-decoration: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" />
+                    </svg>
+                    100% Open Source
+                </a>
+                <span class="ftr-badge">
+                    <svg width="16" height="16" viewBox="0 0 76 65" fill="#fff">
+                        <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+                    </svg>
+                    Hosted on Vercel
+                </span>
+            </div>
+            <div class="ftr-policy">
+                <strong>Privacy Policy:</strong> This service runs strictly on the client-side inside your browser. We
+                do not log, store, track, or aggregate your IP address, network infrastructure, or performance metrics.
+                Any telemetry queries to APIs originate directly from your machine with no middle-man server tracking
+                your session.
+                <div style="margin-top: 16px; font-weight: 500;">
+                    <a href="privacy.html"
+                        style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Privacy
+                        Policy</a> &bull;
+                    <a href="tnu.html"
+                        style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Terms
+                        of Use</a> &bull;
+                    <a href="contact.html"
+                        style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Contact
+                        Us</a>
+                </div>
+            </div>
+        </footer>
 
     </div>
 
-    <!-- Footer / Privacy -->
-    <footer class="ftr">
-        <div class="ftr-content">
-            <a href="https://github.com/kkkkja-co/network-checking-dashboard" target="_blank" class="ftr-badge" style="text-decoration: none;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
-                100% Open Source
-            </a>
-            <span class="ftr-badge">
-                <svg width="16" height="16" viewBox="0 0 76 65" fill="#fff"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
-                Hosted on Vercel
-            </span>
-        </div>
-        <div class="ftr-policy">
-            <strong>Privacy Policy:</strong> This service runs strictly on the client-side inside your browser. We do not log, store, track, or aggregate your IP address, network infrastructure, or performance metrics. Any telemetry queries to APIs originate directly from your machine with no middle-man server tracking your session.
-            <div style="margin-top: 16px; font-weight: 500;">
-                <a href="privacy.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Privacy Policy</a> &bull;
-                <a href="tnu.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Terms of Use</a> &bull;
-                <a href="contact.html" style="color: var(--accent-primary); text-decoration: none; margin: 0 12px; transition: 0.2s;">Contact Us</a>
-            </div>
-        </div>
-    </footer>
+    <script>
+        const $ = id => document.getElementById(id);
+        const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const flag = c => { if (!c || c.length !== 2) return ''; return c.toUpperCase().replace(/./g, x => String.fromCodePoint(x.charCodeAt(0) + 127397)); };
+        const row = (l, v, hi = false) => `<div class="row"><span class="rl">${l}</span><span class="rv${hi ? ' hi' : ''}">${v}</span></div>`;
+        const safeStr = v => {
+            if (v === null || v === undefined) return '';
+            if (typeof v === 'string') return v;
+            if (typeof v === 'number') return String(v);
+            if (Array.isArray(v)) return v.map(safeStr).filter(Boolean).join(', ');
+            if (typeof v === 'object') return v.name || v.description || v.org || v.isp || '';
+            return String(v);
+        };
 
-</div>
-
-<script>
-    const $=id=>document.getElementById(id);
-    const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const flag=c=>{if(!c||c.length!==2)return '';return c.toUpperCase().replace(/./g,x=>String.fromCodePoint(x.charCodeAt(0)+127397));};
-    const row=(l,v,hi=false)=>`<div class="row"><span class="rl">${l}</span><span class="rv${hi?' hi':''}">${v}</span></div>`;
-    const safeStr=v=>{
-        if(v===null||v===undefined)return '';
-        if(typeof v==='string')return v;
-        if(typeof v==='number')return String(v);
-        if(Array.isArray(v))return v.map(safeStr).filter(Boolean).join(', ');
-        if(typeof v==='object')return v.name||v.description||v.org||v.isp||'';
-        return String(v);
-    };
-
-    const STEPS=4;
-    function prog(n,msg){
-        $('pF').style.width=Math.round(n/STEPS*100)+'%';
-        $('pL').textContent=msg;
-        if(n>=STEPS)$('hSt').innerHTML='<div class="pdot"></div> <span style="color:var(--success)">Scan complete</span>';
-    }
-
-    window.addEventListener('DOMContentLoaded',async()=>{
-        renderUA();
-        prog(0,'Fetching IP data…');
-        try{
-            const ip=await fetchIP();
-            renderIP(ip); renderVPN(ip);
-            prog(1,'Detecting WebRTC IPs…');
-            await runWebRTC(ip);
-            prog(2,'Detecting DNS resolvers…');
-            await runDNS();
-            prog(STEPS,'All tests complete — start speed test when ready');
-        }catch(e){ prog(0,'Error: '+e.message); }
-    });
-
-    async function fetchIP(){
-        const [v4,v6]=await Promise.allSettled([
-            fetch('https://api.ipapi.is/').then(r=>r.json()),
-            fetch('https://api64.ipify.org/?format=json').then(r=>r.json())
-        ]);
-        const d=v4.status==='fulfilled'?v4.value:{};
-        const v6ip=v6.status==='fulfilled'?v6.value.ip:null;
-        if(v6ip&&v6ip!==d.ip&&v6ip.includes(':'))d.ipv6=v6ip;
-        return d;
-    }
-    function renderIP(d){
-        const loc=d.location||{}, asn=d.asn||{}, co=d.company||{};
-        let h=`<div class="row"><span class="rl">IPv4</span><span class="rv hi">${d.ip||'—'}</span></div>
-               <div class="row"><span class="rl">IPv6</span><span class="rv">${d.ipv6||'Not detected'}</span></div>
-               <div class="row"><span class="rl">Country</span><span class="rv">${loc.country||'—'} (${loc.country_code||'—'})</span></div>
-               <div class="row"><span class="rl">City / Region</span><span class="rv">${loc.city||'—'}, ${loc.state||'—'}</span></div>
-               <div class="row"><span class="rl">Timezone</span><span class="rv">${loc.timezone||'—'}</span></div>
-               <div class="row"><span class="rl">Local Time</span><span class="rv">${loc.local_time||'—'}</span></div>
-               <div class="row"><span class="rl">Coordinates</span><span class="rv">${loc.latitude||'—'}, ${loc.longitude||'—'}</span></div>
-               <div class="row"><span class="rl">AS Number</span><span class="rv">${asn.asn?'AS'+asn.asn:'—'}</span></div>
-               <div class="row"><span class="rl">AS Org</span><span class="rv">${asn.org||co.name||'—'}</span></div>
-               <div class="row"><span class="rl">Network</span><span class="rv">${asn.route||'—'}</span></div>
-               <div class="row"><span class="rl">RIR</span><span class="rv">${d.rir||'—'}</span></div>`;
-        if(loc.latitude&&loc.longitude) h+=`<div style="margin-top:20px; text-align: right;"><a href="https://www.google.com/maps?q=${loc.latitude},${loc.longitude}" target="_blank" class="map-link">Open on Map <span>→</span></a></div>`;
-        $('ip-out').innerHTML=h;
-    }
-
-    function renderVPN(d){
-        const co=d.company||{},loc=d.location||{},vp=d.vpn||{};
-        const isVPN=d.is_vpn===true,isTor=d.is_tor===true,isProxy=d.is_proxy===true,isDC=d.is_datacenter===true,isAbuser=d.is_abuser===true;
-        const rs=[];
-        if(isVPN)    rs.push({i:'🔐',t:'IP flagged as VPN exit node',c:'var(--red)'});
-        if(isTor)    rs.push({i:'🧅',t:'Tor exit node detected',c:'var(--red)'});
-        if(isProxy)  rs.push({i:'🔄',t:'Proxy server detected',c:'var(--yellow)'});
-        if(isDC)     rs.push({i:'🏢',t:'Datacenter / hosting provider IP',c:'var(--yellow)'});
-        if(isAbuser) rs.push({i:'⚠️',t:'IP linked to abuse',c:'var(--yellow)'});
-        if(loc.timezone){const btz=Intl.DateTimeFormat().resolvedOptions().timeZone;if(btz&&btz!==loc.timezone)rs.push({i:'🕐',t:`TZ mismatch — Browser: "${btz}" vs IP: "${loc.timezone}"`,c:'var(--yellow)'});}
-        const clean=!isVPN&&!isTor&&!isProxy;
-        $('vpn-bdg').innerHTML=`<span class="bdg ${(isTor||isVPN)?'b-r':!clean?'b-y':'b-g'}">${isTor?'🧅 Tor':isVPN?'🔐 VPN':isProxy?'🔄 Proxy':isDC?'🏢 Datacenter':'✅ Clean'}</span>`;
-        let h='';
-        if(isVPN){const nm=safeStr(vp.name||vp.service||co.name);if(nm)h+=`<div class="al al-r"><strong>VPN:</strong> ${esc(nm)}</div>`;}
-        if(isTor)h+=`<div class="al al-r">🧅 <strong>Tor Network</strong> — traffic routed via Tor.</div>`;
-        if(clean)h+=`<div class="al al-g">No VPN, proxy, or anonymizing indicators detected.</div>`;
-        if(rs.length){h+='<div>';rs.forEach(r=>{h+=`<div class="rsn"><span>${r.i}</span><span style="color:${r.c};line-height:1.5">${esc(r.t)}</span></div>`;});h+='</div>';}
-        h+='<div class="rows" style="margin-top:10px">';
-        if(co.type)  h+=row('Company Type',esc(safeStr(co.type)));
-        if(co.domain)h+=row('Domain',esc(safeStr(co.domain)));
-        if(d.rir)    h+=row('RIR',esc(safeStr(d.rir)));
-        h+='</div>';
-        $('vpn-out').innerHTML=h;
-    }
-
-    async function runWebRTC(ipData){
-        const ips=await getWebRTCIPs(),pub=ipData.ip;
-        const lk=[],pr=[],v6=[];
-        ips.forEach(ip=>{
-            if(ip.includes('.local')||ip==='0.0.0.0')return;
-            if(ip.includes(':'))v6.push(ip);
-            else if(/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.)/.test(ip))pr.push(ip);
-            else lk.push(ip);
-        });
-        const hasLk=lk.some(ip=>ip!==pub);
-        $('rtc-bdg').innerHTML=`<span class="bdg ${hasLk?'b-r':lk.length?'b-y':'b-g'}">${hasLk?'🚨 Leak':lk.length?'⚠️ Exposed':'✅ No Leak'}</span>`;
-        let h='';
-        if(!lk.length&&!v6.length)h+=`<div class="al al-g">✅ No WebRTC leak — no public IPs exposed.</div>`;
-        else if(hasLk)h+=`<div class="al al-r">🚨 <strong>WebRTC Leak!</strong> Real IP exposed even behind VPN.</div>`;
-        else h+=`<div class="al al-i">ℹ️ WebRTC active. IP matches known IP — no unexpected leak.</div>`;
-        if(ips.length){
-            h+='<div class="chips">';
-            lk.forEach(ip=>{h+=`<span class="chip lk">${esc(ip)} ${ip!==pub?'⚠️':'✓'}</span>`;});
-            pr.forEach(ip=>{h+=`<span class="chip lc">🏠 ${esc(ip)}</span>`;});
-            v6.forEach(ip=>{h+=`<span class="chip v6">${esc(ip.length>28?ip.slice(0,26)+'…':ip)}</span>`;});
-            h+='</div>';
+        const STEPS = 4;
+        function prog(n, msg) {
+            $('pF').style.width = Math.round(n / STEPS * 100) + '%';
+            $('pL').textContent = msg;
+            if (n >= STEPS) $('hSt').innerHTML = '<div class="pdot"></div> <span style="color:var(--success)">Scan complete</span>';
         }
-        h+='<div class="rows" style="margin-top:10px">';
-        h+=row('Total IPs',ips.length);
-        h+=row('Public',`<span style="color:${lk.length?'var(--red)':'var(--green)'}">${lk.length}</span>`);
-        h+=row('Private / LAN',pr.length);
-        h+=row('IPv6',v6.length);
-        h+='</div>';
-        $('rtc-out').innerHTML=h;
-    }
-    function getWebRTCIPs(){
-        return new Promise(resolve=>{
-            const ips=new Set();let pc;
-            try{pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.cloudflare.com:3478'}]});}
-            catch(e){resolve([]);return;}
-            pc.createDataChannel('');
-            pc.createOffer().then(o=>pc.setLocalDescription(o)).catch(()=>resolve([]));
-            pc.onicecandidate=e=>{
-                if(!e.candidate)return;
-                const c=e.candidate.candidate;
-                const v4=c.match(/([0-9]{1,3}\.){3}[0-9]{1,3}/);
-                const v6=c.match(/([a-f0-9:]+:+)+[a-f0-9]+/i);
-                if(v4)ips.add(v4[0]);
-                if(v6&&v6[0].includes(':'))ips.add(v6[0]);
-            };
-            setTimeout(()=>{try{pc.close();}catch(e){}resolve(Array.from(ips));},5500);
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            renderUA();
+            prog(0, 'Fetching IP data…');
+            try {
+                const ip = await fetchIP();
+                renderIP(ip); renderVPN(ip);
+                prog(1, 'Detecting WebRTC IPs…');
+                await runWebRTC(ip);
+                prog(2, 'Detecting DNS resolvers…');
+                await runDNS();
+                prog(STEPS, 'All tests complete — start speed test when ready');
+            } catch (e) { prog(0, 'Error: ' + e.message); }
         });
-    }
 
-    /* ─────────────────────────────────────────────────────────────────────
-       DNS LEAK & DoH DETECTION — Progressive Multi-Provider Probes
-       Uses parallel probes to both ipleak.net and ip-api.com (EDNS).
-       Detections are rendered instantly as discovered.
-       Enriched with logic to identify known Encrypted DNS providers.
-    ───────────────────────────────────────────────────────────────────── */
-    async function runDNS(){
-        const dnsMap = new Map();
-        let probesDone = 0;
-        const TOTAL = 90; 
-        const sessionID = [...Array(16)].map(()=>Math.floor(Math.random()*36).toString(36)).join('');
-        const probes = [];
-        let dohDetected = false;
+        async function fetchIP() {
+            const [v4, v6] = await Promise.allSettled([
+                fetch('https://api.ipapi.is/').then(r => r.json()),
+                fetch('https://api64.ipify.org/?format=json').then(r => r.json())
+            ]);
+            const d = v4.status === 'fulfilled' ? v4.value : {};
+            const v6ip = v6.status === 'fulfilled' ? v6.value.ip : null;
+            if (v6ip && v6ip !== d.ip && v6ip.includes(':')) d.ipv6 = v6ip;
+            return d;
+        }
+        function renderIP(d) {
+            const loc = d.location || {}, asn = d.asn || {}, co = d.company || {};
+            let h = `<div class="row"><span class="rl">IPv4</span><span class="rv hi">${d.ip || '—'}</span></div>
+               <div class="row"><span class="rl">IPv6</span><span class="rv">${d.ipv6 || 'Not detected'}</span></div>
+               <div class="row"><span class="rl">Country</span><span class="rv">${loc.country || '—'} (${loc.country_code || '—'})</span></div>
+               <div class="row"><span class="rl">City / Region</span><span class="rv">${loc.city || '—'}, ${loc.state || '—'}</span></div>
+               <div class="row"><span class="rl">Timezone</span><span class="rv">${loc.timezone || '—'}</span></div>
+               <div class="row"><span class="rl">Local Time</span><span class="rv">${loc.local_time || '—'}</span></div>
+               <div class="row"><span class="rl">Coordinates</span><span class="rv">${loc.latitude || '—'}, ${loc.longitude || '—'}</span></div>
+               <div class="row"><span class="rl">AS Number</span><span class="rv">${asn.asn ? 'AS' + asn.asn : '—'}</span></div>
+               <div class="row"><span class="rl">AS Org</span><span class="rv">${asn.org || co.name || '—'}</span></div>
+               <div class="row"><span class="rl">Network</span><span class="rv">${asn.route || '—'}</span></div>
+               <div class="row"><span class="rl">RIR</span><span class="rv">${d.rir || '—'}</span></div>`;
+            if (loc.latitude && loc.longitude) h += `<div style="margin-top:20px; text-align: right;"><a href="https://www.google.com/maps?q=${loc.latitude},${loc.longitude}" target="_blank" class="map-link">Open on Map <span>→</span></a></div>`;
+            $('ip-out').innerHTML = h;
+        }
 
-        // Reset and prepare UI
-        $('dns-out').innerHTML = `
+        function renderVPN(d) {
+            const co = d.company || {}, loc = d.location || {}, vp = d.vpn || {};
+            const isVPN = d.is_vpn === true, isTor = d.is_tor === true, isProxy = d.is_proxy === true, isDC = d.is_datacenter === true, isAbuser = d.is_abuser === true;
+            const rs = [];
+            if (isVPN) rs.push({ i: '🔐', t: 'IP flagged as VPN exit node', c: 'var(--red)' });
+            if (isTor) rs.push({ i: '🧅', t: 'Tor exit node detected', c: 'var(--red)' });
+            if (isProxy) rs.push({ i: '🔄', t: 'Proxy server detected', c: 'var(--yellow)' });
+            if (isDC) rs.push({ i: '🏢', t: 'Datacenter / hosting provider IP', c: 'var(--yellow)' });
+            if (isAbuser) rs.push({ i: '⚠️', t: 'IP linked to abuse', c: 'var(--yellow)' });
+            if (loc.timezone) { const btz = Intl.DateTimeFormat().resolvedOptions().timeZone; if (btz && btz !== loc.timezone) rs.push({ i: '🕐', t: `TZ mismatch — Browser: "${btz}" vs IP: "${loc.timezone}"`, c: 'var(--yellow)' }); }
+            const clean = !isVPN && !isTor && !isProxy;
+            $('vpn-bdg').innerHTML = `<span class="bdg ${(isTor || isVPN) ? 'b-r' : !clean ? 'b-y' : 'b-g'}">${isTor ? '🧅 Tor' : isVPN ? '🔐 VPN' : isProxy ? '🔄 Proxy' : isDC ? '🏢 Datacenter' : '✅ Clean'}</span>`;
+            let h = '';
+            if (isVPN) { const nm = safeStr(vp.name || vp.service || co.name); if (nm) h += `<div class="al al-r"><strong>VPN:</strong> ${esc(nm)}</div>`; }
+            if (isTor) h += `<div class="al al-r">🧅 <strong>Tor Network</strong> — traffic routed via Tor.</div>`;
+            if (clean) h += `<div class="al al-g">No VPN, proxy, or anonymizing indicators detected.</div>`;
+            if (rs.length) { h += '<div>'; rs.forEach(r => { h += `<div class="rsn"><span>${r.i}</span><span style="color:${r.c};line-height:1.5">${esc(r.t)}</span></div>`; }); h += '</div>'; }
+            h += '<div class="rows" style="margin-top:10px">';
+            if (co.type) h += row('Company Type', esc(safeStr(co.type)));
+            if (co.domain) h += row('Domain', esc(safeStr(co.domain)));
+            if (d.rir) h += row('RIR', esc(safeStr(d.rir)));
+            h += '</div>';
+            $('vpn-out').innerHTML = h;
+        }
+
+        async function runWebRTC(ipData) {
+            const ips = await getWebRTCIPs(), pub = ipData.ip;
+            const lk = [], pr = [], v6 = [];
+            ips.forEach(ip => {
+                if (ip.includes('.local') || ip === '0.0.0.0') return;
+                if (ip.includes(':')) v6.push(ip);
+                else if (/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|127\.)/.test(ip)) pr.push(ip);
+                else lk.push(ip);
+            });
+            const hasLk = lk.some(ip => ip !== pub);
+            $('rtc-bdg').innerHTML = `<span class="bdg ${hasLk ? 'b-r' : lk.length ? 'b-y' : 'b-g'}">${hasLk ? '🚨 Leak' : lk.length ? '⚠️ Exposed' : '✅ No Leak'}</span>`;
+            let h = '';
+            if (!lk.length && !v6.length) h += `<div class="al al-g">✅ No WebRTC leak — no public IPs exposed.</div>`;
+            else if (hasLk) h += `<div class="al al-r">🚨 <strong>WebRTC Leak!</strong> Real IP exposed even behind VPN.</div>`;
+            else h += `<div class="al al-i">ℹ️ WebRTC active. IP matches known IP — no unexpected leak.</div>`;
+            if (ips.length) {
+                h += '<div class="chips">';
+                lk.forEach(ip => { h += `<span class="chip lk">${esc(ip)} ${ip !== pub ? '⚠️' : '✓'}</span>`; });
+                pr.forEach(ip => { h += `<span class="chip lc">🏠 ${esc(ip)}</span>`; });
+                v6.forEach(ip => { h += `<span class="chip v6">${esc(ip.length > 28 ? ip.slice(0, 26) + '…' : ip)}</span>`; });
+                h += '</div>';
+            }
+            h += '<div class="rows" style="margin-top:10px">';
+            h += row('Total IPs', ips.length);
+            h += row('Public', `<span style="color:${lk.length ? 'var(--red)' : 'var(--green)'}">${lk.length}</span>`);
+            h += row('Private / LAN', pr.length);
+            h += row('IPv6', v6.length);
+            h += '</div>';
+            $('rtc-out').innerHTML = h;
+        }
+        function getWebRTCIPs() {
+            return new Promise(resolve => {
+                const ips = new Set(); let pc;
+                try { pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:stun.cloudflare.com:3478' }] }); }
+                catch (e) { resolve([]); return; }
+                pc.createDataChannel('');
+                pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => resolve([]));
+                pc.onicecandidate = e => {
+                    if (!e.candidate) return;
+                    const c = e.candidate.candidate;
+                    const v4 = c.match(/([0-9]{1,3}\.){3}[0-9]{1,3}/);
+                    const v6 = c.match(/([a-f0-9:]+:+)+[a-f0-9]+/i);
+                    if (v4) ips.add(v4[0]);
+                    if (v6 && v6[0].includes(':')) ips.add(v6[0]);
+                };
+                setTimeout(() => { try { pc.close(); } catch (e) { } resolve(Array.from(ips)); }, 5500);
+            });
+        }
+
+        /* ─────────────────────────────────────────────────────────────────────
+           DNS LEAK & DoH DETECTION — Progressive Multi-Provider Probes
+           Uses parallel probes to both ipleak.net and ip-api.com (EDNS).
+           Detections are rendered instantly as discovered.
+           Enriched with logic to identify known Encrypted DNS providers.
+        ───────────────────────────────────────────────────────────────────── */
+        async function runDNS() {
+            const dnsMap = new Map();
+            let probesDone = 0;
+            const TOTAL = 90;
+            const sessionID = [...Array(16)].map(() => Math.floor(Math.random() * 36).toString(36)).join('');
+            const probes = [];
+            let dohDetected = false;
+
+            // Reset and prepare UI
+            $('dns-out').innerHTML = `
             <div id="dns-live-status" style="display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:.85rem;margin-bottom:16px">
                 <div class="pdot" style="margin:0;width:8px;height:8px"></div>
                 <span id="dns-live-count">Initializing massive paralleled probe…</span>
@@ -1093,383 +1395,384 @@
             <div id="dns-live-list" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:16px;"></div>
             <div id="dns-live-footer" style="margin-top:20px;"></div>`;
 
-        function updateStatus() {
-            const el = document.getElementById('dns-live-count');
-            if (el) el.textContent = `Analyzing infrastructure — ${dnsMap.size} resolver${dnsMap.size !== 1 ? 's' : ''} found (${probesDone}/${TOTAL} probes)…`;
-        }
-
-        const dohIspPool = ["cloudflare", "google", "nextdns", "quad9", "opendns", "adguard", "mullvad", "control d", "cleanbrowsing", "cisco", "umbrella", "ahadns", "yandex", "ahadns", "comodo"];
-
-        function handleResolver(s) {
-            if (!s || !s.ip) return;
-            const ip = safeStr(s.ip);
-            if (!/^\d+\.\d+\.\d+\.\d+$|:/.test(ip)) return;
-            
-            if (dnsMap.has(ip)) return;
-            dnsMap.set(ip, s);
-            
-            const isp = (s.isp || "").toLowerCase();
-            if (dohIspPool.some(p => isp.includes(p))) {
-                dohDetected = true;
+            function updateStatus() {
+                const el = document.getElementById('dns-live-count');
+                if (el) el.textContent = `Analyzing infrastructure — ${dnsMap.size} resolver${dnsMap.size !== 1 ? 's' : ''} found (${probesDone}/${TOTAL} probes)…`;
             }
 
-            const list = document.getElementById('dns-live-list');
-            if (!list) return;
-            
-            const cc = s.country_code || s.cc || '';
-            const card = document.createElement('div');
-            card.className = 'dns-card';
-            card.style.cssText = 'opacity:0;transform:translateY(10px);transition:opacity 0.4s, transform 0.4s;margin:0;';
-            card.innerHTML = `
+            const dohIspPool = ["cloudflare", "google", "nextdns", "quad9", "opendns", "adguard", "mullvad", "control d", "cleanbrowsing", "cisco", "umbrella", "ahadns", "yandex", "ahadns", "comodo"];
+
+            function handleResolver(s) {
+                if (!s || !s.ip) return;
+                const ip = safeStr(s.ip);
+                if (!/^\d+\.\d+\.\d+\.\d+$|:/.test(ip)) return;
+
+                if (dnsMap.has(ip)) return;
+                dnsMap.set(ip, s);
+
+                const isp = (s.isp || "").toLowerCase();
+                if (dohIspPool.some(p => isp.includes(p))) {
+                    dohDetected = true;
+                }
+
+                const list = document.getElementById('dns-live-list');
+                if (!list) return;
+
+                const cc = s.country_code || s.cc || '';
+                const card = document.createElement('div');
+                card.className = 'dns-card';
+                card.style.cssText = 'opacity:0;transform:translateY(10px);transition:opacity 0.4s, transform 0.4s;margin:0;';
+                card.innerHTML = `
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
                 <span style="font-family:var(--font-mono);font-weight:700;font-size:0.95rem;color:var(--text)">${esc(ip)}</span>
-                ${cc ? `<span style="font-size:0.8rem">${flag(cc)||'🌐'} ${esc(s.country||'')}</span>` : ''}
+                ${cc ? `<span style="font-size:0.8rem">${flag(cc) || '🌐'} ${esc(s.country || '')}</span>` : ''}
               </div>
-              <div style="font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(s.isp)}">${esc(s.isp||'Unknown ISP')}</div>
+              <div style="font-size:0.8rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(s.isp)}">${esc(s.isp || 'Unknown ISP')}</div>
               ${s.city ? `<div style="font-size:0.75rem;color:var(--text-tertiary);margin-top:3px">${esc(s.city)}</div>` : ''}`;
-            list.appendChild(card);
-            
-            // Trigger animation
-            requestAnimationFrame(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-            });
-            
-            updateBadges();
-        }
+                list.appendChild(card);
 
-        function updateBadges() {
-            const count = dnsMap.size;
-            const leak = count > 1;
-            let h = `<span class="bdg ${leak?'b-r':count>0?'b-g':'b-m'}">${count === 0 ? '⚠️ No detection' : (leak ? '🚨 ' + count + ' Resolvers' : '✅ 1 Resolver')}</span>`;
-            if (dohDetected) h += ` <span class="bdg b-i">🛡️ DoH / Encrypted</span>`;
-            $('dns-bdg').innerHTML = h;
-        }
+                // Trigger animation
+                requestAnimationFrame(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                });
 
-        function finalize() {
-            const status = document.getElementById('dns-live-status');
-            if (status) status.style.opacity = '0.4';
-            const countEl = document.getElementById('dns-live-count');
-            if (countEl) countEl.textContent = `Deep scan complete. Discoveries synced.`;
+                updateBadges();
+            }
 
-            const footer = document.getElementById('dns-live-footer');
-            if (!footer) return;
+            function updateBadges() {
+                const count = dnsMap.size;
+                const leak = count > 1;
+                let h = `<span class="bdg ${leak ? 'b-r' : count > 0 ? 'b-g' : 'b-m'}">${count === 0 ? '⚠️ No detection' : (leak ? '🚨 ' + count + ' Resolvers' : '✅ 1 Resolver')}</span>`;
+                if (dohDetected) h += ` <span class="bdg b-i">🛡️ DoH / Encrypted</span>`;
+                $('dns-bdg').innerHTML = h;
+            }
 
-            const servers = Array.from(dnsMap.values());
-            const leak = servers.length > 1;
-            
-            let assessment = '';
-            if (servers.length === 0) {
-                assessment = `<div class="al al-i">Unable to identify DNS resolvers. Queries may be blocked or entirely hidden via a private relay.</div>`;
-            } else {
-                let msg = '';
-                if (dohDetected) msg = 'Encrypted DNS (DoH/DoT) is active. Queries are secured from local snooping but resolved via centralized infrastructure.';
-                else if (leak) msg = 'Multiple backend resolvers detected. This is typical for load-balanced DNS but can also indicate a DNS leak if ISPs are mixed.';
-                else msg = 'Clean, single-threaded DNS path detected. Standard configuration.';
+            function finalize() {
+                const status = document.getElementById('dns-live-status');
+                if (status) status.style.opacity = '0.4';
+                const countEl = document.getElementById('dns-live-count');
+                if (countEl) countEl.textContent = `Deep scan complete. Discoveries synced.`;
 
-                assessment = `<div class="al ${leak?'al-r':dohDetected?'al-i':'al-g'}" style="margin-top:16px">
+                const footer = document.getElementById('dns-live-footer');
+                if (!footer) return;
+
+                const servers = Array.from(dnsMap.values());
+                const leak = servers.length > 1;
+
+                let assessment = '';
+                if (servers.length === 0) {
+                    assessment = `<div class="al al-i">Unable to identify DNS resolvers. Queries may be blocked or entirely hidden via a private relay.</div>`;
+                } else {
+                    let msg = '';
+                    if (dohDetected) msg = 'Encrypted DNS (DoH/DoT) is active. Queries are secured from local snooping but resolved via centralized infrastructure.';
+                    else if (leak) msg = 'Multiple backend resolvers detected. This is typical for load-balanced DNS but can also indicate a DNS leak if ISPs are mixed.';
+                    else msg = 'Clean, single-threaded DNS path detected. Standard configuration.';
+
+                    assessment = `<div class="al ${leak ? 'al-r' : dohDetected ? 'al-i' : 'al-g'}" style="margin-top:16px">
                     <div style="font-weight:700;margin-bottom:4px">${leak ? '🚨 DNS LEAK RISK' : dohDetected ? '🛡️ ENCRYPTED DNS ACTIVE' : '✅ DNS PATH SECURE'}</div>
                     <div style="opacity:0.9">${msg}</div>
                     <div style="font-size:0.7rem;margin-top:10px;opacity:0.6;font-family:var(--font-mono)">PROBES: ${TOTAL} · CAPTURED: ${servers.length} · SESSIONS: ROTATING</div>
                 </div>`;
-            }
-            footer.innerHTML = assessment;
-            updateBadges();
-        }
-
-
-        for(let i=0; i<TOTAL; i++) {
-            const rnd = Math.random().toString(36).substring(2, 12);
-            
-            // Probes are distributed across 3 different infrastructure patterns:
-            // 1. IP-API (EDNS method) - Highly reliable for IPv4
-            // 2. IPLeak Standard - Dual-stack authoritative logging
-            // 3. IPLeak IPv6-Only - Forces detection of IPv6 resolvers if available
-            
-            const variant = i % 3;
-            let host = `${sessionID}-${rnd}.ipleak.net`;
-            if (variant === 2) host = `${sessionID}-${rnd}.ipv6.ipleak.net`;
-
-            let p;
-            if (variant === 0) {
-                // IP-API EDNS 
-                p = fetch(`https://edns.ip-api.com/json?cache=${rnd}`, { cache: 'no-store' })
-                    .then(r => r.json())
-                    .then(d => {
-                        if (d.dns) {
-                            const geoArr = (d.dns.geo || "").split(" - ");
-                            handleResolver({
-                                ip: d.dns.ip,
-                                isp: geoArr[1] || geoArr[0] || "Unknown",
-                                country: geoArr[0] || "",
-                                country_code: "",
-                                city: ""
-                            });
-                        }
-                    });
-            } else {
-                // IPLeak (Standard or IPv6 forced)
-                p = fetch(`https://${host}/dnsdetection/`, { cache: 'no-store' })
-                    .then(r => r.json())
-                    .then(d => {
-                        const item = Array.isArray(d) ? d[0] : d;
-                        if (item && item.ip) {
-                            handleResolver({
-                                ip: item.ip,
-                                isp: item.isp || item.as_org || item.org || "Unknown",
-                                country: item.country_name || item.country || "",
-                                country_code: item.country_code || item.cc || "",
-                                city: item.city || ""
-                            });
-                        }
-                    });
+                }
+                footer.innerHTML = assessment;
+                updateBadges();
             }
 
-            probes.push(p.catch(()=>null).finally(() => { probesDone++; updateStatus(); }));
+
+            for (let i = 0; i < TOTAL; i++) {
+                const rnd = Math.random().toString(36).substring(2, 12);
+
+                // Probes are distributed across 3 different infrastructure patterns:
+                // 1. IP-API (EDNS method) - Highly reliable for IPv4
+                // 2. IPLeak Standard - Dual-stack authoritative logging
+                // 3. IPLeak IPv6-Only - Forces detection of IPv6 resolvers if available
+
+                const variant = i % 3;
+                let host = `${sessionID}-${rnd}.ipleak.net`;
+                if (variant === 2) host = `${sessionID}-${rnd}.ipv6.ipleak.net`;
+
+                let p;
+                if (variant === 0) {
+                    // IP-API EDNS 
+                    p = fetch(`https://edns.ip-api.com/json?cache=${rnd}`, { cache: 'no-store' })
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.dns) {
+                                const geoArr = (d.dns.geo || "").split(" - ");
+                                handleResolver({
+                                    ip: d.dns.ip,
+                                    isp: geoArr[1] || geoArr[0] || "Unknown",
+                                    country: geoArr[0] || "",
+                                    country_code: "",
+                                    city: ""
+                                });
+                            }
+                        });
+                } else {
+                    // IPLeak (Standard or IPv6 forced)
+                    p = fetch(`https://${host}/dnsdetection/`, { cache: 'no-store' })
+                        .then(r => r.json())
+                        .then(d => {
+                            const item = Array.isArray(d) ? d[0] : d;
+                            if (item && item.ip) {
+                                handleResolver({
+                                    ip: item.ip,
+                                    isp: item.isp || item.as_org || item.org || "Unknown",
+                                    country: item.country_name || item.country || "",
+                                    country_code: item.country_code || item.cc || "",
+                                    city: item.city || ""
+                                });
+                            }
+                        });
+                }
+
+                probes.push(p.catch(() => null).finally(() => { probesDone++; updateStatus(); }));
+            }
+
+            await Promise.allSettled(probes);
+            finalize();
         }
 
-        await Promise.allSettled(probes);
-        finalize();
-    }
-
-    function renderUA(){
-        const ua=navigator.userAgent;
-        let br='Unknown',bv='',os='Unknown',ov='',eng='Unknown',dev='Desktop';
-        if(/Edg\/([\d.]+)/.test(ua)){br='Microsoft Edge';bv=RegExp.$1;}
-        else if(/Firefox\/([\d.]+)/.test(ua)){br='Mozilla Firefox';bv=RegExp.$1;}
-        else if(/OPR\/([\d.]+)/.test(ua)){br='Opera';bv=RegExp.$1;}
-        else if(/Chrome\/([\d.]+)/.test(ua)&&!/Chromium/.test(ua)){br='Google Chrome';bv=RegExp.$1;}
-        else if(/Chromium\/([\d.]+)/.test(ua)){br='Chromium';bv=RegExp.$1;}
-        else if(/Safari\//.test(ua)&&/Version\/([\d.]+)/.test(ua)){br='Apple Safari';bv=RegExp.$1;}
-        if(/Windows NT 10/.test(ua)){os='Windows';ov='10/11';}
-        else if(/Mac OS X ([\d_]+)/.test(ua)){os='macOS';ov=RegExp.$1.replace(/_/g,'.');}
-        else if(/Android ([\d.]+)/.test(ua)){os='Android';ov=RegExp.$1;}
-        else if(/iPhone OS ([\d_]+)/.test(ua)){os='iOS';ov=RegExp.$1.replace(/_/g,'.');}
-        else if(/iPad.*OS ([\d_]+)/.test(ua)){os='iPadOS';ov=RegExp.$1.replace(/_/g,'.');}
-        else if(/Linux/.test(ua)){os='Linux';}
-        if(/Gecko\//.test(ua)&&/Firefox/.test(ua))eng='Gecko';
-        else if(/WebKit\//.test(ua))eng='WebKit / Blink';
-        const conn=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
-        const feat=[];
-        if('serviceWorker' in navigator)feat.push('Service Worker');
-        if(window.WebAssembly)feat.push('WebAssembly');
-        if(window.crypto?.subtle)feat.push('Web Crypto');
-        if('bluetooth' in navigator)feat.push('Bluetooth API');
-        if('gpu' in navigator)feat.push('WebGPU');
-        if('xr' in navigator)feat.push('WebXR');
-        if(navigator.doNotTrack==='1')feat.push('Do Not Track ON');
-        if(/Mobile/.test(ua))dev='Mobile';else if(/Tablet|iPad/.test(ua))dev='Tablet';
-        let h=`<div class="ua-raw">${esc(ua)}</div>`;
-        h+=`<div class="env-pills">
+        function renderUA() {
+            const ua = navigator.userAgent;
+            let br = 'Unknown', bv = '', os = 'Unknown', ov = '', eng = 'Unknown', dev = 'Desktop';
+            if (/Edg\/([\d.]+)/.test(ua)) { br = 'Microsoft Edge'; bv = RegExp.$1; }
+            else if (/Firefox\/([\d.]+)/.test(ua)) { br = 'Mozilla Firefox'; bv = RegExp.$1; }
+            else if (/OPR\/([\d.]+)/.test(ua)) { br = 'Opera'; bv = RegExp.$1; }
+            else if (/Chrome\/([\d.]+)/.test(ua) && !/Chromium/.test(ua)) { br = 'Google Chrome'; bv = RegExp.$1; }
+            else if (/Chromium\/([\d.]+)/.test(ua)) { br = 'Chromium'; bv = RegExp.$1; }
+            else if (/Safari\//.test(ua) && /Version\/([\d.]+)/.test(ua)) { br = 'Apple Safari'; bv = RegExp.$1; }
+            if (/Windows NT 10/.test(ua)) { os = 'Windows'; ov = '10/11'; }
+            else if (/Mac OS X ([\d_]+)/.test(ua)) { os = 'macOS'; ov = RegExp.$1.replace(/_/g, '.'); }
+            else if (/Android ([\d.]+)/.test(ua)) { os = 'Android'; ov = RegExp.$1; }
+            else if (/iPhone OS ([\d_]+)/.test(ua)) { os = 'iOS'; ov = RegExp.$1.replace(/_/g, '.'); }
+            else if (/iPad.*OS ([\d_]+)/.test(ua)) { os = 'iPadOS'; ov = RegExp.$1.replace(/_/g, '.'); }
+            else if (/Linux/.test(ua)) { os = 'Linux'; }
+            if (/Gecko\//.test(ua) && /Firefox/.test(ua)) eng = 'Gecko';
+            else if (/WebKit\//.test(ua)) eng = 'WebKit / Blink';
+            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            const feat = [];
+            if ('serviceWorker' in navigator) feat.push('Service Worker');
+            if (window.WebAssembly) feat.push('WebAssembly');
+            if (window.crypto?.subtle) feat.push('Web Crypto');
+            if ('bluetooth' in navigator) feat.push('Bluetooth API');
+            if ('gpu' in navigator) feat.push('WebGPU');
+            if ('xr' in navigator) feat.push('WebXR');
+            if (navigator.doNotTrack === '1') feat.push('Do Not Track ON');
+            if (/Mobile/.test(ua)) dev = 'Mobile'; else if (/Tablet|iPad/.test(ua)) dev = 'Tablet';
+            let h = `<div class="ua-raw">${esc(ua)}</div>`;
+            h += `<div class="env-pills">
     <span class="ep"><span>🌐</span><span style="color:#a5b4fc">${br} ${bv}</span></span>
     <span class="ep"><span>💻</span><span style="color:#86efac">${os} ${ov}</span></span>
     <span class="ep"><span>⚙️</span><span style="color:#d8b4fe">${eng}</span></span>
     <span class="ep"><span>📱</span><span style="color:#fde047">${dev}</span></span>
   </div>`;
-        const dr=[['Platform',navigator.platform||'—'],['Language',navigator.language||'—'],
-            ['Screen',screen.width+'×'+screen.height+' / '+screen.colorDepth+'bit'],
-            ['Viewport',window.innerWidth+'×'+window.innerHeight],
-            ['Pixel Ratio',(window.devicePixelRatio||1)+'x'],
-            ['CPU Cores',navigator.hardwareConcurrency||'—'],
-            ['RAM',navigator.deviceMemory?navigator.deviceMemory+' GB':'—'],
-            ['Touch Points',navigator.maxTouchPoints||'0'],
-            ['Network Type',conn?(conn.effectiveType||'—'):'—'],
-            ['RTT',conn&&conn.rtt!=null?conn.rtt+'ms':'—'],
-            ['Cookies',navigator.cookieEnabled?'Enabled':'Disabled'],
-            ['Do Not Track',navigator.doNotTrack==='1'?'Enabled':'Disabled'],
-        ];
-        h+='<div class="rows">';dr.forEach(([l,v])=>{h+=row(l,esc(String(v)));});h+='</div>';
-        if(feat.length){h+=`<div class="feat-l">Supported APIs</div><div class="feats">`;feat.forEach(f=>{h+=`<span class="fi">✓ ${f}</span>`;});h+='</div>';}
-        $('ua-out').innerHTML=h;
-    }
-
-    /* ─────────────────────────────────────────────────────────────────────
-       SPEED TEST
-    ───────────────────────────────────────────────────────────────────── */
-    /* ─────────────────────────────────────────────────────────────────────
-       SPEED TEST — Global state & Control
-    ───────────────────────────────────────────────────────────────────── */
-    let isTesting = false;
-    let testAbort = null;
-
-    function toggleSpeed(){
-        if(isTesting){
-            isTesting = false;
-            if(testAbort) testAbort.abort();
-            $('spdBtn').textContent = 'Stopping session…';
-            $('spdBtn').disabled = true;
-        } else {
-            runSpeed();
+            const dr = [['Platform', navigator.platform || '—'], ['Language', navigator.language || '—'],
+            ['Screen', screen.width + '×' + screen.height + ' / ' + screen.colorDepth + 'bit'],
+            ['Viewport', window.innerWidth + '×' + window.innerHeight],
+            ['Pixel Ratio', (window.devicePixelRatio || 1) + 'x'],
+            ['CPU Cores', navigator.hardwareConcurrency || '—'],
+            ['RAM', navigator.deviceMemory ? navigator.deviceMemory + ' GB' : '—'],
+            ['Touch Points', navigator.maxTouchPoints || '0'],
+            ['Network Type', conn ? (conn.effectiveType || '—') : '—'],
+            ['RTT', conn && conn.rtt != null ? conn.rtt + 'ms' : '—'],
+            ['Cookies', navigator.cookieEnabled ? 'Enabled' : 'Disabled'],
+            ['Do Not Track', navigator.doNotTrack === '1' ? 'Enabled' : 'Disabled'],
+            ];
+            h += '<div class="rows">'; dr.forEach(([l, v]) => { h += row(l, esc(String(v))); }); h += '</div>';
+            if (feat.length) { h += `<div class="feat-l">Supported APIs</div><div class="feats">`; feat.forEach(f => { h += `<span class="fi">✓ ${f}</span>`; }); h += '</div>'; }
+            $('ua-out').innerHTML = h;
         }
-    }
 
-    function setPhase(n){[0,1,2].forEach(i=>{$('ph'+i).className='ph'+(i<n?' done':i===n?' active':'');});}
-    function setSP(pct,msg){$('sPF').style.width=pct+'%';$('sPL').textContent=msg;}
+        /* ─────────────────────────────────────────────────────────────────────
+           SPEED TEST
+        ───────────────────────────────────────────────────────────────────── */
+        /* ─────────────────────────────────────────────────────────────────────
+           SPEED TEST — Global state & Control
+        ───────────────────────────────────────────────────────────────────── */
+        let isTesting = false;
+        let testAbort = null;
 
-    function mkRnd(bytes){
-        const buf=new Uint8Array(bytes);
-        for(let i=0;i<bytes;i+=65536)crypto.getRandomValues(buf.subarray(i,Math.min(i+65536,bytes)));
-        return buf;
-    }
+        function toggleSpeed() {
+            if (isTesting) {
+                isTesting = false;
+                if (testAbort) testAbort.abort();
+                $('spdBtn').textContent = 'Stopping session…';
+                $('spdBtn').disabled = true;
+            } else {
+                runSpeed();
+            }
+        }
 
-    async function uploadChunk(bytes, signal){
-        return new Promise((resolve) => {
-            const data = mkRnd(bytes);
-            const blob = new Blob([data], { type: 'text/plain' });
-            const xhr = new XMLHttpRequest();
-            const start = performance.now();
-            let isDone = false;
+        function setPhase(n) { [0, 1, 2].forEach(i => { $('ph' + i).className = 'ph' + (i < n ? ' done' : i === n ? ' active' : ''); }); }
+        function setSP(pct, msg) { $('sPF').style.width = pct + '%'; $('sPL').textContent = msg; }
 
-            const finish = () => {
-                if (isDone) return;
-                isDone = true;
-                resolve(performance.now() - start);
-            };
+        function mkRnd(bytes) {
+            const buf = new Uint8Array(bytes);
+            for (let i = 0; i < bytes; i += 65536)crypto.getRandomValues(buf.subarray(i, Math.min(i + 65536, bytes)));
+            return buf;
+        }
 
-            if (signal) {
-                if (signal.aborted) return resolve(0);
-                signal.addEventListener('abort', () => {
+        async function uploadChunk(bytes, signal) {
+            return new Promise((resolve) => {
+                const data = mkRnd(bytes);
+                const blob = new Blob([data], { type: 'text/plain' });
+                const xhr = new XMLHttpRequest();
+                const start = performance.now();
+                let isDone = false;
+
+                const finish = () => {
                     if (isDone) return;
                     isDone = true;
-                    xhr.abort();
-                    resolve(0);
-                });
-            }
+                    resolve(performance.now() - start);
+                };
 
-            xhr.onload = finish;
-            xhr.onerror = finish;
-            
-            xhr.open('POST', 'https://speed.cloudflare.com/__up', true);
-            xhr.send(blob);
-        });
-    }
+                if (signal) {
+                    if (signal.aborted) return resolve(0);
+                    signal.addEventListener('abort', () => {
+                        if (isDone) return;
+                        isDone = true;
+                        xhr.abort();
+                        resolve(0);
+                    });
+                }
 
-    async function runSpeed(){
-        isTesting = true;
-        testAbort = new AbortController();
-        const signal = testAbort.signal;
-        
-        const btn=$('spdBtn');
-        btn.textContent='⏹ Stop Speed Test';
-        btn.classList.add('stop');
-        
-        $('spd-phase-wrap').style.display='block';
-        setPhase(-1); // reset phases
-        setSP(0,'Connecting to edge…');
+                xhr.onload = finish;
+                xhr.onerror = finish;
 
-        try{
-            const m=await fetch('https://speed.cloudflare.com/meta', { signal }).then(r=>r.json());
-            if(!isTesting) return endSpeed();
-            const colo = (typeof m.colo === 'object' ? (m.colo.iata || m.colo.name) : m.colo) || '';
-            const nm=`Cloudflare ${colo}${m.city?' — '+m.city:''}`;
-            const loc=[m.country,m.region].filter(Boolean).join(', ');
-            $('srv-name').textContent=nm;
-            $('srv-sub').textContent=loc||'Cloudflare Edge Node';
-            $('srv-box').classList.add('loaded');
-            $('v-srv').textContent=`${nm}${loc?' ('+loc+')':''}`;
-            $('v-proto').textContent=m.httpProtocol||'—';
-            $('v-edgeip').textContent=m.clientIp||'—';
-        }catch(e){ if(e.name==='AbortError') return endSpeed(); }
+                xhr.open('POST', 'https://speed.cloudflare.com/__up', true);
+                xhr.send(blob);
+            });
+        }
 
-        /* ── PING & PACKET LOSS ── */
-        setPhase(0); setSP(5,'Measuring latency and packet loss…');
-        const pings=[];
-        let lossCount=0;
-        const PING_TOTAL = 20;
-        for(let i=0;i<PING_TOTAL;i++){
-            if(!isTesting) return endSpeed();
-            const pStart = performance.now();
+        async function runSpeed() {
+            isTesting = true;
+            testAbort = new AbortController();
+            const signal = testAbort.signal;
+
+            const btn = $('spdBtn');
+            btn.textContent = '⏹ Stop Speed Test';
+            btn.classList.add('stop');
+
+            $('spd-phase-wrap').style.display = 'block';
+            setPhase(-1); // reset phases
+            setSP(0, 'Connecting to edge…');
+
             try {
-                // Set a 1.5 second timeout per ping sample
-                const ctrl = new AbortController();
-                const timeoutId = setTimeout(() => ctrl.abort('timeout'), 1500); 
-                const onGlobal = () => ctrl.abort('user');
-                signal.addEventListener('abort', onGlobal);
+                const m = await fetch('https://speed.cloudflare.com/meta', { signal }).then(r => r.json());
+                if (!isTesting) return endSpeed();
+                const colo = (typeof m.colo === 'object' ? (m.colo.iata || m.colo.name) : m.colo) || '';
+                const nm = `Cloudflare ${colo}${m.city ? ' — ' + m.city : ''}`;
+                const loc = [m.country, m.region].filter(Boolean).join(', ');
+                $('srv-name').textContent = nm;
+                $('srv-sub').textContent = loc || 'Cloudflare Edge Node';
+                $('srv-box').classList.add('loaded');
+                $('v-srv').textContent = `${nm}${loc ? ' (' + loc + ')' : ''}`;
+                $('v-proto').textContent = m.httpProtocol || '—';
+                $('v-edgeip').textContent = m.clientIp || '—';
+            } catch (e) { if (e.name === 'AbortError') return endSpeed(); }
 
-                await fetch('https://speed.cloudflare.com/__down?bytes=0&nc='+Date.now()+i, {cache:'no-store', signal: ctrl.signal});
-                
-                clearTimeout(timeoutId);
-                signal.removeEventListener('abort', onGlobal);
-                pings.push(performance.now() - pStart);
-                setSP(5+i*0.25,'Ping sample '+(i+1)+'/'+PING_TOTAL+'…');
-            } catch(e) {
-                if(e === 'user' || (signal && signal.aborted)) return endSpeed();
-                lossCount++; // Counts as a dropped packet if it times out or errors
+            /* ── PING & PACKET LOSS ── */
+            setPhase(0); setSP(5, 'Measuring latency and packet loss…');
+            const pings = [];
+            let lossCount = 0;
+            const PING_TOTAL = 20;
+            for (let i = 0; i < PING_TOTAL; i++) {
+                if (!isTesting) return endSpeed();
+                const pStart = performance.now();
+                try {
+                    // Set a 1.5 second timeout per ping sample
+                    const ctrl = new AbortController();
+                    const timeoutId = setTimeout(() => ctrl.abort('timeout'), 1500);
+                    const onGlobal = () => ctrl.abort('user');
+                    signal.addEventListener('abort', onGlobal);
+
+                    await fetch('https://speed.cloudflare.com/__down?bytes=0&nc=' + Date.now() + i, { cache: 'no-store', signal: ctrl.signal });
+
+                    clearTimeout(timeoutId);
+                    signal.removeEventListener('abort', onGlobal);
+                    pings.push(performance.now() - pStart);
+                    setSP(5 + i * 0.25, 'Ping sample ' + (i + 1) + '/' + PING_TOTAL + '…');
+                } catch (e) {
+                    if (e === 'user' || (signal && signal.aborted)) return endSpeed();
+                    lossCount++; // Counts as a dropped packet if it times out or errors
+                }
+            }
+
+            const lossPct = Math.round((lossCount / PING_TOTAL) * 100);
+            const lossEl = $('v-loss');
+            lossEl.textContent = lossPct + '%';
+            if (lossPct > 0) lossEl.style.color = 'var(--danger)';
+            else lossEl.style.color = 'var(--text)';
+
+            if (pings.length) {
+                pings.sort((a, b) => a - b);
+                const p = Math.round(pings[0]);
+                $('v-pg').textContent = p;
+                $('b-pg').style.width = Math.min(100, Math.max(5, 100 - p / 2.5)) + '%';
+                $('v-jit').textContent = Math.round(pings[pings.length - 1] - pings[0]) + ' ms';
+                $('v-lat').textContent = Math.round(pings.reduce((s, v) => s + v, 0) / pings.length) + ' ms';
+            }
+            setSP(10, '✓ Latency & Packet Loss confirmed');
+
+            /* ── DOWNLOAD ── */
+            setPhase(1);
+            const dlSz = [1000000, 2000000, 5000000, 10000000, 15000000, 25000000, 35000000, 50000000];
+            let dlB = 0, dlT = 0, dlSpd = 0;
+            for (let si = 0; si < dlSz.length; si++) {
+                if (!isTesting) return endSpeed();
+                const bytes = dlSz[si];
+                setSP(10 + si * (40 / dlSz.length), `Download: ${(bytes / 1e6).toFixed(1)} MB segment…`);
+                try {
+                    const t = performance.now();
+                    const res = await fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}`, { cache: 'no-store', signal });
+                    const buf = await res.arrayBuffer();
+                    const ms = performance.now() - t;
+                    dlB += buf.byteLength * 8; dlT += ms / 1000;
+                    dlSpd = dlB / dlT / 1e6;
+                    $('v-dl').textContent = dlSpd.toFixed(1);
+                    $('b-dl').style.width = Math.min(100, dlSpd / 1.5) + '%';
+                } catch (e) { if (e.name === 'AbortError') return endSpeed(); }
+            }
+
+            /* ── UPLOAD ── */
+            setPhase(2);
+            const ulSz = [500000, 1000000, 2000000, 5000000, 10000000, 15000000, 25000000];
+            let ulB = 0, ulT = 0, ulSpd = 0;
+            for (let si = 0; si < ulSz.length; si++) {
+                if (!isTesting) return endSpeed();
+                const bytes = ulSz[si];
+                setSP(50 + si * (45 / ulSz.length), `Upload: ${(bytes / 1e6).toFixed(1)} MB segment…`);
+                try {
+                    const ms = await uploadChunk(bytes, signal);
+                    if (ms === 0) continue;
+                    ulB += bytes * 8; ulT += ms / 1000;
+                    ulSpd = ulB / ulT / 1e6;
+                    $('v-ul').textContent = ulSpd.toFixed(1);
+                    $('b-ul').style.width = Math.min(100, ulSpd / 0.8) + '%';
+                } catch (e) { if (e.name === 'AbortError') return endSpeed(); }
+            }
+
+            endSpeed(true, dlSpd, ulSpd);
+        }
+
+        function endSpeed(done = false, dl = 0, ul = 0) {
+            isTesting = false;
+            const btn = $('spdBtn');
+            btn.classList.remove('stop');
+            btn.disabled = false;
+            btn.textContent = '🔄 Run Again';
+
+            if (done) {
+                setPhase(3);
+                setSP(100, `✅ Complete: ↓ ${dl.toFixed(1)} Mbps | ↑ ${ul.toFixed(1)} Mbps`);
+            } else {
+                setSP(0, '⚠️ Test Cancelled');
+                [0, 1, 2].forEach(i => { $('ph' + i).className = 'bdg b-m'; }); // reset pills
             }
         }
-        
-        const lossPct = Math.round((lossCount / PING_TOTAL) * 100);
-        const lossEl = $('v-loss');
-        lossEl.textContent = lossPct + '%';
-        if(lossPct > 0) lossEl.style.color = 'var(--danger)';
-        else lossEl.style.color = 'var(--text)';
-
-        if(pings.length){
-            pings.sort((a,b)=>a-b);
-            const p=Math.round(pings[0]);
-            $('v-pg').textContent=p;
-            $('b-pg').style.width=Math.min(100,Math.max(5,100-p/2.5))+'%';
-            $('v-jit').textContent=Math.round(pings[pings.length-1]-pings[0])+' ms';
-            $('v-lat').textContent=Math.round(pings.reduce((s,v)=>s+v,0)/pings.length)+' ms';
-        }
-        setSP(10,'✓ Latency & Packet Loss confirmed');
-
-        /* ── DOWNLOAD ── */
-        setPhase(1);
-        const dlSz=[1000000, 2000000, 5000000, 10000000, 15000000, 25000000, 35000000, 50000000];
-        let dlB=0,dlT=0,dlSpd=0;
-        for(let si=0;si<dlSz.length;si++){
-            if(!isTesting) return endSpeed();
-            const bytes=dlSz[si];
-            setSP(10+si*(40/dlSz.length),`Download: ${(bytes/1e6).toFixed(1)} MB segment…`);
-            try{
-                const t=performance.now();
-                const res=await fetch(`https://speed.cloudflare.com/__down?bytes=${bytes}`,{cache:'no-store', signal});
-                const buf=await res.arrayBuffer();
-                const ms=performance.now()-t;
-                dlB+=buf.byteLength*8; dlT+=ms/1000;
-                dlSpd=dlB/dlT/1e6;
-                $('v-dl').textContent=dlSpd.toFixed(1);
-                $('b-dl').style.width=Math.min(100,dlSpd/1.5)+'%';
-            }catch(e){ if(e.name==='AbortError') return endSpeed(); }
-        }
-
-        /* ── UPLOAD ── */
-        setPhase(2);
-        const ulSz=[500000, 1000000, 2000000, 5000000, 10000000, 15000000, 25000000];
-        let ulB=0,ulT=0,ulSpd=0;
-        for(let si=0;si<ulSz.length;si++){
-            if(!isTesting) return endSpeed();
-            const bytes=ulSz[si];
-            setSP(50+si*(45/ulSz.length),`Upload: ${(bytes/1e6).toFixed(1)} MB segment…`);
-            try{
-                const ms = await uploadChunk(bytes, signal);
-                if(ms === 0) continue;
-                ulB+=bytes*8; ulT+=ms/1000;
-                ulSpd=ulB/ulT/1e6;
-                $('v-ul').textContent=ulSpd.toFixed(1);
-                $('b-ul').style.width=Math.min(100,ulSpd/0.8)+'%';
-            }catch(e){ if(e.name==='AbortError') return endSpeed(); }
-        }
-
-        endSpeed(true, dlSpd, ulSpd);
-    }
-
-    function endSpeed(done=false, dl=0, ul=0){
-        isTesting = false;
-        const btn = $('spdBtn');
-        btn.classList.remove('stop');
-        btn.disabled = false;
-        btn.textContent = '🔄 Run Again';
-        
-        if(done){
-            setPhase(3);
-            setSP(100, `✅ Complete: ↓ ${dl.toFixed(1)} Mbps | ↑ ${ul.toFixed(1)} Mbps`);
-        } else {
-            setSP(0, '⚠️ Test Cancelled');
-            [0,1,2].forEach(i=>{$('ph'+i).className='bdg b-m';}); // reset pills
-        }
-    }
-</script>
+    </script>
 </body>
+
 </html>
