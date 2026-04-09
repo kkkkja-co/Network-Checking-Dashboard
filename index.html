@@ -18,7 +18,7 @@
             --border: rgba(255, 255, 255, 0.1);
             --border-hover: rgba(255, 255, 255, 0.2);
             --card-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            
+
             --overlay: rgba(255, 255, 255, 0.02);
             --overlay-hover: rgba(255, 255, 255, 0.04);
 
@@ -41,7 +41,7 @@
 
             --font-main: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
             --font-mono: 'SF Mono', 'JetBrains Mono', monospace;
-            
+
             --grad-1: rgba(59, 130, 246, 0.08);
             --grad-2: rgba(139, 92, 246, 0.08);
         }
@@ -69,7 +69,7 @@
             --text-primary: #1d1d1f;
             --text-secondary: #515154;
             --text-tertiary: #86868b;
-            
+
             --grad-1: rgba(0, 122, 255, 0.04);
             --grad-2: rgba(88, 86, 214, 0.04);
         }
@@ -672,60 +672,157 @@
 
         /* MODAL */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            z-index: 9999; display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
+
         .modal-overlay.active {
-            opacity: 1; pointer-events: auto;
+            opacity: 1;
+            pointer-events: auto;
         }
+
         .modal-content {
-            background: var(--bg-primary); border: 1px solid var(--border);
-            border-radius: var(--radius-lg); width: 90%; max-width: 650px;
-            max-height: 85vh; display: flex; flex-direction: column;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.05);
-            transform: translateY(20px) scale(0.95); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 650px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            transform: translateY(20px) scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         .modal-overlay.active .modal-content {
             transform: translateY(0) scale(1);
         }
+
         .modal-header {
-            padding: 20px 24px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-glass); border-top-left-radius: var(--radius-lg); border-top-right-radius: var(--radius-lg);
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-glass);
+            border-top-left-radius: var(--radius-lg);
+            border-top-right-radius: var(--radius-lg);
         }
-        .modal-title { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px;}
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .modal-close {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50%; font-size: 1.2rem; display:flex; align-items:center; justify-content:center; width:32px; height:32px; color: var(--text-secondary);
-            cursor: pointer; transition: all 0.2s; padding: 0; line-height: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0;
+            line-height: 1;
         }
-        .modal-close:hover { color: var(--text-primary); transform: scale(1.1); background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+            transform: scale(1.1);
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
         .modal-body {
-            padding: 24px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.85rem;
-            color: var(--text-secondary); background: rgba(0,0,0,0.2); border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg);
+            padding: 24px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom-left-radius: var(--radius-lg);
+            border-bottom-right-radius: var(--radius-lg);
             line-height: 1.6;
         }
-        
+
         /* JSON SYNTAX HIGHLIGHTING */
-        pre { margin: 0; }
-        .json-key { color: var(--accent-primary); font-weight: 600; }
-        .json-string { color: var(--success); }
-        .json-number { color: #f59e0b; }
-        .json-boolean { color: var(--accent-secondary); font-weight: 600; }
-        .json-null { color: var(--danger); font-weight: 600; }
+        pre {
+            margin: 0;
+        }
+
+        .json-key {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .json-string {
+            color: var(--success);
+        }
+
+        .json-number {
+            color: #f59e0b;
+        }
+
+        .json-boolean {
+            color: var(--accent-secondary);
+            font-weight: 600;
+        }
+
+        .json-null {
+            color: var(--danger);
+            font-weight: 600;
+        }
 
         .tech-btn {
-            background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border);
-            border-radius: var(--radius-sm); width: 36px; height: 36px; display: flex;
-            align-items: center; justify-content: center; cursor: pointer;
-            color: var(--text-secondary); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative; overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
         }
-        .tech-btn svg { width: 18px; height: 18px; }
+
+        .tech-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
         .tech-btn:hover {
-            background: rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.3);
-            color: var(--accent-primary); transform: translateY(-2px);
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
         }
 
@@ -1093,8 +1190,17 @@
 
             <div style="display: flex; align-items: center; gap: 16px;">
                 <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
                 </button>
                 <nav class="nav-links">
@@ -1142,8 +1248,13 @@
                             <div class="cs">IP Address & Geolocation</div>
                         </div>
                     </div>
-                    <button class="tech-btn" onclick="showTechInfo('ip', '🌐 Network Identity Payload')" title="View Technical Details">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <button class="tech-btn" onclick="showTechInfo('ip', '🌐 Network Identity Payload')"
+                        title="View Technical Details">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
                     </button>
                 </div>
                 <div id="ip-out">
@@ -1166,8 +1277,13 @@
                     </div>
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div id="vpn-bdg"></div>
-                        <button class="tech-btn" onclick="showTechInfo('vpn', '🔐 Traffic Security Payload')" title="View Technical Details">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <button class="tech-btn" onclick="showTechInfo('vpn', '🔐 Traffic Security Payload')"
+                            title="View Technical Details">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -1189,8 +1305,13 @@
                     </div>
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div id="rtc-bdg"></div>
-                        <button class="tech-btn" onclick="showTechInfo('webrtc', '⚡ WebRTC Leak Payload')" title="View Technical Details">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <button class="tech-btn" onclick="showTechInfo('webrtc', '⚡ WebRTC Leak Payload')"
+                            title="View Technical Details">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -1212,8 +1333,13 @@
                     </div>
                     <div style="display:flex; align-items:center; gap:12px;">
                         <div id="dns-bdg"></div>
-                        <button class="tech-btn" onclick="showTechInfo('dns', '🔍 DNS Infrastructure Payload')" title="View Technical Details">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <button class="tech-btn" onclick="showTechInfo('dns', '🔍 DNS Infrastructure Payload')"
+                            title="View Technical Details">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -1233,8 +1359,13 @@
                             <div class="cs">Browser, OS & Hardware</div>
                         </div>
                     </div>
-                    <button class="tech-btn" onclick="showTechInfo('ua', '💻 Device Fingerprint Payload')" title="View Technical Details">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    <button class="tech-btn" onclick="showTechInfo('ua', '💻 Device Fingerprint Payload')"
+                        title="View Technical Details">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
                     </button>
                 </div>
                 <div id="ua-out">
@@ -1464,7 +1595,7 @@
             const d = v4.status === 'fulfilled' ? v4.value : {};
             const v6ip = v6.status === 'fulfilled' ? v6.value.ip : null;
             if (v6ip && v6ip !== d.ip && v6ip.includes(':')) d.ipv6 = v6ip;
-            
+
             window.techData.ip = d;
             return d;
         }
@@ -1526,8 +1657,8 @@
 
         async function runWebRTC(ipData) {
             const ips = await getWebRTCIPs(), pub = ipData.ip;
-            window.techData.webrtc = { 
-                discovered_ips: ips, 
+            window.techData.webrtc = {
+                discovered_ips: ips,
                 public_ip: pub,
                 candidate_gathering: "Complete"
             };
@@ -1995,13 +2126,13 @@
 
         // Theme Toggle Logic
         const themeToggle = document.getElementById('themeToggle');
-        if(themeToggle) {
+        if (themeToggle) {
             themeToggle.onclick = () => {
                 const isLight = document.documentElement.getAttribute('data-theme') === 'light';
                 document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
                 localStorage.setItem('theme', isLight ? 'dark' : 'light');
             };
-            if(localStorage.getItem('theme') === 'light' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            if (localStorage.getItem('theme') === 'light' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches)) {
                 document.documentElement.setAttribute('data-theme', 'light');
             }
         }
