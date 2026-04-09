@@ -81,12 +81,23 @@
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
             background-image:
                 radial-gradient(circle at 15% 50%, var(--grad-1) 0%, transparent 50%),
                 radial-gradient(circle at 85% 30%, var(--grad-2) 0%, transparent 50%);
-            background-attachment: fixed;
-            line-height: 1.5;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -106,12 +117,12 @@
         @keyframes fadeInDown {
             from {
                 opacity: 0;
-                transform: translateY(-30px);
+                transform: translateY(-30px) translateZ(0);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) translateZ(0);
             }
         }
 
@@ -131,15 +142,15 @@
 
         @keyframes float {
             0% {
-                transform: translateY(0px);
+                transform: translateY(0px) translateZ(0);
             }
 
             50% {
-                transform: translateY(-10px);
+                transform: translateY(-10px) translateZ(0);
             }
 
             100% {
-                transform: translateY(0px);
+                transform: translateY(0px) translateZ(0);
             }
         }
 
@@ -238,8 +249,8 @@
         /* CARDS */
         .card {
             background: var(--bg-glass);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
             padding: 24px;
@@ -248,8 +259,9 @@
             position: relative;
             overflow: hidden;
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(30px) translateZ(0);
             animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: transform, opacity;
         }
 
         .card:nth-child(1) {
@@ -279,12 +291,12 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(40px);
+                transform: translateY(40px) translateZ(0);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) translateZ(0);
             }
         }
 
@@ -300,7 +312,7 @@
 
         .card:hover {
             border-color: var(--border-hover);
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
         }
 
         .ch {
@@ -500,7 +512,7 @@
         }
 
         .spd-btn:hover:not(:disabled) {
-            transform: translateY(-2px) scale(1.01);
+            transform: translateY(-2px) scale(1.01) translateZ(0);
             box-shadow: 0 15px 35px rgba(59, 130, 246, 0.5);
         }
 
@@ -509,7 +521,7 @@
         }
 
         .spd-btn:active:not(:disabled) {
-            transform: scale(0.97);
+            transform: scale(0.97) translateZ(0);
             transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -544,7 +556,7 @@
         }
 
         .met:hover {
-            transform: translateY(-2px);
+            transform: translateY(-2px) translateZ(0);
             border-color: var(--border-hover);
         }
 
